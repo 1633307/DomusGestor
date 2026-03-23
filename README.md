@@ -24,13 +24,13 @@ domus-gestor/
 ├── backend/               # MODEL & CONTROLADOR (Django + PostgreSQL)
 │   ├── core/              # Configuració global del projecte
 │   ├── users/             # Gestió d'Usuaris, Staff, Propietaris i Inquilins
-[cite_start]│   ├── properties/        # Gestió d'Immobles, Inventari i Temporades [cite: 49]
-[cite_start]│   └── bookings/          # Motor de reserves, Pagaments i Registre Mossos [cite: 50, 51]
+│   ├── properties/        # Gestió d'Immobles, Inventari i Temporades 
+│   └── bookings/          # Motor de reserves, Pagaments i Registre Mossos 
 ├── frontend/              # VISTA (React.js)
 │   ├── public/            # Actius estàtics
 │   └── src/
-[cite_start]│       ├── components/    # UI reusable (Calendari, Forms, Taules) [cite: 80]
-[cite_start]│       └── pages/         # Vistes de l'aplicació (Dashboard, Portal Client) [cite: 153]
-[cite_start]├── docs/                  # Documentació (Contracte, Diagrames ER) [cite: 1]
+│       ├── components/    # UI reusable (Calendari, Forms, Taules)
+│       └── pages/         # Vistes de l'aplicació (Dashboard, Portal Client) 
+├── docs/                  # Documentació (Contracte, Diagrames ER) 
 ├── .gitignore             # Fitxers exclosos (node_modules, .env, __pycache__)
 └── README.md              # Documentació principal
