@@ -1,0 +1,5 @@
+django>=5.0,<5.1
+django-environ         # Per gestionar variables d'entorn (.env) segur
+djangorestframework    # Per crear l'API que connectarà amb React
+psycopg2-binary        # Driver per connectar Django amb PostgreSQL
+django-cors-headers    # Necessari perquè React pugui parlar amb Django

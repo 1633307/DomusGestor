@@ -34,3 +34,38 @@ domus-gestor/
 ├── docs/                  # Documentació (Contracte, Diagrames ER) 
 ├── .gitignore             # Fitxers exclosos (node_modules, .env, __pycache__)
 └── README.md              # Documentació principal
+
+## 🚀 Posada en Marxa
+
+### 1. Requisits Previs
+* **Python 3.13+** (comprovat amb `py --version`).
+* **Node.js i npm** per a la part de React.
+* **Git** per al control de versions.
+
+### 2. Configuració del Backend (Django)
+S'ha de seguir aquests passos:
+
+1. **Entrar a la carpeta**:
+   ```powershell
+   cd backend
+2. **Crear l'entorn virtual:**:
+   ```powershell
+   py -m venv venv
+3. **Activar l'entorn virtual:**:
+   ```powershell
+   .\venv\Scripts\activate
+4. **Entrar a la carpeta**:
+   ```powershell
+   pip install -r requirements.txt
+
+### 3. Configuració del Frontend (React)
+S'ha de seguir aquests passos:
+1. **Entrar a la carpeta**:
+   ```powershell
+    cd frontend
+2. **Instal·lar paquets:**:
+   ```powershell
+   npm install
+3. **Llançar l'aplicació:**:
+   ```powershell
+   npm start
