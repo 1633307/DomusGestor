@@ -34,6 +34,7 @@ domus-gestor/
 ├── docs/                  # Documentació (Contracte, Diagrames ER) 
 ├── .gitignore             # Fitxers exclosos (node_modules, .env, __pycache__)
 └── README.md              # Documentació principal
+```
 
 ## 🚀 Posada en Marxa
 
