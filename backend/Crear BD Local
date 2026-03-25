@@ -77,3 +77,91 @@ CREATE TABLE reserva_hostes (
     es_principal BOOLEAN,
     PRIMARY KEY (id_reserva, id_hoste)
 );
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Dades d'exemple:
+DO $$
+DECLARE
+    u_id UUID;
+    p_id UUID;
+    i_id UUID;
+    m_id UUID;
+    r_id UUID;
+    i INTEGER;
+BEGIN
+    -- 1. Generar 10 Usuaris (Staff)
+    FOR i IN 1..10 LOOP
+        INSERT INTO usuari (nom, email, password_hash, rol, nip)
+        VALUES (
+            'Staff ' || i,
+            'staff' || i || '@domusgestor.com',
+            'pbkdf2_sha256$720000$hash_simulat_' || i,
+            CASE WHEN i = 1 THEN 'admin'::rol_enum ELSE 'gestor'::rol_enum END,
+            'NIP' || (1000 + i)
+        );
+    END LOOP;
+
+    -- 2. Generar 10 Propietaris
+    FOR i IN 1..10 LOOP
+        INSERT INTO propietari (dni_nie, nom, dades_fiscals, email)
+        VALUES (
+            '432100' || LPAD(i::text, 2, '0') || 'X',
+            'Propietari ' || i,
+            'Carrer de la Propitat ' || i || ', 08001 Barcelona',
+            'owner' || i || '@gmail.com'
+        ) RETURNING id_propietari INTO p_id;
+
+        -- 3. Generar 4 Immobles per cada Propietari (Total 40) [cite: 103, 107]
+        FOR j IN 1..4 LOOP
+            INSERT INTO immoble (id_propietari, nom_comercial, adreca, preu_base, estat_neteja, info_tecnica)
+            VALUES (
+                p_id,
+                'Apartament ' || i || '-' || j,
+                'Carrer Turístic ' || (i*j) || ', Costa Brava',
+                75.00 + (i * 5),
+                CASE WHEN (i+j) % 2 = 0 THEN 'net'::estat_neteja_enum ELSE 'pendent'::estat_neteja_enum END,
+                '{"wifi": true, "aire": true, "habitacions": 2}'::jsonb
+            ) RETURNING id_immoble INTO m_id;
+
+            -- 4. Generar 2 Temporades per Immoble (Total 80) [cite: 129, 131]
+            INSERT INTO temporada (id_immoble, nom_descriptiu, data_inici, data_fi, preu_nit, min_nits, dia_checkin_permis)
+            VALUES 
+            (m_id, 'Estiu', '2026-06-01', '2026-08-31', 150.00, 5, 6),
+            (m_id, 'Baixa', '2026-10-01', '2026-12-20', 60.00, 2, NULL);
+        END LOOP;
+    END LOOP;
+
+    -- 5. Generar 40 Inquilins
+    FOR i IN 1..40 LOOP
+        INSERT INTO inquili (dni_passaport, nom, email, dades_facturacio)
+        VALUES (
+            'PASS' || LPAD(i::text, 5, '0'),
+            'Client ' || i,
+            'client' || i || '@yahoo.com',
+            'Dades de facturació client ' || i
+        ) RETURNING id_inquili INTO i_id;
+
+        -- 6. Generar una Reserva per cada inquilí (Total 40) [cite: 110, 150]
+        -- Seleccionem un immoble aleatori per a la reserva
+        SELECT id_immoble INTO m_id FROM immoble ORDER BY random() LIMIT 1;
+        
+        INSERT INTO reserva (id_immoble, id_inquili_principal, data_entrada, data_sortida, preu_total, taxa_turistica, estat)
+        VALUES (
+            m_id,
+            i_id,
+            '2026-07-01'::date + (i * interval '1 day'),
+            '2026-07-07'::date + (i * interval '1 day'),
+            850.00,
+            14.50,
+            'confirmada'
+        ) RETURNING id_reserva INTO r_id;
+
+        -- 7. Relacionar hostes (cada reserva té almenys el titular) [cite: 112]
+        INSERT INTO reserva_hostes (id_reserva, id_hoste, es_principal)
+        VALUES (r_id, i_id, TRUE);
+    END LOOP;
+END $$;
+
