@@ -1,0 +1,79 @@
+### Instalar BD LOCAL
+- Instalar https://dbngin.com/.
+- Un cop fet creas la bd en postgreeSQL
+- l'executes i quan estigui run veuras que al costat hi ha un play
+- Quan cliquis et sortira de descarregar aixo https://tableplus.com/download/
+- Quan el descarreguis tanques tot
+- Quan tornis a obrir el dbngin, cliques el play i set obrira la nova aplicacio ja vinculada a la bd
+- Cliques a dalt on diu SQL i executes el següent codi:
+
+
+CREATE TYPE rol_enum AS ENUM ('admin', 'gestor');
+CREATE TYPE estat_neteja_enum AS ENUM ('net', 'pendent');
+
+
+CREATE TABLE usuari (
+    id_usuari UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nom VARCHAR(100),
+    email VARCHAR(150) UNIQUE,
+    password_hash TEXT,
+    rol rol_enum,
+    nip VARCHAR(10)
+);
+
+CREATE TABLE propietari (
+    id_propietari UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    dni_nie VARCHAR(20) UNIQUE,
+    nom VARCHAR(100),
+    dades_fiscals TEXT,
+    email VARCHAR(150)
+);
+
+CREATE TABLE inquili (
+    id_inquili UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    dni_passaport VARCHAR(20) UNIQUE,
+    nom VARCHAR(100),
+    email VARCHAR(150),
+    dades_facturacio TEXT
+);
+
+
+CREATE TABLE immoble (
+    id_immoble UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_propietari UUID REFERENCES propietari(id_propietari) ON DELETE RESTRICT,
+    nom_comercial VARCHAR(100),
+    adreca TEXT,
+    preu_base DECIMAL,
+    estat_neteja estat_neteja_enum,
+    info_tecnica JSONB
+);
+
+CREATE TABLE temporada (
+    id_temporada UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_immoble UUID REFERENCES immoble(id_immoble) ON DELETE RESTRICT,
+    nom_descriptiu VARCHAR(50),
+    data_inici DATE,
+    data_fi DATE,
+    preu_nit DECIMAL,
+    min_nits INT,
+    dia_checkin_permis INT
+);
+
+CREATE TABLE reserva (
+    id_reserva UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_immoble UUID REFERENCES immoble(id_immoble) ON DELETE RESTRICT,
+    id_inquili_principal UUID REFERENCES inquili(id_inquili) ON DELETE RESTRICT,
+    data_entrada DATE,
+    data_sortida DATE,
+    preu_total DECIMAL,
+    taxa_turistica DECIMAL,
+    estat VARCHAR(20)
+);
+
+
+CREATE TABLE reserva_hostes (
+    id_reserva UUID REFERENCES reserva(id_reserva) ON DELETE RESTRICT,
+    id_hoste UUID REFERENCES inquili(id_inquili) ON DELETE RESTRICT,
+    es_principal BOOLEAN,
+    PRIMARY KEY (id_reserva, id_hoste)
+);
