@@ -10,11 +10,15 @@ export default function LoginForm() {
     nip: '',
     password: '',
   });
+
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -30,9 +34,7 @@ export default function LoginForm() {
   };
 
   return (
-    <form className="card login-form" onSubmit={handleSubmit}>
-      <h2>Iniciar sesión</h2>
-
+    <form className="login-form" onSubmit={handleSubmit}>
       <label>
         NIP
         <input
@@ -51,13 +53,13 @@ export default function LoginForm() {
           name="password"
           value={form.password}
           onChange={handleChange}
-          placeholder="••••••••"
+          placeholder="Introduce tu contraseña"
         />
       </label>
 
       {error && <p className="error-text">{error}</p>}
 
-      <button type="submit" className="btn">
+      <button type="submit" className="login-button">
         Entrar
       </button>
     </form>
