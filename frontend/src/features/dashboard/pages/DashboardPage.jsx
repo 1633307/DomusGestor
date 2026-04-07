@@ -1,19 +1,25 @@
 export default function DashboardPage() {
   return (
     <section>
-      <h2>Dashboard</h2>
-      <div className="grid-cards">
-        <article className="card">
-          <h3>Resumen</h3>
-          <p>Aquí irá el resumen principal del sistema.</p>
-        </article>
-        <article className="card">
+      <div className="page-title">
+        <h2>Dashboard</h2>
+        <p>Resumen general del sistema</p>
+      </div>
+
+      <div className="dashboard-grid">
+        <article className="dashboard-card">
           <h3>Reservas</h3>
-          <p>Estado general de reservas y ocupación.</p>
+          <p>Aquí irá el resumen de reservas.</p>
         </article>
-        <article className="card">
-          <h3>Pagos</h3>
-          <p>Más adelante se conectará al backend.</p>
+
+        <article className="dashboard-card">
+          <h3>Inmuebles</h3>
+          <p>Aquí irá el resumen de inmuebles.</p>
+        </article>
+
+        <article className="dashboard-card">
+          <h3>Clientes</h3>
+          <p>Aquí irá el resumen de clientes.</p>
         </article>
       </div>
     </section>

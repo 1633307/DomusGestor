@@ -1,17 +1,18 @@
-import LoginForm from '../components/LoginForm';
+import LoginForm from '../components/loginForm';
 
 export default function LoginPage() {
   return (
     <section className="login-page">
-      <div className="login-hero">
-        <h1>Domus Gestor</h1>
-        <p>
-          Plataforma para la gestión de alojamientos turísticos, reservas,
-          propietarios e inquilinos.
-        </p>
-      </div>
+      <div className="login-box">
+        <div className="login-header">
+          <p className="login-tag">Domus Gestor</p>
+          <h1>Iniciar sesión</h1>
+          <p className="login-subtitle">
+            Accede a la plataforma de gestión de alojamientos turísticos,
+            reservas, propietarios e inquilinos.
+          </p>
+        </div>
 
-      <div className="login-panel">
         <LoginForm />
       </div>
     </section>

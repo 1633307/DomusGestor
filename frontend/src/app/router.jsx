@@ -1,9 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import LoginPage from '../features/auth/pages/LoginPage';
-import DashboardPage from '../features/dashboard/pages/DashboardPage';
-import PropertiesPage from '../features/properties/pages/PropertiesPage';
-import AppLayout from './AppLayout';
-import ProtectedRoute from '../components/layout/ProtectedRoute';
+import AppLayout from './appLayout';
+import ProtectedRoute from '../components/layout/protectedRoute';
+import LoginPage from '../features/auth/pages/loginPage';
+import DashboardPage from '../features/dashboard/pages/dashboardPage';
+import PropertiesPage from '../features/properties/pages/propertiesPage';
 
 export default function AppRouter() {
   return (
@@ -20,7 +20,7 @@ export default function AppRouter() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="inmuebles" element={<PropertiesPage />} />
+        <Route path="properties" element={<PropertiesPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
