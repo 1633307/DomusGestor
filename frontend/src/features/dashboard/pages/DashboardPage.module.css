@@ -1,0 +1,36 @@
+.pageTitle {
+  margin-bottom: 20px;
+}
+
+.pageTitle h2 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.pageTitle p {
+  margin: 8px 0 0;
+  color: #a1a1aa;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.dashboardCard {
+  background: #1a1a1a;
+  border: 1px solid #2f2f2f;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.dashboardCard h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.dashboardCard p {
+  margin: 0;
+  color: #b4b4b8;
+}

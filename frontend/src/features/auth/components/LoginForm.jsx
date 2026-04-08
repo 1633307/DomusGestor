@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../authContext';
+import styles from './loginForm.module.css';
 
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -34,10 +35,11 @@ export default function LoginForm() {
   };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
-      <label>
+    <form className={styles.loginForm} onSubmit={handleSubmit}>
+      <label className={styles.field}>
         NIP
         <input
+          className={styles.input}
           type="text"
           name="nip"
           value={form.nip}
@@ -46,9 +48,10 @@ export default function LoginForm() {
         />
       </label>
 
-      <label>
+      <label className={styles.field}>
         Contraseña
         <input
+          className={styles.input}
           type="password"
           name="password"
           value={form.password}
@@ -57,9 +60,9 @@ export default function LoginForm() {
         />
       </label>
 
-      {error && <p className="error-text">{error}</p>}
+      {error && <p className={styles.errorText}>{error}</p>}
 
-      <button type="submit" className="login-button">
+      <button type="submit" className={styles.loginButton}>
         Entrar
       </button>
     </form>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PropertyForm from '../components/propertyForm';
+import styles from './propertiesPage.module.css';
 
 const initialProperties = [
   {
@@ -49,16 +50,29 @@ export default function PropertiesPage() {
     setShowForm(false);
   };
 
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'Disponible':
+        return `${styles.statusBadge} ${styles.statusDisponible}`;
+      case 'Reservado':
+        return `${styles.statusBadge} ${styles.statusReservado}`;
+      case 'Mantenimiento':
+        return `${styles.statusBadge} ${styles.statusMantenimiento}`;
+      default:
+        return styles.statusBadge;
+    }
+  };
+
   return (
     <section>
-      <div className="page-title page-title-row">
+      <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
         <div>
           <h2>Inmuebles</h2>
           <p>Gestión inicial de propiedades turísticas</p>
         </div>
 
         <button
-          className="primary-button"
+          className={styles.primaryButton}
           onClick={() => setShowForm((prev) => !prev)}
         >
           {showForm ? 'Cerrar formulario' : '+ Nuevo inmueble'}
@@ -66,8 +80,8 @@ export default function PropertiesPage() {
       </div>
 
       {showForm && (
-        <div className="form-card">
-          <div className="form-card-header">
+        <div className={styles.formCard}>
+          <div className={styles.formCardHeader}>
             <h3>Nuevo inmueble</h3>
             <p>Completa los datos básicos de la propiedad</p>
           </div>
@@ -76,14 +90,14 @@ export default function PropertiesPage() {
         </div>
       )}
 
-      <div className="properties-toolbar">
+      <div className={styles.propertiesToolbar}>
         <input
           type="text"
           placeholder="Buscar inmueble..."
-          className="search-input"
+          className={styles.searchInput}
         />
 
-        <select className="filter-select" defaultValue="Todos">
+        <select className={styles.filterSelect} defaultValue="Todos">
           <option value="Todos">Todos</option>
           <option value="Disponible">Disponible</option>
           <option value="Reservado">Reservado</option>
@@ -91,42 +105,40 @@ export default function PropertiesPage() {
         </select>
       </div>
 
-      <div className="properties-grid">
+      <div className={styles.propertiesGrid}>
         {properties.map((property) => (
-          <article className="property-card" key={property.id}>
-            <div className="property-card-top">
+          <article className={styles.propertyCard} key={property.id}>
+            <div className={styles.propertyCardTop}>
               <div>
                 <h3>{property.name}</h3>
                 <p>{property.city}</p>
               </div>
 
-              <span
-                className={`status-badge status-${property.status.toLowerCase()}`}
-              >
+              <span className={getStatusClass(property.status)}>
                 {property.status}
               </span>
             </div>
 
-            <div className="property-info">
+            <div className={styles.propertyInfo}>
               <div>
-                <span className="property-label">Dirección</span>
+                <span className={styles.propertyLabel}>Dirección</span>
                 <strong>{property.address}</strong>
               </div>
 
               <div>
-                <span className="property-label">Capacidad</span>
+                <span className={styles.propertyLabel}>Capacidad</span>
                 <strong>{property.capacity} huéspedes</strong>
               </div>
 
               <div>
-                <span className="property-label">Precio</span>
+                <span className={styles.propertyLabel}>Precio</span>
                 <strong>{property.price} €/noche</strong>
               </div>
             </div>
 
-            <div className="property-actions">
-              <button className="secondary-button">Ver detalle</button>
-              <button className="primary-button">Editar</button>
+            <div className={styles.propertyActions}>
+              <button className={styles.secondaryButton}>Ver detalle</button>
+              <button className={styles.primaryButton}>Editar</button>
             </div>
           </article>
         ))}

@@ -1,0 +1,184 @@
+.pageTitle {
+  margin-bottom: 20px;
+}
+
+.pageTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageTitle h2 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.pageTitle p {
+  margin: 8px 0 0;
+  color: #a1a1aa;
+}
+
+.primaryButton,
+.secondaryButton {
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 0.75em 1.1em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background-color: #646cff;
+  color: white;
+}
+
+.primaryButton:hover {
+  background-color: #535bf2;
+}
+
+.secondaryButton {
+  background: #2a2a2a;
+  color: #f4f4f5;
+  border-color: #3a3a3a;
+}
+
+.secondaryButton:hover {
+  background: #343434;
+}
+
+.formCard {
+  background: #1a1a1a;
+  border: 1px solid #2f2f2f;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.formCardHeader {
+  margin-bottom: 18px;
+}
+
+.formCardHeader h3 {
+  margin: 0;
+}
+
+.formCardHeader p {
+  margin: 8px 0 0;
+  color: #a1a1aa;
+}
+
+.propertiesToolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.searchInput,
+.filterSelect {
+  background: #1a1a1a;
+  color: #f4f4f5;
+  border: 1px solid #2f2f2f;
+  border-radius: 10px;
+  padding: 0.8em 1em;
+  font: inherit;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 240px;
+}
+
+.filterSelect {
+  min-width: 180px;
+}
+
+.propertiesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.propertyCard {
+  background: #1a1a1a;
+  border: 1px solid #2f2f2f;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.propertyCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.propertyCardTop h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.propertyCardTop p {
+  margin: 6px 0 0;
+  color: #a1a1aa;
+}
+
+.statusBadge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.statusDisponible {
+  background: rgba(34, 197, 94, 0.14);
+  color: #4ade80;
+}
+
+.statusReservado {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+}
+
+.statusMantenimiento {
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+}
+
+.propertyInfo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.propertyInfo div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.propertyLabel {
+  font-size: 0.85rem;
+  color: #a1a1aa;
+}
+
+.propertyActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .pageTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

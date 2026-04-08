@@ -1,23 +1,25 @@
+import styles from './DashboardPage.module.css';
+
 export default function DashboardPage() {
   return (
     <section>
-      <div className="page-title">
+      <div className={styles.pageTitle}>
         <h2>Dashboard</h2>
         <p>Resumen general del sistema</p>
       </div>
 
-      <div className="dashboard-grid">
-        <article className="dashboard-card">
+      <div className={styles.dashboardGrid}>
+        <article className={styles.dashboardCard}>
           <h3>Reservas</h3>
           <p>Aquí irá el resumen de reservas.</p>
         </article>
 
-        <article className="dashboard-card">
+        <article className={styles.dashboardCard}>
           <h3>Inmuebles</h3>
           <p>Aquí irá el resumen de inmuebles.</p>
         </article>
 
-        <article className="dashboard-card">
+        <article className={styles.dashboardCard}>
           <h3>Clientes</h3>
           <p>Aquí irá el resumen de clientes.</p>
         </article>
