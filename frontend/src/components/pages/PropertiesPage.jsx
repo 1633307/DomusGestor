@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import PropertyForm from '../components/propertyForm';
+import PropertyForm from '../forms/propertyForm';
 
 const initialProperties = [
   {

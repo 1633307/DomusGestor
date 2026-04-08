@@ -1,9 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './appLayout';
-import ProtectedRoute from '../components/layout/protectedRoute';
-import LoginPage from '../features/auth/pages/loginPage';
-import DashboardPage from '../features/dashboard/pages/dashboardPage';
-import PropertiesPage from '../features/properties/pages/propertiesPage';
+import ProtectedRoute from '../ProtectedRoute';
+import LoginPage from '../components/pages/LoginPage';
+import DashboardPage from '../components/pages/DashboardPage';
+import PropertiesPage from '../components/pages/PropertiesPage';
 
 export default function AppRouter() {
   return (
