@@ -1,167 +1,155 @@
-### Instalar BD LOCAL
-- Instalar https://dbngin.com/.
-- Un cop fet creas la bd en postgreeSQL
-- l'executes i quan estigui run veuras que al costat hi ha un play
-- Quan cliquis et sortira de descarregar aixo https://tableplus.com/download/
-- Quan el descarreguis tanques tot
-- Quan tornis a obrir el dbngin, cliques el play i set obrira la nova aplicacio ja vinculada a la bd
-- Cliques a dalt on diu SQL i executes el següent codi:
+### Instrucciones para el Backend Django
 
+## 1. Instalar dependencias Python
 
-CREATE TYPE rol_enum AS ENUM ('admin', 'gestor');
-CREATE TYPE estat_neteja_enum AS ENUM ('net', 'pendent');
+```bash
+cd backend
+pip install -r requirements.txt
+```
 
+## 2. Configurar la base de datos
 
-CREATE TABLE usuari (
-    id_usuari UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nom VARCHAR(100),
-    email VARCHAR(150) UNIQUE,
-    password_hash TEXT,
-    rol rol_enum,
-    nip VARCHAR(10)
-);
+- Instalar https://dbngin.com/
+- Crear una BD PostgreSQL y ejecutarla (port 1234)
+- Copiar .env.example a .env y ajustar si es necesario:
 
-CREATE TABLE propietari (
-    id_propietari UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    dni_nie VARCHAR(20) UNIQUE,
-    nom VARCHAR(100),
-    dades_fiscals TEXT,
-    email VARCHAR(150)
-);
+```bash
+cp .env.example .env
+```
 
-CREATE TABLE inquili (
-    id_inquili UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    dni_passaport VARCHAR(20) UNIQUE,
-    nom VARCHAR(100),
-    email VARCHAR(150),
-    dades_facturacio TEXT
-);
+## 3. Ejecutar migraciones de Django
 
+```bash
+python manage.py makemigrations users properties bookings
+python manage.py migrate
+```
 
-CREATE TABLE immoble (
-    id_immoble UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_propietari UUID REFERENCES propietari(id_propietari) ON DELETE RESTRICT,
-    nom_comercial VARCHAR(100),
-    adreca TEXT,
-    preu_base DECIMAL,
-    estat_neteja estat_neteja_enum,
-    info_tecnica JSONB
-);
+## 4. Crear superusuario (admin)
 
-CREATE TABLE temporada (
-    id_temporada UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_immoble UUID REFERENCES immoble(id_immoble) ON DELETE RESTRICT,
-    nom_descriptiu VARCHAR(50),
-    data_inici DATE,
-    data_fi DATE,
-    preu_nit DECIMAL,
-    min_nits INT,
-    dia_checkin_permis INT
-);
+```bash
+python manage.py createsuperuser
+```
 
-CREATE TABLE reserva (
-    id_reserva UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_immoble UUID REFERENCES immoble(id_immoble) ON DELETE RESTRICT,
-    id_inquili_principal UUID REFERENCES inquili(id_inquili) ON DELETE RESTRICT,
-    data_entrada DATE,
-    data_sortida DATE,
-    preu_total DECIMAL,
-    taxa_turistica DECIMAL,
-    estat VARCHAR(20)
-);
+Te pedirá: username, email, nip, password.
 
+## 5. (Opcional) Cargar datos de ejemplo
 
-CREATE TABLE reserva_hostes (
-    id_reserva UUID REFERENCES reserva(id_reserva) ON DELETE RESTRICT,
-    id_hoste UUID REFERENCES inquili(id_inquili) ON DELETE RESTRICT,
-    es_principal BOOLEAN,
-    PRIMARY KEY (id_reserva, id_hoste)
-);
+```bash
+python manage.py shell
+```
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+Y ejecutar:
+```python
+from users.models import Usuari, Propietari
+from properties.models import Immoble, Temporada
+from bookings.models import Inquili, Reserva, ReservaHostes
+from datetime import date
 
+# Crear 10 usuarios staff
+for i in range(1, 11):
+    rol = 'admin' if i == 1 else 'gestor'
+    user = Usuari.objects.create_user(
+        username=f'staff{i}',
+        email=f'staff{i}@domusgestor.com',
+        password='password',
+        nip=f'NIP{1000+i}',
+        rol=rol,
+    )
 
+# Crear 10 propietaris
+propietaris = []
+for i in range(1, 11):
+    p = Propietari.objects.create(
+        dni_nie=f'432100{i:02d}X',
+        nom=f'Propietari {i}',
+        dades_fiscals=f'Carrer de la Propitat {i}, 08001 Barcelona',
+        email=f'owner{i}@gmail.com',
+    )
+    propietaris.append(p)
 
-Dades d'exemple:
-DO $$
-DECLARE
-    u_id UUID;
-    p_id UUID;
-    i_id UUID;
-    m_id UUID;
-    r_id UUID;
-    i INTEGER;
-BEGIN
-    -- 1. Generar 10 Usuaris (Staff)
-    FOR i IN 1..10 LOOP
-        INSERT INTO usuari (nom, email, password_hash, rol, nip)
-        VALUES (
-            'Staff ' || i,
-            'staff' || i || '@domusgestor.com',
-            'pbkdf2_sha256$720000$hash_simulat_' || i,
-            CASE WHEN i = 1 THEN 'admin'::rol_enum ELSE 'gestor'::rol_enum END,
-            'NIP' || (1000 + i)
-        );
-    END LOOP;
+# Crear 4 immobles per propietari (40 total)
+immobles = []
+for i, p in enumerate(propietaris, 1):
+    for j in range(1, 5):
+        im = Immoble.objects.create(
+            propietari=p,
+            nom_comercial=f'Apartament {i}-{j}',
+            adreca=f'Carrer Turístic {i*j}, Costa Brava',
+            preu_base=75 + (i * 5),
+            estat_neteja='net' if (i+j) % 2 == 0 else 'pendent',
+            info_tecnica={'wifi': True, 'aire': True, 'habitacions': 2},
+            capacitat_maxima=4,
+            num_habitacions=2,
+            num_banys=1,
+        )
+        immobles.append(im)
+        # 2 temporades per immoble
+        Temporada.objects.create(immoble=im, nom_descriptiu='Estiu', data_inici=date(2026,6,1), data_fi=date(2026,8,31), preu_nit=150, min_nits=5, dia_checkin_permis=6)
+        Temporada.objects.create(immoble=im, nom_descriptiu='Baixa', data_inici=date(2026,10,1), data_fi=date(2026,12,20), preu_nit=60, min_nits=2)
 
-    -- 2. Generar 10 Propietaris
-    FOR i IN 1..10 LOOP
-        INSERT INTO propietari (dni_nie, nom, dades_fiscals, email)
-        VALUES (
-            '432100' || LPAD(i::text, 2, '0') || 'X',
-            'Propietari ' || i,
-            'Carrer de la Propitat ' || i || ', 08001 Barcelona',
-            'owner' || i || '@gmail.com'
-        ) RETURNING id_propietari INTO p_id;
+# Crear 40 inquilins amb reserves
+import random
+for i in range(1, 41):
+    inq = Inquili.objects.create(
+        dni_passaport=f'PASS{i:05d}',
+        nom=f'Client {i}',
+        email=f'client{i}@yahoo.com',
+        dades_facturacio=f'Dades de facturació client {i}',
+    )
+    im = random.choice(immobles)
+    r = Reserva.objects.create(
+        immoble=im,
+        inquili_principal=inq,
+        data_entrada=date(2026, 7, 1+i if 1+i <= 28 else 28),
+        data_sortida=date(2026, 7, 7+i if 7+i <= 28 else 28),
+        preu_total=850,
+        taxa_turistica=14.50,
+        estat='confirmada',
+    )
+    ReservaHostes.objects.create(reserva=r, hoste=inq, es_principal=True)
 
-        -- 3. Generar 4 Immobles per cada Propietari (Total 40) [cite: 103, 107]
-        FOR j IN 1..4 LOOP
-            INSERT INTO immoble (id_propietari, nom_comercial, adreca, preu_base, estat_neteja, info_tecnica)
-            VALUES (
-                p_id,
-                'Apartament ' || i || '-' || j,
-                'Carrer Turístic ' || (i*j) || ', Costa Brava',
-                75.00 + (i * 5),
-                CASE WHEN (i+j) % 2 = 0 THEN 'net'::estat_neteja_enum ELSE 'pendent'::estat_neteja_enum END,
-                '{"wifi": true, "aire": true, "habitacions": 2}'::jsonb
-            ) RETURNING id_immoble INTO m_id;
+print('Dades de exemple creades!')
+```
 
-            -- 4. Generar 2 Temporades per Immoble (Total 80) [cite: 129, 131]
-            INSERT INTO temporada (id_immoble, nom_descriptiu, data_inici, data_fi, preu_nit, min_nits, dia_checkin_permis)
-            VALUES 
-            (m_id, 'Estiu', '2026-06-01', '2026-08-31', 150.00, 5, 6),
-            (m_id, 'Baixa', '2026-10-01', '2026-12-20', 60.00, 2, NULL);
-        END LOOP;
-    END LOOP;
+## 6. Ejecutar el servidor Django
 
-    -- 5. Generar 40 Inquilins
-    FOR i IN 1..40 LOOP
-        INSERT INTO inquili (dni_passaport, nom, email, dades_facturacio)
-        VALUES (
-            'PASS' || LPAD(i::text, 5, '0'),
-            'Client ' || i,
-            'client' || i || '@yahoo.com',
-            'Dades de facturació client ' || i
-        ) RETURNING id_inquili INTO i_id;
+```bash
+python manage.py runserver
+```
 
-        -- 6. Generar una Reserva per cada inquilí (Total 40) [cite: 110, 150]
-        -- Seleccionem un immoble aleatori per a la reserva
-        SELECT id_immoble INTO m_id FROM immoble ORDER BY random() LIMIT 1;
-        
-        INSERT INTO reserva (id_immoble, id_inquili_principal, data_entrada, data_sortida, preu_total, taxa_turistica, estat)
-        VALUES (
-            m_id,
-            i_id,
-            '2026-07-01'::date + (i * interval '1 day'),
-            '2026-07-07'::date + (i * interval '1 day'),
-            850.00,
-            14.50,
-            'confirmada'
-        ) RETURNING id_reserva INTO r_id;
+El servidor arrancará en http://127.0.0.1:8000
 
-        -- 7. Relacionar hostes (cada reserva té almenys el titular) [cite: 112]
-        INSERT INTO reserva_hostes (id_reserva, id_hoste, es_principal)
-        VALUES (r_id, i_id, TRUE);
-    END LOOP;
-END $$;
+## 7. Ejecutar el frontend
 
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+El frontend arrancará en http://localhost:5173 y las peticiones a /api se redirigen al backend Django automáticamente.
+
+## Endpoints de la API
+
+### Auth
+- POST /api/auth/login/        → Login (nip + password) → devuelve token
+- POST /api/auth/logout/       → Logout (requiere token)
+- POST /api/auth/register/     → Registrar usuario
+- GET  /api/auth/me/           → Datos del usuario autenticado
+
+### Inmuebles
+- GET    /api/properties/       → Listar inmuebles (?search=texto)
+- POST   /api/properties/       → Crear inmueble
+- GET    /api/properties/:id/   → Detalle inmueble
+- PATCH  /api/properties/:id/   → Actualizar inmueble
+- DELETE /api/properties/:id/   → Eliminar inmueble
+
+### Reserves
+- GET    /api/bookings/reserves/       → Listar reserves
+- POST   /api/bookings/reserves/       → Crear reserva
+- GET    /api/bookings/reserves/:id/   → Detalle reserva
+- GET    /api/bookings/inquilins/      → Listar inquilins
+- GET    /api/bookings/dashboard/      → Estadísticas del dashboard
+
+### Admin
+- http://127.0.0.1:8000/admin/  → Panel de administración de Django
