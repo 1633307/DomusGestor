@@ -1,32 +1,53 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { api } from '../../services/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = ({ nip, password }) => {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      api.getMe()
+        .then(setUser)
+        .catch(() => localStorage.removeItem('token'))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const login = async ({ nip, password }) => {
     if (!nip || !password) {
       throw new Error('Debes completar todos los campos');
     }
 
-    setUser({
-      name: 'Administrador',
-      nip,
-      role: 'admin',
-    });
+    const data = await api.login(nip, password);
+    localStorage.setItem('token', data.token);
+    setUser(data.user);
   };
 
-  const logout = () => setUser(null);
+  const logout = async () => {
+    try {
+      await api.logout();
+    } catch {
+      // ignore
+    }
+    localStorage.removeItem('token');
+    setUser(null);
+  };
 
   const value = useMemo(
     () => ({
       user,
+      loading,
       isAuthenticated: Boolean(user),
       login,
       logout,
     }),
-    [user]
+    [user, loading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
