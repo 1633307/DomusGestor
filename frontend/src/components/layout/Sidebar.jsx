@@ -4,10 +4,6 @@ import styles from './Sidebar.module.css';
 export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.sidebarBrand}>
-        <h2>Domus Gestor</h2>
-        <p>Panel de gestión</p>
-      </div>
 
       <nav className={styles.sidebarNav}>
         <NavLink
@@ -18,7 +14,7 @@ export default function Sidebar() {
               : styles.link
           }
         >
-          Dashboard
+          Perfil
         </NavLink>
 
         <NavLink
@@ -29,7 +25,18 @@ export default function Sidebar() {
               : styles.link
           }
         >
-          Inmuebles
+          Fotos
+        </NavLink>
+
+        <NavLink
+        to="/inmobles"
+          className={({ isActive }) =>
+            isActive
+              ? `${styles.link} ${styles.activeLink}`
+              : styles.link
+          }
+        >
+          Incidències
         </NavLink>
       </nav>
     </aside>

@@ -1,9 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './appLayout';
+import AppLayoutSideBar from './appLayoutSideBar';
 import ProtectedRoute from '../ProtectedRoute';
 import LoginPage from '../components/pages/LoginPage';
 import DashboardPage from '../components/pages/DashboardPage';
-import PropertiesPage from '../components/pages/PropertiesPage';
+import CercadorPage from '../components/pages/Cercador';
+import InmoblesPage from '../components/pages/InmoblesPage';
+import InfoInmoble from '../components/pages/InfoInmoble';
+
 
 export default function AppRouter() {
   return (
@@ -20,9 +24,24 @@ export default function AppRouter() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="properties" element={<PropertiesPage />} />
+        <Route path="properties" element={<CercadorPage />} />
+        <Route path="inmobles" element={<InmoblesPage />} />
+             
       </Route>
 
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <AppLayoutSideBar />
+          </ProtectedRoute>
+        }
+      >
+      <Route path="infoInmoble" element={<InfoInmoble />} /> 
+             
+      </Route>
+
+        
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

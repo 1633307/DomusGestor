@@ -15,7 +15,7 @@ export default function DashboardPage() {
         </article>
 
         <article className={styles.dashboardCard}>
-          <h3>Inmuebles</h3>
+          <h3>Inmobles</h3>
           <p>Aquí irá el resumen de inmuebles.</p>
         </article>
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropertyForm from '../forms/propertyForm';
-import styles from './PropertiesPage.module.css';
+import styles from './cercador.module.css';
 
 
 const initialProperties = [
@@ -46,54 +46,20 @@ const initialProperties = [
   },
 ];
 
-export default function PropertiesPage() {
+export default function CercadorPage() {
   const [properties, setProperties] = useState(initialProperties);
-  const [showForm, setShowForm] = useState(false);
 
-  const handleCreateProperty = (newProperty) => {
-    setProperties((prev) => [newProperty, ...prev]);
-    setShowForm(false);
-  };
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'Disponible':
-        return `${styles.statusBadge} ${styles.statusDisponible}`;
-      case 'Reservado':
-        return `${styles.statusBadge} ${styles.statusReservado}`;
-      case 'Mantenimiento':
-        return `${styles.statusBadge} ${styles.statusMantenimiento}`;
-      default:
-        return styles.statusBadge;
-    }
-  };
 
   return (
     <section>
       <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
         <div>
-          <h2>Inmuebles</h2>
-          <p>Gestión inicial de propiedades turísticas</p>
+          <h2>Cercador</h2>
         </div>
-
-        <button
-          className={styles.primaryButton}
-          onClick={() => setShowForm((prev) => !prev)}
-        >
-          {showForm ? 'Cerrar formulario' : '+ Nuevo inmueble'}
-        </button>
       </div>
 
-      {showForm && (
-        <div className={styles.formCard}>
-          <div className={styles.formCardHeader}>
-            <h3>Nuevo inmueble</h3>
-            <p>Completa los datos básicos de la propiedad</p>
-          </div>
-
-          <PropertyForm onCreate={handleCreateProperty} />
-        </div>
-      )}
+      
 
       <div className={styles.propertiesToolbar}>
         <input
