@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropertyForm from '../forms/propertyForm';
-import styles from './cercador.module.css';
+import styles from './cercadorPage.module.css';
 
 
 const initialProperties = [

@@ -52,6 +52,16 @@ export default function Header() {
               >
                 Inmobles
               </NavLink>
+              <NavLink
+              to="/reserves"
+                className={({ isActive }) =>
+                  isActive
+                    ? `${styles.link} ${styles.activeLink}`
+                    : styles.link
+                }
+              >
+                Reserves
+              </NavLink>
         </nav>
       
       </div>

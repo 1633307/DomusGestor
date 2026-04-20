@@ -4,10 +4,10 @@ import AppLayoutSideBar from './appLayoutSideBar';
 import ProtectedRoute from '../ProtectedRoute';
 import LoginPage from '../components/pages/LoginPage';
 import DashboardPage from '../components/pages/DashboardPage';
-import CercadorPage from '../components/pages/Cercador';
+import CercadorPage from '../components/pages/CercadorPage';
 import InmoblesPage from '../components/pages/InmoblesPage';
-import InfoInmoble from '../components/pages/InfoInmoble';
-
+import InfoInmoble from '../components/pages/InfoInmoblePage';
+import ReservesPage from '../components/pages/reservesPage';
 
 export default function AppRouter() {
   return (
@@ -26,6 +26,8 @@ export default function AppRouter() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="properties" element={<CercadorPage />} />
         <Route path="inmobles" element={<InmoblesPage />} />
+        <Route path="reserves" element={<ReservesPage />} />
+        <Route path="infoInmoble" element={<InfoInmoble />} /> 
              
       </Route>
 
@@ -37,7 +39,7 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       >
-      <Route path="infoInmoble" element={<InfoInmoble />} /> 
+      
              
       </Route>
 

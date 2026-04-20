@@ -38,7 +38,7 @@
 }
 
 .link {
-  color: #9c9ca079;
+  color: #00000079;
   text-decoration: none;
   padding: 10px 12px;
   border-radius: 10px;
@@ -46,7 +46,7 @@
 }
 
 .link:hover {
-  background: #232323;
+  background: #5c9fec;
 }
 
 .activeLink {

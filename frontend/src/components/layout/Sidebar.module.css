@@ -3,6 +3,8 @@
   border-right: 1px solid #e2e8f0;
   color: #1e293b;
   padding: 24px 18px;
+
+  box-sizing: border-box;
 }
 
 .sidebarBrand p {
