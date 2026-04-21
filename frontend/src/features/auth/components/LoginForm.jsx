@@ -12,7 +12,6 @@ export default function LoginForm() {
   });
 
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,18 +21,15 @@ export default function LoginForm() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    setSubmitting(true);
 
     try {
-      await login(form);
+      login(form);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -51,7 +47,7 @@ export default function LoginForm() {
       </label>
 
       <label>
-        Contrasenya
+        Contraseña
         <input
           type="password"
           name="password"
@@ -63,8 +59,8 @@ export default function LoginForm() {
 
       {error && <p className="error-text">{error}</p>}
 
-      <button type="submit" className="login-button" disabled={submitting}>
-        {submitting ? 'Entrant...' : 'Entrar'}
+      <button type="submit" className="login-button">
+        Entrar
       </button>
     </form>
   );

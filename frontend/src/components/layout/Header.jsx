@@ -11,7 +11,7 @@ export default function Header() {
       </div>
 
       <div className="header-actions">
-        <span>{user?.username || user?.email || 'Usuario'}</span>
+        <span>{user?.name || 'Usuario'}</span>
         <button className="secondary-button" onClick={logout}>
           Cerrar sesión
         </button>
