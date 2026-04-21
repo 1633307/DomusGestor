@@ -1,63 +1,53 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PropertyForm from '../components/propertyForm';
-import { api } from '../../../services/api';
+
+const initialProperties = [
+  {
+    id: 1,
+    name: 'Apartamento Costa',
+    city: 'Barcelona',
+    address: 'Carrer de Mallorca, 120',
+    status: 'Disponible',
+    capacity: 4,
+    price: 120,
+  },
+  {
+    id: 2,
+    name: 'Ático Central',
+    city: 'Girona',
+    address: 'Plaça Catalunya, 8',
+    status: 'Reservado',
+    capacity: 2,
+    price: 95,
+  },
+  {
+    id: 3,
+    name: 'Estudio Playa',
+    city: 'Tarragona',
+    address: 'Passeig Marítim, 22',
+    status: 'Mantenimiento',
+    capacity: 3,
+    price: 80,
+  },
+  {
+    id: 4,
+    name: 'Casa Jardín',
+    city: 'Sitges',
+    address: 'Avinguda del Mar, 14',
+    status: 'Disponible',
+    capacity: 6,
+    price: 180,
+  },
+];
 
 export default function PropertiesPage() {
-  const [properties, setProperties] = useState([]);
+  const [properties, setProperties] = useState(initialProperties);
   const [showForm, setShowForm] = useState(false);
-  const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('Todos');
-  const [loading, setLoading] = useState(true);
 
-  const fetchProperties = async (searchTerm = '') => {
-    try {
-      const data = await api.getProperties(searchTerm);
-      setProperties(data);
-    } catch (err) {
-      console.error('Error cargando inmuebles:', err);
-    } finally {
-      setLoading(false);
-    }
+  const handleCreateProperty = (newProperty) => {
+    setProperties((prev) => [newProperty, ...prev]);
+    setShowForm(false);
   };
-
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearch(value);
-    fetchProperties(value);
-  };
-
-  const handleCreateProperty = async (formData) => {
-    try {
-      await api.createProperty({
-        nom_comercial: formData.name,
-        adreca: `${formData.address}, ${formData.city}`,
-        preu_base: formData.price,
-        capacitat_maxima: formData.capacity,
-        actiu: formData.status !== 'Mantenimiento',
-      });
-      setShowForm(false);
-      fetchProperties(search);
-    } catch (err) {
-      console.error('Error creando inmueble:', err);
-    }
-  };
-
-  const getStatus = (property) => {
-    if (!property.actiu) return 'Mantenimiento';
-    const hasReserva = property.reserves_count > 0;
-    return hasReserva ? 'Reservado' : 'Disponible';
-  };
-
-  const filteredProperties = properties.filter((p) => {
-    if (filterStatus === 'Todos') return true;
-    return getStatus(p) === filterStatus;
-  });
-
-  if (loading) return <p>Cargando...</p>;
 
   return (
     <section>
@@ -91,15 +81,9 @@ export default function PropertiesPage() {
           type="text"
           placeholder="Buscar inmueble..."
           className="search-input"
-          value={search}
-          onChange={handleSearch}
         />
 
-        <select
-          className="filter-select"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
+        <select className="filter-select" defaultValue="Todos">
           <option value="Todos">Todos</option>
           <option value="Disponible">Disponible</option>
           <option value="Reservado">Reservado</option>
@@ -108,47 +92,44 @@ export default function PropertiesPage() {
       </div>
 
       <div className="properties-grid">
-        {filteredProperties.map((property) => {
-          const status = getStatus(property);
-          return (
-            <article className="property-card" key={property.id}>
-              <div className="property-card-top">
-                <div>
-                  <h3>{property.nom_comercial}</h3>
-                  <p>{property.adreca}</p>
-                </div>
-
-                <span
-                  className={`status-badge status-${status.toLowerCase()}`}
-                >
-                  {status}
-                </span>
+        {properties.map((property) => (
+          <article className="property-card" key={property.id}>
+            <div className="property-card-top">
+              <div>
+                <h3>{property.name}</h3>
+                <p>{property.city}</p>
               </div>
 
-              <div className="property-info">
-                <div>
-                  <span className="property-label">Dirección</span>
-                  <strong>{property.adreca}</strong>
-                </div>
+              <span
+                className={`status-badge status-${property.status.toLowerCase()}`}
+              >
+                {property.status}
+              </span>
+            </div>
 
-                <div>
-                  <span className="property-label">Capacidad</span>
-                  <strong>{property.capacitat_maxima} huéspedes</strong>
-                </div>
-
-                <div>
-                  <span className="property-label">Precio</span>
-                  <strong>{property.preu_base} €/noche</strong>
-                </div>
+            <div className="property-info">
+              <div>
+                <span className="property-label">Dirección</span>
+                <strong>{property.address}</strong>
               </div>
 
-              <div className="property-actions">
-                <button className="secondary-button">Ver detalle</button>
-                <button className="primary-button">Editar</button>
+              <div>
+                <span className="property-label">Capacidad</span>
+                <strong>{property.capacity} huéspedes</strong>
               </div>
-            </article>
-          );
-        })}
+
+              <div>
+                <span className="property-label">Precio</span>
+                <strong>{property.price} €/noche</strong>
+              </div>
+            </div>
+
+            <div className="property-actions">
+              <button className="secondary-button">Ver detalle</button>
+              <button className="primary-button">Editar</button>
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );

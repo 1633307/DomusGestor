@@ -1,21 +1,15 @@
 from django.contrib import admin
-from .models import Inquili, Reserva, ReservaHostes
+
+from .models import InquiliBasic, ReservaBasica
 
 
-class ReservaHostesInline(admin.TabularInline):
-    model = ReservaHostes
-    extra = 0
-
-
-@admin.register(Inquili)
+@admin.register(InquiliBasic)
 class InquiliAdmin(admin.ModelAdmin):
-    list_display = ['nom', 'dni_passaport', 'email']
-    search_fields = ['nom', 'dni_passaport', 'email']
+    list_display = ['nom_complet', 'email']
+    search_fields = ['nom_complet', 'email']
 
 
-@admin.register(Reserva)
+@admin.register(ReservaBasica)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display = ['id', 'immoble', 'inquili_principal', 'data_entrada', 'data_sortida', 'estat']
-    list_filter = ['estat']
-    search_fields = ['immoble__nom_comercial', 'inquili_principal__nom']
-    inlines = [ReservaHostesInline]
+    list_display = ['id', 'immoble', 'inquili', 'data_entrada', 'data_sortida', 'pagat']
+    list_filter = ['pagat']

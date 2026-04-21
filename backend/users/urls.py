@@ -6,6 +6,6 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('register/', views.RegisterView.as_view(), name='register'),
     path('me/', views.MeView.as_view(), name='me'),
-    path('propietaris/', views.PropietariListCreateView.as_view(), name='propietari-list'),
-    path('propietaris/<int:pk>/', views.PropietariDetailView.as_view(), name='propietari-detail'),
+    path('info-immobiliaria/', views.InfoImmobiliariaListCreateView.as_view(), name='info-immobiliaria-list'),
+    path('info-immobiliaria/<int:pk>/', views.InfoImmobiliariaDetailView.as_view(), name='info-immobiliaria-detail'),
 ]

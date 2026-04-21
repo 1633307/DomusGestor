@@ -3,12 +3,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Usuari, Propietari
+from .models import Usuari, InfoImmobiliaria
 from .serializers import (
     LoginSerializer,
     RegisterSerializer,
     UsuariSerializer,
-    PropietariSerializer,
+    InfoImmobiliariaSerializer,
 )
 
 
@@ -20,10 +20,7 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user': UsuariSerializer(user).data,
-        })
+        return Response({'token': token.key, 'user': UsuariSerializer(user).data})
 
 
 class LogoutView(APIView):
@@ -41,10 +38,10 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user': UsuariSerializer(user).data,
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {'token': token.key, 'user': UsuariSerializer(user).data},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class MeView(APIView):
@@ -52,11 +49,13 @@ class MeView(APIView):
         return Response(UsuariSerializer(request.user).data)
 
 
-class PropietariListCreateView(generics.ListCreateAPIView):
-    queryset = Propietari.objects.all()
-    serializer_class = PropietariSerializer
+class InfoImmobiliariaListCreateView(generics.ListCreateAPIView):
+    """RF-11: Gestionar informació general de la immobiliària."""
+    queryset = InfoImmobiliaria.objects.all()
+    serializer_class = InfoImmobiliariaSerializer
 
 
-class PropietariDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Propietari.objects.all()
-    serializer_class = PropietariSerializer
+class InfoImmobiliariaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """RF-11: Obtenir i actualitzar la informació de la immobiliària."""
+    queryset = InfoImmobiliaria.objects.all()
+    serializer_class = InfoImmobiliariaSerializer

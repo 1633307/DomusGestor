@@ -1,8 +1,6 @@
-from django.contrib.auth import authenticate
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
 
-from .models import Usuari, Propietari
+from .models import Usuari, InfoImmobiliaria
 
 
 class LoginSerializer(serializers.Serializer):
@@ -22,7 +20,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Credencials incorrectes.')
 
         if not user.is_active:
-            raise serializers.ValidationError("Compte desactivat.")
+            raise serializers.ValidationError('Compte desactivat.')
 
         data['user'] = user
         return data
@@ -31,7 +29,7 @@ class LoginSerializer(serializers.Serializer):
 class UsuariSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuari
-        fields = ['id', 'username', 'email', 'nip', 'rol', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'nip']
         read_only_fields = ['id']
 
 
@@ -40,7 +38,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuari
-        fields = ['username', 'email', 'nip', 'rol', 'password']
+        fields = ['username', 'email', 'nip', 'password']
+
+    def validate_nip(self, value):
+        if Usuari.objects.filter(nip_hash=hmac_value(value)).exists():
+            raise serializers.ValidationError("Ja existeix un usuari amb aquest NIP.")
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -50,7 +53,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class PropietariSerializer(serializers.ModelSerializer):
+class InfoImmobiliariaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Propietari
+        model = InfoImmobiliaria
         fields = '__all__'
