@@ -31,3 +31,6 @@ frontend/.eslintcache
 # --- Base de dades ---
 *.sql
 *.dump
+
+.gitignore
+.claude
