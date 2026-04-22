@@ -1,5 +1,5 @@
 import { useState } from 'react';
-
+import styles from './PropertyForm.module.css';
 const initialForm = {
   name: '',
   city: '',
@@ -39,11 +39,12 @@ export default function PropertyForm({ onCreate }) {
   };
 
   return (
-    <form className="property-form" onSubmit={handleSubmit}>
-      <div className="property-form-grid">
-        <label>
+    <form className={styles.propertyForm} onSubmit={handleSubmit}>
+      <div className={styles.propertyFormGrid}>
+        <label className={styles.field}>
           Nombre del inmueble
           <input
+            className={styles.input}
             type="text"
             name="name"
             value={form.name}
@@ -53,9 +54,10 @@ export default function PropertyForm({ onCreate }) {
           />
         </label>
 
-        <label>
+        <label className={styles.field}>
           Ciudad
           <input
+            className={styles.input}
             type="text"
             name="city"
             value={form.city}
@@ -65,9 +67,10 @@ export default function PropertyForm({ onCreate }) {
           />
         </label>
 
-        <label className="full-width">
+        <label className={`${styles.field} ${styles.fullWidth}`}>
           Dirección
           <input
+            className={styles.input}
             type="text"
             name="address"
             value={form.address}
@@ -77,9 +80,10 @@ export default function PropertyForm({ onCreate }) {
           />
         </label>
 
-        <label>
+        <label className={styles.field}>
           Capacidad
           <input
+            className={styles.input}
             type="number"
             name="capacity"
             value={form.capacity}
@@ -90,9 +94,10 @@ export default function PropertyForm({ onCreate }) {
           />
         </label>
 
-        <label>
+        <label className={styles.field}>
           Precio por noche
           <input
+            className={styles.input}
             type="number"
             name="price"
             value={form.price}
@@ -103,9 +108,10 @@ export default function PropertyForm({ onCreate }) {
           />
         </label>
 
-        <label>
+        <label className={styles.field}>
           Estado
           <select
+            className={styles.select}
             name="status"
             value={form.status}
             onChange={handleChange}
@@ -117,8 +123,8 @@ export default function PropertyForm({ onCreate }) {
         </label>
       </div>
 
-      <div className="property-form-actions">
-        <button type="submit" className="primary-button">
+      <div className={styles.propertyFormActions}>
+        <button type="submit" className={styles.primaryButton}>
           Guardar inmueble
         </button>
       </div>
