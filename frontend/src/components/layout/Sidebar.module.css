@@ -1,10 +1,19 @@
 .sidebar {
   background: #eff6ff;
-  border-right: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
   color: #1e293b;
   padding: 24px 18px;
-
   box-sizing: border-box;
+
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  height: fit-content;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+
+  margin: 24px 0 24px 24px;
 }
 
 .sidebarBrand p {
@@ -21,6 +30,7 @@
 }
 
 .link {
+  display: block;
   color: #00000079;
   text-decoration: none;
   padding: 10px 12px;
@@ -29,7 +39,7 @@
 }
 
 .link:hover {
-  background: #cccccc;
+  background: #dbeafe;
 }
 
 .activeLink {
@@ -39,7 +49,12 @@
 
 @media (max-width: 900px) {
   .sidebar {
-    border-right: none;
-    border-bottom: 1px solid #2f2f2f;
+    position: static;
+    height: auto;
+    max-height: none;
+    margin: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow-y: visible;
   }
 }

@@ -1,11 +1,11 @@
-.templateGrid{
-
-    display: grid;
-    grid-template-columns: 260px auto;
-    min-height: 100vh;
-    
+.templateGrid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  align-items: start;
+  min-height: 100vh;
 }
 
-.perfilCard{
-    padding: 24px;
+.perfilCard {
+  padding: 24px;
+  min-width: 0;
 }
