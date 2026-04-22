@@ -69,8 +69,7 @@ return(
 
         {properties.map((property) => (
             <article className={styles.propertyCard} key={property.id}>
-                <NavLink to="/infoInmoble"
-                >
+                <NavLink to="/infoInmoble">
                 <h3>{property.name}</h3></NavLink>
             </article>
 

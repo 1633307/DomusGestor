@@ -6,7 +6,10 @@ export default function Sidebar({setSeccioActiva, seccioActiva}) {
   const menuItems = [
     {id: 'perfil',label:'Perfil'},
     {id: 'fotos',label:'Fotos'},
-    {id: 'incidencies', label: 'Incidéncies'}
+    {id: 'incidencies', label: 'Incidéncies'},
+    {id: 'info', label:'Informació'},
+    {id:'hospedes', label:'Hospedes'},
+    {id:'pagaments', label:'Pagaments'}
   ];
 
 

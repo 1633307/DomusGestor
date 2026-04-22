@@ -3,7 +3,7 @@ import Sidebar from '../layout/Sidebar';
 import style from './InfoInmoblePage.module.css';
 
 
-export default function InfoInmoble(){
+export default function InfoInmoble(infoActiva,setInfoActiva){
 
     const [seccioActiva, setSeccioActiva] = useState('perfil');
 

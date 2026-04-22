@@ -8,6 +8,7 @@ import CercadorPage from '../components/pages/CercadorPage';
 import InmoblesPage from '../components/pages/InmoblesPage';
 import InfoInmoble from '../components/pages/InfoInmoblePage';
 import ReservesPage from '../components/pages/reservesPage';
+import InfoReserva from '../components/pages/infoReservaPage';
 
 export default function AppRouter() {
   return (
@@ -27,23 +28,11 @@ export default function AppRouter() {
         <Route path="properties" element={<CercadorPage />} />
         <Route path="inmobles" element={<InmoblesPage />} />
         <Route path="reserves" element={<ReservesPage />} />
-        <Route path="infoInmoble" element={<InfoInmoble />} /> 
+        <Route path="infoInmoble" element={<InfoInmoble />} />
+        <Route path="infoReserva" element={<InfoReserva />} />  
              
       </Route>
 
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <AppLayoutSideBar />
-          </ProtectedRoute>
-        }
-      >
-      
-             
-      </Route>
-
-        
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
