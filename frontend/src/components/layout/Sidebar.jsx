@@ -1,16 +1,31 @@
 import { NavLink } from 'react-router-dom';
+import styles from './Sidebar.module.css';
 
-export default function Sidebar() {
+export default function Sidebar({setSeccioActiva, seccioActiva}) {
+
+  const menuItems = [
+    {id: 'perfil',label:'Perfil'},
+    {id: 'fotos',label:'Fotos'},
+    {id: 'incidencies', label: 'Incidéncies'},
+    {id: 'info', label:'Informació'},
+    {id:'hospedes', label:'Hospedes'},
+    {id:'pagaments', label:'Pagaments'}
+  ];
+
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-brand">
-        <h2>Domus Gestor</h2>
-        <p>Panel de gestión</p>
-      </div>
+    <aside className={styles.sidebar}>
 
-      <nav className="sidebar-nav">
-        <NavLink to="/dashboard">Dashboard</NavLink>
-        <NavLink to="/properties">Inmuebles</NavLink>
+      <nav className={styles.sidebarNav}>
+        {menuItems.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => setSeccioActiva(item.id)}
+            className={`${styles.link} ${seccioActiva === item.id ? styles.activeLink : ''}`}
+          >
+            {item.label}
+          </div>
+        ))}
       </nav>
     </aside>
   );
