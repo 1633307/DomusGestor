@@ -1,84 +1,55 @@
-import {useState} from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { propertiesApi } from '../../services/api';
 import styles from './inmoblesPage.module.css';
-import { NavLink } from 'react-router-dom';
-
-const initialProperties = [
-  {
-    id: 1,
-    name: 'Apartamento Costa',
-    city: 'Barcelona',
-    address: 'Carrer de Mallorca, 120',
-    status: 'Disponible',
-    capacity: 4,
-    price: 120,
-    image: '/placeHolderCasa.jpg',
-  },
-  {
-    id: 2,
-    name: 'Ático Central',
-    city: 'Girona',
-    address: 'Plaça Catalunya, 8',
-    status: 'Reservado',
-    capacity: 2,
-    price: 95,
-    image: '/placeHolderCasa.jpg',
-  },
-  {
-    id: 3,
-    name: 'Estudio Playa',
-    city: 'Tarragona',
-    address: 'Passeig Marítim, 22',
-    status: 'Mantenimiento',
-    capacity: 3,
-    price: 80,
-    image: '/placeHolderCasa.jpg',
-  },
-  {
-    id: 4,
-    name: 'Casa Jardín',
-    city: 'Sitges',
-    address: 'Avinguda del Mar, 14',
-    status: 'Disponible',
-    capacity: 6,
-    price: 180,
-    image: '/placeHolderCasa.jpg',
-  },
-];
-
-
 
 export default function InmoblesPage() {
+  const [properties, setProperties] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-const [properties, setProperties] = useState(initialProperties);
+  useEffect(() => {
+    setLoading(true);
+    setError('');
+    propertiesApi
+      .list(search)
+      .then((data) => setProperties(data.results ?? data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [search]);
 
-return(
- <section>
-    <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
-        <h2> Llistat Inmobles</h2>
-    </div>
+  return (
+    <section>
+      <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
+        <h2>Llistat Inmobles</h2>
+      </div>
 
-    <div className={styles.propertiesToolbar}>
+      <div className={styles.propertiesToolbar}>
         <input
-        type="text"
-        placeholder='Buscar inmoble'
-        className={styles.searchInput}
+          type="text"
+          placeholder="Buscar inmoble"
+          className={styles.searchInput}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
-    </div>
+      </div>
 
-    <div  className={styles.propertiesGrid}>
+      {loading && <p>Carregant...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
+      <div className={styles.propertiesGrid}>
         {properties.map((property) => (
-            <article className={styles.propertyCard} key={property.id}>
-                <NavLink to="/infoInmoble">
-                <h3>{property.name}</h3></NavLink>
-            </article>
-
-
+          <article className={styles.propertyCard} key={property.id}>
+            <Link to={`/infoInmoble/${property.id}`}>
+              <h3>{property.nom_comercial}</h3>
+              <p>{property.adreca}</p>
+              <p>{property.preu_base_nit}€/nit</p>
+            </Link>
+          </article>
         ))}
-    </div>
-
- </section>
-);
-
-
-} 
+        {!loading && properties.length === 0 && <p>No hi ha immobles.</p>}
+      </div>
+    </section>
+  );
+}

@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './appLayout';
-import AppLayoutSideBar from './appLayoutSideBar';
 import ProtectedRoute from '../ProtectedRoute';
 import LoginPage from '../components/pages/LoginPage';
 import DashboardPage from '../components/pages/DashboardPage';
@@ -28,9 +27,8 @@ export default function AppRouter() {
         <Route path="properties" element={<CercadorPage />} />
         <Route path="inmobles" element={<InmoblesPage />} />
         <Route path="reserves" element={<ReservesPage />} />
-        <Route path="infoInmoble" element={<InfoInmoble />} />
-        <Route path="infoReserva" element={<InfoReserva />} />  
-             
+        <Route path="infoInmoble/:id" element={<InfoInmoble />} />
+        <Route path="infoReserva/:id" element={<InfoReserva />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
