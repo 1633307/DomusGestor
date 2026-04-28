@@ -1,97 +1,51 @@
-import {useState} from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { bookingsApi } from '../../services/api';
 import styles from './inmoblesPage.module.css';
-import { NavLink } from 'react-router-dom';
 
-const initialReserves = [
-  {
-      "id": "RES-2026-001",
-      "client": {
-        "nom": "Marc Rovira",
-        "email": "m.rovira@exemple.cat",
-        "telefon": "+34 600 112 233"
-      },
-      "data_entrada": "2026-05-15",
-      "data_sortida": "2026-05-20",
-      "servei": "Habitació Doble Deluxe",
-      "preu_total": 540.50,
-      "estat": "confirmada"
-    },
-    {
-      "id": "RES-2026-002",
-      "client": {
-        "nom": "Laia Font",
-        "email": "laia.font@correu.com",
-        "telefon": "+34 622 334 455"
-      },
-      "data_entrada": "2026-06-02",
-      "data_sortida": "2026-06-04",
-      "servei": "Apartament Loft",
-      "preu_total": 210.00,
-      "estat": "pendent"
-    },
-    {
-      "id": "RES-2026-003",
-      "client": {
-        "nom": "Jordi Mestre",
-        "email": "jmestre88@servei.net",
-        "telefon": "+34 677 889 900"
-      },
-      "data_entrada": "2026-07-10",
-      "data_sortida": "2026-07-17",
-      "servei": "Suite Nupcial",
-      "preu_total": 1250.00,
-      "estat": "pagada"
-    },
-    {
-      "id": "RES-2026-004",
-      "client": {
-        "nom": "Sílvia Soler",
-        "email": "silvia.soler@tinet.cat",
-        "telefon": "+34 611 222 333"
-      },
-      "data_entrada": "2026-08-20",
-      "data_sortida": "2026-08-22",
-      "servei": "Habitació Individual",
-      "preu_total": 145.75,
-      "estat": "cancel·lada"
-    }
-];
+export default function ReservesPage() {
+  const [reserves, setReserves] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
+  useEffect(() => {
+    bookingsApi
+      .list()
+      .then((data) => setReserves(data.results ?? data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
+  return (
+    <section>
+      <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
+        <h2>Llistat Reserves</h2>
+      </div>
 
-export default function reservesPage() {
-
-const [reserves, setReserves] = useState(initialReserves);
-
-return(
- <section>
-    <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
-        <h2> Llistat Reserves</h2>
-    </div>
-
-    <div className={styles.Toolbar}>
+      <div className={styles.Toolbar}>
         <input
-        type="text"
-        placeholder='Buscar inmoble'
-        className={styles.searchInput}
+          type="text"
+          placeholder="Buscar reserva"
+          className={styles.searchInput}
         />
-    </div>
+      </div>
 
-    <div  className={styles.Grid}>
+      {loading && <p>Carregant...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
+      <div className={styles.Grid}>
         {reserves.map((reserva) => (
-            <article className={styles.Card} key={reserva.id}>
-                <NavLink to="/infoReserva"
-                >
-                <h3>{reserva.id}</h3></NavLink>
-            </article>
-
-
+          <article className={styles.Card} key={reserva.id}>
+            <Link to={`/infoReserva/${reserva.id}`}>
+              <h3>Reserva #{reserva.id}</h3>
+              <p>{reserva.immoble_nom} — {reserva.inquili_nom}</p>
+              <p>{reserva.data_entrada} → {reserva.data_sortida}</p>
+              <p>{reserva.pagat ? 'Pagada' : 'Pendent'}</p>
+            </Link>
+          </article>
         ))}
-    </div>
-
- </section>
-);
-
-
+        {!loading && reserves.length === 0 && <p>No hi ha reserves.</p>}
+      </div>
+    </section>
+  );
 }

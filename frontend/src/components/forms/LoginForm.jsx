@@ -22,15 +22,19 @@ export default function LoginForm() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+    setSubmitting(true);
     try {
-      login(form);
+      await login(form);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -62,8 +66,8 @@ export default function LoginForm() {
 
       {error && <p className={styles.errorText}>{error}</p>}
 
-      <button type="submit" className={styles.loginButton}>
-        Entrar
+      <button type="submit" className={styles.loginButton} disabled={submitting}>
+        {submitting ? 'Entrando...' : 'Entrar'}
       </button>
     </form>
   );
