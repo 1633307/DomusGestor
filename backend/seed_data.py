@@ -1,13 +1,17 @@
 """
-Seed script: crea 20 immobles, 20 inquilins i 20 reserves de mostra.
+Seed script: crea un usuari admin, 20 immobles, 20 inquilins i 20 reserves.
 Executa'l des de la carpeta backend/:
 
     python seed_data.py
 
 AVÍS: esborra tots els registres existents de reserves, inquilins i immobles
-abans de crear-ne de nous.
+abans de crear-ne de nous. L'usuari admin NO s'esborra si ja existeix.
 
 REQUISIT PREVI, EXECUTAR A LA CARPETA DE BACKEND: python manage.py migrate
+
+Credencials de l'usuari creat:
+    NIP:      ADM001
+    Password: DomusGestor2026!
 """
 
 
@@ -20,11 +24,24 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "domusgestor.settings")
 django.setup()
 
+from users.models import Usuari
 from properties.models import Immoble
 from bookings.models import InquiliBasic, ReservaBasica
 
 
 def run():
+    # ── Usuari admin ─────────────────────────────────────────────────────────
+    if not Usuari.objects.filter(nip="ADM001").exists():
+        Usuari.objects.create_user(
+            username="admin",
+            email="admin@domusgestor.cat",
+            nip="ADM001",
+            password="DomusGestor2026!",
+        )
+        print("Usuari creat  →  NIP: ADM001 / Password: DomusGestor2026!")
+    else:
+        print("Usuari admin ja existeix (NIP: ADM001), no s'ha sobreescrit")
+
     # ── Netejar dades existents ──────────────────────────────────────────────
     deleted_r = ReservaBasica.objects.all().delete()[0]
     deleted_i = InquiliBasic.objects.all().delete()[0]
