@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import PropertyForm from '../forms/propertyForm';
 import styles from './cercadorPage.module.css';
+import { DatePickerInput } from '@mantine/dates';
+
 
 
 const initialProperties = [
@@ -48,6 +50,7 @@ const initialProperties = [
 
 export default function CercadorPage() {
   const [properties, setProperties] = useState(initialProperties);
+  const [value, setValue] = useState([null,null]);
 
 
 
@@ -67,13 +70,13 @@ export default function CercadorPage() {
           placeholder="Buscar inmueble..."
           className={styles.searchInput}
         />
-
-        <select className={styles.filterSelect} defaultValue="Todos">
-          <option value="Todos">Todos</option>
-          <option value="Disponible">Disponible</option>
-          <option value="Reservado">Reservado</option>
-          <option value="Mantenimiento">Mantenimiento</option>
-        </select>
+        <DatePickerInput
+          label="Escull una data"
+          placeholder='Escull una data'
+          type="range"
+          value={value}
+          onChange={setValue}
+          />    
       </div>
 
       <div className={styles.propertiesGrid}>
