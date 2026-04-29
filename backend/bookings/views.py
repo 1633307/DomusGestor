@@ -8,26 +8,34 @@ from .serializers import InquiliSerializer, ReservaSerializer, DashboardSerializ
 
 
 class InquiliListCreateView(generics.ListCreateAPIView):
-    """RF-17, RF-18, RF-25: Llista i crea inquilins."""
     queryset = InquiliBasic.objects.all()
     serializer_class = InquiliSerializer
 
 
 class InquiliDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """RF-17: Detall, actualització i eliminació d'inquilí."""
     queryset = InquiliBasic.objects.all()
     serializer_class = InquiliSerializer
 
 
 class ReservaListCreateView(generics.ListCreateAPIView):
     """RF-23: Llista i crea reserves."""
-    queryset = ReservaBasica.objects.select_related('immoble', 'inquili').all()
+    queryset = (
+        ReservaBasica.objects
+        .select_related('immoble', 'inquili')
+        .prefetch_related('hostes')
+        .all()
+    )
     serializer_class = ReservaSerializer
 
 
 class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """RF-23: Detall, actualització i eliminació de reserva."""
-    queryset = ReservaBasica.objects.select_related('immoble', 'inquili').all()
+    """RF-23: Detall, actualització i eliminació de reserva (incl. hostes)."""
+    queryset = (
+        ReservaBasica.objects
+        .select_related('immoble', 'inquili')
+        .prefetch_related('hostes')
+        .all()
+    )
     serializer_class = ReservaSerializer
 
 

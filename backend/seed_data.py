@@ -26,12 +26,14 @@ django.setup()
 
 from users.models import Usuari
 from properties.models import Immoble
-from bookings.models import InquiliBasic, ReservaBasica
+from bookings.models import InquiliBasic, ReservaBasica, Hoste
 
 
 def run():
     # ── Usuari admin ─────────────────────────────────────────────────────────
-    if not Usuari.objects.filter(nip="ADM001").exists():
+    if Usuari.objects.filter(nip="ADM001").exists() or Usuari.objects.filter(username="admin").exists():
+        print("Usuari admin ja existeix, no s'ha sobreescrit")
+    else:
         Usuari.objects.create_user(
             username="admin",
             email="admin@domusgestor.cat",
@@ -39,8 +41,6 @@ def run():
             password="DomusGestor2026!",
         )
         print("Usuari creat  →  NIP: ADM001 / Password: DomusGestor2026!")
-    else:
-        print("Usuari admin ja existeix (NIP: ADM001), no s'ha sobreescrit")
 
     # ── Netejar dades existents ──────────────────────────────────────────────
     deleted_r = ReservaBasica.objects.all().delete()[0]
@@ -131,42 +131,134 @@ def run():
     print(f"{len(inquilins)} inquilins creats")
 
     # ── 20 Reserves ──────────────────────────────────────────────────────────
-    # Cada fila: (index_immoble, index_inquili, data_entrada, data_sortida, pagat)
+    # (immoble_idx, inquili_idx, data_entrada, data_sortida, pagat,
+    #  tipus_reserva, comentaris)
     reserves_data = [
-        (0,  0,  "2026-01-10", "2026-01-15", True),
-        (1,  1,  "2026-01-20", "2026-01-23", True),
-        (2,  2,  "2026-02-03", "2026-02-10", True),
-        (3,  3,  "2026-02-14", "2026-02-16", False),
-        (4,  4,  "2026-03-01", "2026-03-08", True),
-        (5,  5,  "2026-03-15", "2026-03-18", False),
-        (6,  6,  "2026-04-05", "2026-04-07", True),
-        (7,  7,  "2026-04-20", "2026-04-25", False),
-        (8,  8,  "2026-05-01", "2026-05-05", True),
-        (9,  9,  "2026-05-10", "2026-05-17", False),
-        (10, 10, "2026-05-20", "2026-05-22", True),
-        (11, 11, "2026-06-01", "2026-06-08", False),
-        (12, 12, "2026-06-15", "2026-06-20", True),
-        (13, 13, "2026-07-01", "2026-07-07", False),
-        (14, 14, "2026-07-10", "2026-07-14", True),
-        (15, 15, "2026-07-20", "2026-07-25", False),
-        (16, 16, "2026-08-01", "2026-08-10", True),
-        (17, 17, "2026-08-15", "2026-08-18", True),
-        (18, 18, "2026-09-01", "2026-09-05", False),
-        (19, 19, "2026-09-10", "2026-09-15", True),
+        (0,  0,  "2026-01-10", "2026-01-15", True,  "Airbnb",  "Entrada abans de les 15:00 si es possible."),
+        (1,  1,  "2026-01-20", "2026-01-23", True,  "Booking", "Hostes habituals, llits separats."),
+        (2,  2,  "2026-02-03", "2026-02-10", True,  "Direct",  "Reserva familiar, necessiten bressol."),
+        (3,  3,  "2026-02-14", "2026-02-16", False, "Airbnb",  "Sant Valenti - decoracio especial."),
+        (4,  4,  "2026-03-01", "2026-03-08", True,  "Direct",  "Estada llarga, descompte aplicat."),
+        (5,  5,  "2026-03-15", "2026-03-18", False, "Booking", ""),
+        (6,  6,  "2026-04-05", "2026-04-07", True,  "Airbnb",  "Cap d'any avancat - Setmana Santa."),
+        (7,  7,  "2026-04-20", "2026-04-25", False, "Direct",  "Pendent confirmacio pagament."),
+        (8,  8,  "2026-05-01", "2026-05-05", True,  "Booking", "Festa local, possible soroll."),
+        (9,  9,  "2026-05-10", "2026-05-17", False, "Airbnb",  ""),
+        (10, 10, "2026-05-20", "2026-05-22", True,  "Direct",  "Treball, necessita wifi rapid."),
+        (11, 11, "2026-06-01", "2026-06-08", False, "Booking", ""),
+        (12, 12, "2026-06-15", "2026-06-20", True,  "Airbnb",  "Aniversari de noces."),
+        (13, 13, "2026-07-01", "2026-07-07", False, "Altres",  "Reserva via partner extern."),
+        (14, 14, "2026-07-10", "2026-07-14", True,  "Direct",  ""),
+        (15, 15, "2026-07-20", "2026-07-25", False, "Booking", "Mascota petita autoritzada."),
+        (16, 16, "2026-08-01", "2026-08-10", True,  "Airbnb",  "Vacances familiars d'estiu."),
+        (17, 17, "2026-08-15", "2026-08-18", True,  "Direct",  "Pagat per transferencia."),
+        (18, 18, "2026-09-01", "2026-09-05", False, "Booking", ""),
+        (19, 19, "2026-09-10", "2026-09-15", True,  "Airbnb",  "Check-in autonom amb codi."),
     ]
 
     reserves = []
-    for imm_i, inq_i, entrada, sortida, pagat in reserves_data:
+    for row in reserves_data:
+        imm_i, inq_i, entrada, sortida, pagat, tipus, comentaris = row
         r = ReservaBasica.objects.create(
             immoble=immobles[imm_i],
             inquili=inquilins[inq_i],
             data_entrada=entrada,
             data_sortida=sortida,
             pagat=pagat,
+            tipus_reserva=tipus,
+            comentaris_interns=comentaris,
         )
         reserves.append(r)
 
     print(f"{len(reserves)} reserves creades")
+
+    # ── Hostes (~2-4 per reserva) ────────────────────────────────────────────
+    # Per cada reserva creem un hoste principal (a partir de l'inquili) i
+    # 1-3 hostes addicionals amb dades coherents.
+    hostes_extra = [
+        # (nom, genere, relacio, doc_type, doc_num, nacionalitat, naixement, residencia, email, tel)
+        ("Aina Puig Coma",       "Dona",  "Parella",        "DNI",       "11112222Z", "Espanyola",  "1995-03-12", "Carrer Major 5, Barcelona",      "aina.puig@gmail.com",     "+34 600 000 001"),
+        ("Eric Bosch Pons",      "Home",  "Fill/a",         "DNI",       "22223333Y", "Espanyola",  "2015-07-22", "Carrer Major 5, Barcelona",      "",                        ""),
+        ("Maria Solans Roca",    "Dona",  "Fill/a",         "DNI",       "33334444X", "Espanyola",  "2018-11-04", "Avinguda Diagonal 10, Barcelona","",                        ""),
+        ("Pau Llopis Vila",      "Home",  "Parella",        "Passaport", "AB1234567", "Francesa",   "1988-01-30", "Rue de la Paix 12, Paris",       "pau.llopis@gmail.com",    "+33 6 12 34 56 78"),
+        ("Clara Ferrer Mas",     "Dona",  "Germà/Germana",  "DNI",       "44445555W", "Espanyola",  "1993-06-18", "Placa Catalunya 8, Tarragona",   "clara.ferrer@gmail.com",  "+34 600 000 002"),
+        ("Roger Pla Font",       "Home",  "Fill/a",         "DNI",       "55556666V", "Espanyola",  "2012-04-09", "Carrer del Pi 12, Lleida",       "",                        ""),
+        ("Laia Vidal Mas",       "Dona",  "Parella",        "NIE",       "Y1234567B", "Argentina",  "1991-09-25", "Rambla Nova 20, Tarragona",      "laia.vidal@gmail.com",    "+54 11 1234 5678"),
+        ("Marti Coll Vives",     "Home",  "Fill/a",         "DNI",       "66667777U", "Espanyola",  "2019-02-14", "Carrer Balmes 55, Barcelona",    "",                        ""),
+        ("Berta Sole Pons",      "Dona",  "Parella",        "DNI",       "77778888T", "Espanyola",  "1986-12-01", "Via Augusta 3, Barcelona",       "berta.sole@gmail.com",    "+34 600 000 003"),
+        ("Nil Camps Ros",        "Home",  "Parella",        "DNI",       "88889999S", "Espanyola",  "1990-08-15", "Carrer Groc 7, Reus",            "nil.camps@gmail.com",     "+34 600 000 004"),
+        ("Quim Sala Mas",        "Home",  "Fill/a",         "DNI",       "99990000R", "Espanyola",  "2014-05-20", "Passeig de la Pau 1, Vic",       "",                        ""),
+        ("Mireia Roca Pla",      "Dona",  "Parella",        "DNI",       "00001111Q", "Espanyola",  "1992-10-03", "Carrer dels Albers 4, Manresa",  "mireia.roca@gmail.com",   "+34 600 000 005"),
+    ]
+
+    total_hostes = 0
+    # Patró d'addicionals per reserva (índexs a hostes_extra). Ciclat per 20 reserves.
+    patrons = [
+        [0, 1, 2],     # 1 + 3 → 4
+        [3],           # 1 + 1 → 2
+        [4, 5],        # 1 + 2 → 3
+        [],            # 1 → 1
+        [6, 7, 8],     # 1 + 3 → 4
+        [9],
+        [10, 11],
+        [0],
+        [1, 2],
+        [],
+        [3, 4],
+        [5],
+        [6, 7, 8],
+        [9, 10],
+        [0],
+        [1],
+        [2, 3, 4],
+        [5, 6],
+        [],
+        [7, 8],
+    ]
+
+    for idx, reserva in enumerate(reserves):
+        inq = reserva.inquili
+        # Hoste principal (basat en l'inquili)
+        Hoste.objects.create(
+            reserva=reserva,
+            es_principal=True,
+            nom_complet=inq.nom_complet,
+            genere="Home" if idx % 2 == 0 else "Dona",
+            tipus_document="DNI",
+            numero_document=inq.dni_passaport,
+            nacionalitat="Espanyola",
+            data_naixement=f"19{70 + (idx % 30):02d}-0{1 + (idx % 9)}-15",
+            residencia=inq.dades_facturacio or "",
+            email=inq.email,
+            telefon=f"+34 6{idx:02d} 000 000",
+        )
+        total_hostes += 1
+
+        # Hostes addicionals
+        for extra_idx in patrons[idx]:
+            extra = hostes_extra[extra_idx]
+            (nom, gen, rel, dtype, dnum, nac, naix, res, em, tel) = extra
+            Hoste.objects.create(
+                reserva=reserva,
+                es_principal=False,
+                nom_complet=nom,
+                genere=gen,
+                relacio_parental=rel,
+                tipus_document=dtype,
+                numero_document=dnum,
+                nacionalitat=nac,
+                data_naixement=naix,
+                residencia=res,
+                email=em,
+                telefon=tel,
+            )
+            total_hostes += 1
+
+        # Actualitzar el comptador a la reserva
+        reserva.num_hostes = reserva.hostes.count()
+        reserva.save(update_fields=['num_hostes'])
+
+    print(f"{total_hostes} hostes creats")
     print("Tot OK!")
 
 
