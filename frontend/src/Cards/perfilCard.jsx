@@ -25,14 +25,14 @@ export default function PerfilCard({ data, isEditing, onChange }) {
       <section className={styles.card}>
         <div className={styles.cardHeader}>
           <div>
-            <h2>Informació de l&apos;immoble</h2>
-            <p>Dades generals i tècniques de l&apos;immoble</p>
+            <h2>Informació de l'immoble</h2>
+            <p>Dades generals i tècniques de l'immoble</p>
           </div>
         </div>
 
         <div className={styles.formGrid}>
           <Field
-            label="Nom de l&apos;immoble"
+            label="Nom de l'immoble"
             name="propertyName"
             value={data.propertyName}
             isEditing={isEditing}
@@ -77,7 +77,7 @@ export default function PerfilCard({ data, isEditing, onChange }) {
           />
 
           <Field
-            label="Tipus d&apos;immoble"
+            label="Tipus d'immoble"
             name="propertyType"
             value={data.propertyType}
             isEditing={isEditing}
