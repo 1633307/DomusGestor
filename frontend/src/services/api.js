@@ -65,7 +65,9 @@ export const bookingsApi = {
   list: () => api.get('/bookings/reserves/'),
   get: (id) => api.get(`/bookings/reserves/${id}/`),
   create: (data) => api.post('/bookings/reserves/', data),
-  update: (id, data) => api.put(`/bookings/reserves/${id}/`, data),
+  // PATCH (partial update) perquè la pestanya d'edició només envia
+  // alguns camps (comentaris, hostes, etc.) sense les FKs.
+  update: (id, data) => api.patch(`/bookings/reserves/${id}/`, data),
   remove: (id) => api.del(`/bookings/reserves/${id}/`),
   dashboard: () => api.get('/bookings/dashboard/'),
 };
