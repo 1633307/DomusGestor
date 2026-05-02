@@ -2,7 +2,7 @@
 Seed script: crea un usuari admin, 20 immobles, 20 inquilins i 20 reserves.
 Executa'l des de la carpeta backend/:
 
-    python seed_data.py
+set FERNET_KEY=I08TJ_a6jqha4aJNErHJsAd8_MUgIY0OI_BH165zSfw= && python seed_data.py
 
 AVÍS: esborra tots els registres existents de reserves, inquilins i immobles
 abans de crear-ne de nous. L'usuari admin NO s'esborra si ja existeix.
