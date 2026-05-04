@@ -72,3 +72,7 @@ export const bookingsApi = {
   dashboard: () => api.get('/bookings/dashboard/'),
 };
 
+export const inquilinsApi = {
+  create: (data) => api.post('/bookings/inquilins/', data),
+};
+

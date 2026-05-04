@@ -8,6 +8,8 @@ function Field({
   onChange,
   type = "text",
   editable = true,
+  options,
+  displayValue,
 }) {
   const canEdit = isEditing && editable;
 
@@ -15,7 +17,15 @@ function Field({
     <div className={styles.field}>
       <label>{label}</label>
 
-      {canEdit ? (
+      {canEdit && options ? (
+        <select name={name} value={value} onChange={onChange}>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ) : canEdit ? (
         <input
           name={name}
           type={type}
@@ -23,10 +33,20 @@ function Field({
           onChange={onChange}
         />
       ) : (
-        <div className={styles.fieldValue}>{value || "-"}</div>
+        <div className={styles.fieldValue}>{displayValue ?? (value || "-")}</div>
       )}
     </div>
   );
+}
+
+function formatLimpio(value) {
+  return value === true || value === "true" || value === "Sí" || value === "Si"
+    ? "Sí"
+    : "No";
+}
+
+function getLimpioSelectValue(value) {
+  return formatLimpio(value) === "Sí" ? "true" : "false";
 }
 
 export default function ReservaInfoCard({ data, isEditing, onChange }) {
@@ -101,6 +121,36 @@ export default function ReservaInfoCard({ data, isEditing, onChange }) {
               {data.reservationType || "-"}
             </div>
           </div>
+
+          {/* Editable */}
+          <Field
+            label="Estat de la reserva"
+            name="estadoReserva"
+            value={data.estadoReserva}
+            isEditing={isEditing}
+            onChange={onChange}
+            options={[
+              { value: "", label: "-" },
+              { value: "prereservada", label: "Prereservada" },
+              { value: "reservada", label: "Reservada" },
+              { value: "lista", label: "Llista" },
+              { value: "cancelada", label: "Cancel·lada" },
+            ]}
+          />
+
+          {/* Editable */}
+          <Field
+            label="Net"
+            name="limpio"
+            value={getLimpioSelectValue(data.limpio)}
+            isEditing={isEditing}
+            onChange={onChange}
+            displayValue={formatLimpio(data.limpio)}
+            options={[
+              { value: "true", label: "Sí" },
+              { value: "false", label: "No" },
+            ]}
+          />
 
           {/* Editable */}
           <div className={`${styles.field} ${styles.fullWidth}`}>

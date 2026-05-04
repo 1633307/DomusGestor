@@ -5,11 +5,14 @@ export default function Sidebar({setSeccioActiva, seccioActiva}) {
 
   const menuItems = [
     {id: 'perfil',label:'Perfil'},
+    {id: 'descompte', label: 'Descompte'},
+    {id: 'novaReserva', label: 'Nova reserva'},
     {id: 'fotos',label:'Fotos'},
     {id: 'incidencies', label: 'Incidéncies'},
     {id: 'info', label:'Informació'},
     {id:'hospedes', label:'Hospedes'},
-    {id:'pagaments', label:'Pagaments'}
+    {id:'pagaments', label:'Pagaments'},
+    {id: 'comunicacions', label: 'Comunicacions'}
   ];
 
 

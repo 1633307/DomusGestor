@@ -22,6 +22,8 @@ class Immoble(models.Model):
     descripcio = models.TextField(blank=True)
 
     preu_base_nit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    descompte_actiu = models.BooleanField(default=False)
+    descompte_percentatge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     foto_principal = models.CharField(max_length=500, blank=True, default='')
 
     propietari_nom = models.CharField(max_length=150, blank=True, default='')

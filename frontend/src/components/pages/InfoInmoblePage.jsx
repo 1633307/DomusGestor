@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../layout/Sidebar';
 import FooterActions from '../layout/FooterActions';
 import style from './InfoInmoblePage.module.css';
 import PerfilCard from '../../Cards/perfilCard';
-import { propertiesApi } from '../../services/api';
+import ImmobleDescompteCard from '../../Cards/immobleDescompteCard';
+import CrearReservaCard from '../../Cards/crearReservaCard';
+import { bookingsApi, inquilinsApi, propertiesApi } from '../../services/api';
 
 const emptyForm = {
   propertyName: '',
@@ -24,7 +26,13 @@ const emptyForm = {
   ownerPhone: '',
   ownerAddress: '',
   ownerIban: '',
+  descompteActiu: false,
+  descomptePercentatge: '',
 };
+
+function toBoolean(value) {
+  return value === true || value === 'true' || value === 'Sí' || value === 'Si';
+}
 
 function backendToForm(p) {
   return {
@@ -45,6 +53,8 @@ function backendToForm(p) {
     ownerPhone: p.propietari_telefon ?? '',
     ownerAddress: p.propietari_adreca ?? '',
     ownerIban: p.propietari_iban ?? '',
+    descompteActiu: p.descompte_actiu ?? false,
+    descomptePercentatge: String(p.descompte_percentatge ?? ''),
   };
 }
 
@@ -67,6 +77,8 @@ function formToBackend(f, original) {
     propietari_telefon: f.ownerPhone,
     propietari_adreca: f.ownerAddress,
     propietari_iban: f.ownerIban,
+    descompte_actiu: toBoolean(f.descompteActiu),
+    descompte_percentatge: Number(f.descomptePercentatge) || 0,
     metres_quadrats: original?.metres_quadrats ?? 0,
     descripcio: original?.descripcio ?? '',
     actiu: original?.actiu ?? true,
@@ -75,6 +87,7 @@ function formToBackend(f, original) {
 
 export default function InfoInmoble() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [seccioActiva, setSeccioActiva] = useState('perfil');
   const [isEditing, setIsEditing] = useState(false);
   const [original, setOriginal] = useState(null);
@@ -83,6 +96,7 @@ export default function InfoInmoble() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [creatingReserva, setCreatingReserva] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -135,6 +149,47 @@ export default function InfoInmoble() {
     setDraftData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleCreateReserva = async (form) => {
+    setCreatingReserva(true);
+    setError('');
+    try {
+      const mainGuest = form.hostes[0];
+      const inquili = await inquilinsApi.create({
+        nom_complet: mainGuest.nom_complet || 'Client sense nom',
+        dni_passaport: mainGuest.numero_document || `PENDENT-${Date.now()}`,
+        email: mainGuest.email || 'pendent@example.com',
+        dades_facturacio: '',
+      });
+
+      const payload = {
+        immoble: Number(id),
+        inquili: inquili.id,
+        data_entrada: form.dataEntrada,
+        data_sortida: form.dataSortida,
+        num_hostes: form.hostes.length,
+        tipus_reserva: form.tipusReserva,
+        estat_reserva: form.estatReserva,
+        net: toBoolean(form.net),
+        comentaris_interns: form.comentarisInterns,
+        descompte_immoble_aplicat: toBoolean(form.descompteImmobleAplicat),
+        descompte_immoble_percentatge: Number(form.descompteImmoblePercentatge) || 0,
+        descompte_individual_aplicat: toBoolean(form.descompteIndividualAplicat),
+        descompte_individual_percentatge: Number(form.descompteIndividualPercentatge) || 0,
+        descompte_individual_motiu: form.descompteIndividualMotiu,
+        hostes: form.hostes,
+      };
+
+      const created = await bookingsApi.create(payload);
+      if (created?.id) {
+        navigate(`/infoReserva/${created.id}`);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreatingReserva(false);
+    }
+  };
+
   if (loading) return <p>Carregant immoble...</p>;
 
   return (
@@ -158,8 +213,22 @@ export default function InfoInmoble() {
 
           {seccioActiva === 'fotos' && (<div><h2>Galeria de Fotos</h2></div>)}
           {seccioActiva === 'incidencies' && (<div><h2>Gestió d'Incidències</h2></div>)}
+          {seccioActiva === 'descompte' && (
+            <ImmobleDescompteCard
+              data={isEditing ? draftData : formData}
+              isEditing={isEditing}
+              onChange={handleChange}
+            />
+          )}
+          {seccioActiva === 'novaReserva' && (
+            <CrearReservaCard
+              immoble={{ id, ...formData }}
+              onCreate={handleCreateReserva}
+              isCreating={creatingReserva}
+            />
+          )}
 
-          {seccioActiva === 'perfil' && (
+          {(seccioActiva === 'perfil' || seccioActiva === 'descompte') && (
             <FooterActions
               isEditing={isEditing}
               onEdit={handleEdit}

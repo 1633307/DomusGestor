@@ -50,10 +50,24 @@ class ReservaSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'immoble', 'immoble_nom', 'inquili', 'inquili_nom',
             'data_entrada', 'data_sortida', 'pagat',
-            'codi_reserva', 'tipus_reserva', 'comentaris_interns', 'num_hostes',
+            'codi_reserva', 'tipus_reserva', 'estat_reserva', 'net',
+            'comentaris_interns', 'num_hostes',
+            'descompte_immoble_aplicat', 'descompte_immoble_percentatge',
+            'descompte_individual_aplicat', 'descompte_individual_percentatge',
+            'descompte_individual_motiu',
             'hostes',
         ]
         read_only_fields = ['id', 'codi_reserva']
+
+    def validate_descompte_immoble_percentatge(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("El descompte de l'immoble ha d'estar entre 0 i 100.")
+        return value
+
+    def validate_descompte_individual_percentatge(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("El descompte individual ha d'estar entre 0 i 100.")
+        return value
 
     def _replace_hostes(self, reserva, hostes_data):
         """Esborra els hostes existents i en crea de nous a partir de la llista."""

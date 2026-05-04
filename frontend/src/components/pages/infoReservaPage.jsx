@@ -5,6 +5,8 @@ import style from './InfoReservaPage.module.css';
 import PageFooterActions from '../layout/FooterActions';
 import ReservaInfoCard from '../../Cards/reservaInfoCard';
 import ReservaHostesCard from '../../Cards/reservaHostesCard';
+import ReservaPagamentsCard from '../../Cards/reservaPagamentsCard';
+import ReservaComunicacionsCard from '../../Cards/reservaComunicacionsCard';
 import { bookingsApi } from '../../services/api';
 
 // ── Mappers backend <-> frontend ────────────────────────────────────────────
@@ -16,8 +18,24 @@ function reservaBackendToInfo(r) {
         endDate: r.data_sortida ?? '',
         reservedProperty: r.immoble_nom ?? '',
         reservationType: r.tipus_reserva ?? '',
+        estadoReserva: r.estat_reserva ?? r.estadoReserva ?? r.estado_reserva ?? '',
+        limpio: r.net ?? r.limpio ?? false,
         internalComments: r.comentaris_interns ?? '',
     };
+}
+
+function reservaBackendToPagaments(r) {
+    return {
+        descompteImmobleAplicat: r.descompte_immoble_aplicat ?? false,
+        descompteImmoblePercentatge: String(r.descompte_immoble_percentatge ?? ''),
+        descompteIndividualAplicat: r.descompte_individual_aplicat ?? false,
+        descompteIndividualPercentatge: String(r.descompte_individual_percentatge ?? ''),
+        descompteIndividualMotiu: r.descompte_individual_motiu ?? '',
+    };
+}
+
+function toBoolean(value) {
+    return value === true || value === 'true' || value === 'Sí' || value === 'Si';
 }
 
 function hosteBackendToFront(h) {
@@ -60,10 +78,67 @@ const emptyReserva = {
     endDate: '',
     reservedProperty: '',
     reservationType: '',
+    estadoReserva: '',
+    limpio: false,
     internalComments: '',
 };
 
 const emptyHostes = { guestCount: 0, guests: [] };
+
+const emptyPagaments = {
+    estatPagament: 'pendent',
+    importTotal: '',
+    importPagat: '',
+    importPendent: '',
+    fianca: '',
+    metodePagament: '',
+    dataUltimPagament: '',
+    observacions: 'Encara no hi ha pagaments registrats',
+    descompteImmobleAplicat: false,
+    descompteImmoblePercentatge: '',
+    descompteIndividualAplicat: false,
+    descompteIndividualPercentatge: '',
+    descompteIndividualMotiu: '',
+};
+
+const emptyComunicacio = {
+    canal: 'Email',
+    titol: '',
+    destinatari: '',
+    data: '',
+    estat: 'pendent',
+    resum: '',
+};
+
+const initialComunicacions = [
+    {
+        id: 1,
+        canal: 'Email',
+        titol: 'Confirmació de reserva',
+        destinatari: 'client@example.com',
+        data: '2026-05-02',
+        estat: 'enviada',
+        resum: "S'ha enviat la confirmació amb les dates, l'immoble i les dades principals de la reserva.",
+    },
+    {
+        id: 2,
+        canal: 'WhatsApp',
+        titol: 'Recordatori de check-in',
+        destinatari: '+34 600 000 000',
+        data: '2026-05-04',
+        estat: 'programada',
+        resum: "Missatge programat amb instruccions d'entrada i informació pràctica per al check-in.",
+    },
+    {
+        id: 3,
+        canal: 'Sistema',
+        titol: 'Avís de pagament pendent',
+        destinatari: 'Equip Domus Gestor',
+        data: '2026-05-04',
+        estat: 'pendent',
+        resum: 'Pendent de confirmar el pagament abans de tancar la reserva com a pagada.',
+    },
+];
 
 export default function InfoReserva() {
     const { id } = useParams();
@@ -77,6 +152,10 @@ export default function InfoReserva() {
     const [draftData, setDraftData] = useState(emptyReserva);
     const [hostesData, setHostesData] = useState(emptyHostes);
     const [draftHostesData, setDraftHostesData] = useState(emptyHostes);
+    const [pagamentsData, setPagamentsData] = useState(emptyPagaments);
+    const [draftPagamentsData, setDraftPagamentsData] = useState(emptyPagaments);
+    const [comunicacionsData, setComunicacionsData] = useState(initialComunicacions);
+    const [draftComunicacio, setDraftComunicacio] = useState(emptyComunicacio);
 
     const [pendingGuestRemoval, setPendingGuestRemoval] = useState({
         isPending: false,
@@ -95,6 +174,10 @@ export default function InfoReserva() {
             .get(id)
             .then((data) => {
                 const info = reservaBackendToInfo(data);
+                const pagaments = {
+                    ...emptyPagaments,
+                    ...reservaBackendToPagaments(data),
+                };
                 const guests = (data.hostes || []).map(hosteBackendToFront);
                 // Garantim que hi hagi un principal
                 if (guests.length && !guests.some((g) => g.isMainGuest)) {
@@ -103,6 +186,8 @@ export default function InfoReserva() {
                 const hostes = { guestCount: guests.length, guests };
                 setFormData(info);
                 setDraftData(info);
+                setPagamentsData(pagaments);
+                setDraftPagamentsData(pagaments);
                 setHostesData(hostes);
                 setDraftHostesData(hostes);
             })
@@ -111,12 +196,36 @@ export default function InfoReserva() {
     }, [id]);
 
     const handleEdit = () => {
+        if (seccioActiva === 'comunicacions') {
+            setDraftComunicacio(emptyComunicacio);
+            setIsEditing(true);
+            return;
+        }
+
+        if (seccioActiva === 'pagaments') {
+            setDraftPagamentsData(pagamentsData);
+            setIsEditing(true);
+            return;
+        }
+
         setDraftData(formData);
         setDraftHostesData(hostesData);
         setIsEditing(true);
     };
 
     const handleCancel = () => {
+        if (seccioActiva === 'comunicacions') {
+            setDraftComunicacio(emptyComunicacio);
+            setIsEditing(false);
+            return;
+        }
+
+        if (seccioActiva === 'pagaments') {
+            setDraftPagamentsData(pagamentsData);
+            setIsEditing(false);
+            return;
+        }
+
         setDraftData(formData);
         setDraftHostesData(hostesData);
         setPendingGuestRemoval({
@@ -128,17 +237,76 @@ export default function InfoReserva() {
     };
 
     const handleSave = async () => {
+        if (seccioActiva === 'comunicacions') {
+            if (!draftComunicacio.titol.trim()) {
+                setError('El títol de la comunicació és obligatori.');
+                return;
+            }
+
+            setComunicacionsData((prev) => [
+                {
+                    ...draftComunicacio,
+                    id: Date.now(),
+                    titol: draftComunicacio.titol.trim(),
+                },
+                ...prev,
+            ]);
+            setDraftComunicacio(emptyComunicacio);
+            setIsEditing(false);
+            setError('');
+            return;
+        }
+
+        if (seccioActiva === 'pagaments') {
+            setSaving(true);
+            setError('');
+            try {
+                const payload = {
+                    descompte_immoble_aplicat: toBoolean(draftPagamentsData.descompteImmobleAplicat),
+                    descompte_immoble_percentatge: Number(draftPagamentsData.descompteImmoblePercentatge) || 0,
+                    descompte_individual_aplicat: toBoolean(draftPagamentsData.descompteIndividualAplicat),
+                    descompte_individual_percentatge: Number(draftPagamentsData.descompteIndividualPercentatge) || 0,
+                    descompte_individual_motiu: draftPagamentsData.descompteIndividualMotiu ?? '',
+                };
+                const updated = await bookingsApi.update(id, payload);
+                const updatedPagaments = {
+                    ...draftPagamentsData,
+                    ...reservaBackendToPagaments(updated),
+                };
+                setPagamentsData(updatedPagaments);
+                setDraftPagamentsData(updatedPagaments);
+                setIsEditing(false);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setSaving(false);
+            }
+            return;
+        }
+
         setSaving(true);
         setError('');
         try {
             // num_hostes sempre derivat de la llista real (no del input pendent)
             const payload = {
                 comentaris_interns: draftData.internalComments,
+                estat_reserva: draftData.estadoReserva || null,
+                net: toBoolean(draftData.limpio),
+                descompte_immoble_aplicat: toBoolean(pagamentsData.descompteImmobleAplicat),
+                descompte_immoble_percentatge: Number(pagamentsData.descompteImmoblePercentatge) || 0,
+                descompte_individual_aplicat: toBoolean(pagamentsData.descompteIndividualAplicat),
+                descompte_individual_percentatge: Number(pagamentsData.descompteIndividualPercentatge) || 0,
+                descompte_individual_motiu: pagamentsData.descompteIndividualMotiu ?? '',
                 num_hostes: draftHostesData.guests.length,
                 hostes: draftHostesData.guests.map(hosteFrontToBackend),
             };
+            console.log('Payload reserva update:', payload);
             const updated = await bookingsApi.update(id, payload);
             const info = reservaBackendToInfo(updated);
+            const pagaments = {
+                ...pagamentsData,
+                ...reservaBackendToPagaments(updated),
+            };
             const guests = (updated.hostes || []).map(hosteBackendToFront);
             if (guests.length && !guests.some((g) => g.isMainGuest)) {
                 guests[0].isMainGuest = true;
@@ -146,6 +314,8 @@ export default function InfoReserva() {
             const hostes = { guestCount: guests.length, guests };
             setFormData(info);
             setDraftData(info);
+            setPagamentsData(pagaments);
+            setDraftPagamentsData(pagaments);
             setHostesData(hostes);
             setDraftHostesData(hostes);
             setIsEditing(false);
@@ -159,6 +329,16 @@ export default function InfoReserva() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setDraftData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handlePagamentChange = (e) => {
+        const { name, value } = e.target;
+        setDraftPagamentsData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleComunicacioChange = (e) => {
+        const { name, value } = e.target;
+        setDraftComunicacio((prev) => ({ ...prev, [name]: value }));
     };
 
     const createEmptyGuest = (id, isMainGuest = false) => ({
@@ -303,9 +483,26 @@ export default function InfoReserva() {
                             />
                         </>
                     )}
-                    {seccioActiva === 'pagaments' && <div><h2>Pagaments</h2></div>}
+                    {seccioActiva === 'pagaments' && (
+                        <ReservaPagamentsCard
+                            data={isEditing ? draftPagamentsData : pagamentsData}
+                            isEditing={isEditing}
+                            onChange={handlePagamentChange}
+                        />
+                    )}
+                    {seccioActiva === 'comunicacions' && (
+                        <ReservaComunicacionsCard
+                            comunicacions={comunicacionsData}
+                            draftComunicacio={draftComunicacio}
+                            isEditing={isEditing}
+                            onDraftChange={handleComunicacioChange}
+                        />
+                    )}
 
-                    {(seccioActiva === 'info' || seccioActiva === 'hospedes') && (
+                    {(seccioActiva === 'info' ||
+                        seccioActiva === 'hospedes' ||
+                        seccioActiva === 'pagaments' ||
+                        seccioActiva === 'comunicacions') && (
                         <PageFooterActions
                             isEditing={isEditing}
                             onEdit={handleEdit}
