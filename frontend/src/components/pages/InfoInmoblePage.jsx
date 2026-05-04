@@ -1,59 +1,59 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Sidebar from '../layout/Sidebar';
-import FooterActions from '../layout/FooterActions';
-import style from './InfoInmoblePage.module.css';
-import PerfilCard from '../../Cards/perfilCard';
-import ImmobleDescompteCard from '../../Cards/immobleDescompteCard';
-import CrearReservaCard from '../../Cards/crearReservaCard';
-import FotosCard from '../../Cards/fotosCard';
-import { bookingsApi, inquilinsApi, propertiesApi } from '../../services/api';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Sidebar from "../layout/Sidebar";
+import FooterActions from "../layout/FooterActions";
+import style from "./InfoInmoblePage.module.css";
+import PerfilCard from "../../Cards/perfilCard";
+import ImmobleDescompteCard from "../../Cards/immobleDescompteCard";
+import CrearReservaCard from "../../Cards/crearReservaCard";
+import FotosCard from "../../Cards/fotosCard";
+import { bookingsApi, inquilinsApi, propertiesApi } from "../../services/api";
 
 const emptyForm = {
-  propertyName: '',
-  reference: '',
-  address: '',
-  city: '',
-  postalCode: '',
-  propertyType: '',
-  capacity: '',
-  bedrooms: '',
-  bathrooms: '',
-  basePrice: '',
-  ownerName: '',
-  ownerTaxId: '',
-  ownerEmail: '',
-  ownerPhone: '',
-  ownerAddress: '',
-  ownerIban: '',
+  propertyName: "",
+  reference: "",
+  address: "",
+  city: "",
+  postalCode: "",
+  propertyType: "",
+  capacity: "",
+  bedrooms: "",
+  bathrooms: "",
+  basePrice: "",
+  ownerName: "",
+  ownerTaxId: "",
+  ownerEmail: "",
+  ownerPhone: "",
+  ownerAddress: "",
+  ownerIban: "",
   descompteActiu: false,
-  descomptePercentatge: '',
+  descomptePercentatge: "",
 };
 
 function toBoolean(value) {
-  return value === true || value === 'true' || value === 'Sí' || value === 'Si';
+  return value === true || value === "true" || value === "Sí" || value === "Si";
 }
 
 function backendToForm(p) {
   return {
-    propertyName: p.nom_comercial ?? '',
-    reference: p.referencia ?? '',
-    address: p.adreca ?? '',
-    city: p.ciutat ?? '',
-    postalCode: p.codi_postal ?? '',
-    propertyType: p.tipus_immoble ?? '',
-    capacity: String(p.capacitat_maxima ?? ''),
-    bedrooms: String(p.num_habitacions ?? ''),
-    bathrooms: String(p.num_banys ?? ''),
-    basePrice: String(p.preu_base_nit ?? ''),
-    ownerName: p.propietari_nom ?? '',
-    ownerTaxId: p.propietari_dni ?? '',
-    ownerEmail: p.propietari_email ?? '',
-    ownerPhone: p.propietari_telefon ?? '',
-    ownerAddress: p.propietari_adreca ?? '',
-    ownerIban: p.propietari_iban ?? '',
+    propertyName: p.nom_comercial ?? "",
+    reference: p.referencia ?? "",
+    address: p.adreca ?? "",
+    city: p.ciutat ?? "",
+    postalCode: p.codi_postal ?? "",
+    propertyType: p.tipus_immoble ?? "",
+    capacity: String(p.capacitat_maxima ?? ""),
+    bedrooms: String(p.num_habitacions ?? ""),
+    bathrooms: String(p.num_banys ?? ""),
+    basePrice: String(p.preu_base_nit ?? ""),
+    ownerName: p.propietari_nom ?? "",
+    ownerTaxId: p.propietari_dni ?? "",
+    ownerEmail: p.propietari_email ?? "",
+    ownerPhone: p.propietari_telefon ?? "",
+    ownerAddress: p.propietari_adreca ?? "",
+    ownerIban: p.propietari_iban ?? "",
     descompteActiu: p.descompte_actiu ?? false,
-    descomptePercentatge: String(p.descompte_percentatge ?? ''),
+    descomptePercentatge: String(p.descompte_percentatge ?? ""),
   };
 }
 
@@ -78,7 +78,7 @@ function formToBackend(f, original) {
     descompte_actiu: toBoolean(f.descompteActiu),
     descompte_percentatge: Number(f.descomptePercentatge) || 0,
     metres_quadrats: original?.metres_quadrats ?? 0,
-    descripcio: original?.descripcio ?? '',
+    descripcio: original?.descripcio ?? "",
     actiu: original?.actiu ?? true,
   };
 }
@@ -86,13 +86,13 @@ function formToBackend(f, original) {
 export default function InfoInmoble() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [seccioActiva, setSeccioActiva] = useState('perfil');
+  const [seccioActiva, setSeccioActiva] = useState("perfil");
   const [isEditing, setIsEditing] = useState(false);
   const [original, setOriginal] = useState(null);
   const [formData, setFormData] = useState(emptyForm);
   const [draftData, setDraftData] = useState(emptyForm);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [creatingReserva, setCreatingReserva] = useState(false);
 
@@ -126,7 +126,7 @@ export default function InfoInmoble() {
 
   const handleSave = async () => {
     setSaving(true);
-    setError('');
+    setError("");
     try {
       const payload = formToBackend(draftData, original);
       const updated = await propertiesApi.update(id, payload);
@@ -149,14 +149,14 @@ export default function InfoInmoble() {
 
   const handleCreateReserva = async (form) => {
     setCreatingReserva(true);
-    setError('');
+    setError("");
     try {
       const mainGuest = form.hostes[0];
       const inquili = await inquilinsApi.create({
-        nom_complet: mainGuest.nom_complet || 'Client sense nom',
+        nom_complet: mainGuest.nom_complet || "Client sense nom",
         dni_passaport: mainGuest.numero_document || `PENDENT-${Date.now()}`,
-        email: mainGuest.email || 'pendent@example.com',
-        dades_facturacio: '',
+        email: mainGuest.email || "pendent@example.com",
+        dades_facturacio: "",
       });
 
       const payload = {
@@ -170,9 +170,13 @@ export default function InfoInmoble() {
         net: toBoolean(form.net),
         comentaris_interns: form.comentarisInterns,
         descompte_immoble_aplicat: toBoolean(form.descompteImmobleAplicat),
-        descompte_immoble_percentatge: Number(form.descompteImmoblePercentatge) || 0,
-        descompte_individual_aplicat: toBoolean(form.descompteIndividualAplicat),
-        descompte_individual_percentatge: Number(form.descompteIndividualPercentatge) || 0,
+        descompte_immoble_percentatge:
+          Number(form.descompteImmoblePercentatge) || 0,
+        descompte_individual_aplicat: toBoolean(
+          form.descompteIndividualAplicat,
+        ),
+        descompte_individual_percentatge:
+          Number(form.descompteIndividualPercentatge) || 0,
         descompte_individual_motiu: form.descompteIndividualMotiu,
         hostes: form.hostes,
       };
@@ -193,12 +197,22 @@ export default function InfoInmoble() {
   return (
     <section>
       <div className={style.templateGrid}>
-        <Sidebar setSeccioActiva={setSeccioActiva} seccioActiva={seccioActiva} />
+        <Sidebar
+          setSeccioActiva={setSeccioActiva}
+          seccioActiva={seccioActiva}
+          seccions={[
+            { id: "perfil", label: "Perfil" },
+            { id: "descompte", label: "Descompte" },
+            { id: "novaReserva", label: "Nova reserva" },
+            { id: "fotos", label: "Fotos" },
+            { id: "incidencies", label: "Incidéncies" },
+          ]}
+        />
 
         <div className={style.perfilCard}>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
 
-          {seccioActiva === 'perfil' && (
+          {seccioActiva === "perfil" && (
             <>
               <h2>Perfil de l'immoble</h2>
               <PerfilCard
@@ -209,18 +223,22 @@ export default function InfoInmoble() {
             </>
           )}
 
-          {seccioActiva === 'fotos' && (
+          {seccioActiva === "fotos" && (
             <FotosCard fotos={original?.fotos ?? []} />
           )}
-          {seccioActiva === 'incidencies' && (<div><h2>Gestió d'Incidències</h2></div>)}
-          {seccioActiva === 'descompte' && (
+          {seccioActiva === "incidencies" && (
+            <div>
+              <h2>Gestió d'Incidències</h2>
+            </div>
+          )}
+          {seccioActiva === "descompte" && (
             <ImmobleDescompteCard
               data={isEditing ? draftData : formData}
               isEditing={isEditing}
               onChange={handleChange}
             />
           )}
-          {seccioActiva === 'novaReserva' && (
+          {seccioActiva === "novaReserva" && (
             <CrearReservaCard
               immoble={{ id, ...formData }}
               onCreate={handleCreateReserva}
@@ -228,14 +246,14 @@ export default function InfoInmoble() {
             />
           )}
 
-          {(seccioActiva === 'perfil' || seccioActiva === 'descompte') && (
+          {(seccioActiva === "perfil" || seccioActiva === "descompte") && (
             <FooterActions
               isEditing={isEditing}
               onEdit={handleEdit}
               onCancel={handleCancel}
               onSave={handleSave}
               isSaveDisabled={saving}
-              saveLabel={saving ? 'Guardant...' : 'Guardar'}
+              saveLabel={saving ? "Guardant..." : "Guardar"}
             />
           )}
         </div>
