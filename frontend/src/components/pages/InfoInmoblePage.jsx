@@ -6,6 +6,7 @@ import style from './InfoInmoblePage.module.css';
 import PerfilCard from '../../Cards/perfilCard';
 import ImmobleDescompteCard from '../../Cards/immobleDescompteCard';
 import CrearReservaCard from '../../Cards/crearReservaCard';
+import FotosCard from '../../Cards/fotosCard';
 import { bookingsApi, inquilinsApi, propertiesApi } from '../../services/api';
 
 const emptyForm = {
@@ -19,7 +20,6 @@ const emptyForm = {
   bedrooms: '',
   bathrooms: '',
   basePrice: '',
-  mainPhoto: '',
   ownerName: '',
   ownerTaxId: '',
   ownerEmail: '',
@@ -46,7 +46,6 @@ function backendToForm(p) {
     bedrooms: String(p.num_habitacions ?? ''),
     bathrooms: String(p.num_banys ?? ''),
     basePrice: String(p.preu_base_nit ?? ''),
-    mainPhoto: p.foto_principal ?? '',
     ownerName: p.propietari_nom ?? '',
     ownerTaxId: p.propietari_dni ?? '',
     ownerEmail: p.propietari_email ?? '',
@@ -70,7 +69,6 @@ function formToBackend(f, original) {
     num_habitacions: Number(f.bedrooms) || 0,
     num_banys: Number(f.bathrooms) || 0,
     preu_base_nit: Number(f.basePrice) || 0,
-    foto_principal: f.mainPhoto,
     propietari_nom: f.ownerName,
     propietari_dni: f.ownerTaxId,
     propietari_email: f.ownerEmail,
@@ -211,7 +209,9 @@ export default function InfoInmoble() {
             </>
           )}
 
-          {seccioActiva === 'fotos' && (<div><h2>Galeria de Fotos</h2></div>)}
+          {seccioActiva === 'fotos' && (
+            <FotosCard fotos={original?.fotos ?? []} />
+          )}
           {seccioActiva === 'incidencies' && (<div><h2>Gestió d'Incidències</h2></div>)}
           {seccioActiva === 'descompte' && (
             <ImmobleDescompteCard

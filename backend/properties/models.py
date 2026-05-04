@@ -1,4 +1,26 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
+
+
+class Servei(models.Model):
+    CATEGORIES = [
+        ('climatitzacio',    'Climatització'),
+        ('conectivitat',     'Connectivitat'),
+        ('electrodomestics', 'Electrodomèstics'),
+        ('exterior',         'Exterior'),
+        ('altres',           'Altres'),
+    ]
+
+    nom       = models.CharField(max_length=100, unique=True)
+    icona     = models.CharField(max_length=50, blank=True, default='')
+    categoria = models.CharField(max_length=20, choices=CATEGORIES, default='altres')
+
+    class Meta:
+        verbose_name_plural = 'Serveis'
+        ordering = ['categoria', 'nom']
+
+    def __str__(self):
+        return self.nom
 
 
 class Immoble(models.Model):
@@ -24,7 +46,7 @@ class Immoble(models.Model):
     preu_base_nit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     descompte_actiu = models.BooleanField(default=False)
     descompte_percentatge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    foto_principal = models.CharField(max_length=500, blank=True, default='')
+    fotos = ArrayField(models.CharField(max_length=500), blank=True, default=list)
 
     propietari_nom = models.CharField(max_length=150, blank=True, default='')
     propietari_dni = models.CharField(max_length=20, blank=True, default='')
@@ -32,6 +54,8 @@ class Immoble(models.Model):
     propietari_telefon = models.CharField(max_length=30, blank=True, default='')
     propietari_adreca = models.TextField(blank=True, default='')
     propietari_iban = models.CharField(max_length=34, blank=True, default='')
+
+    serveis = models.ManyToManyField(Servei, blank=True, related_name='immobles')
 
     actiu = models.BooleanField(default=True)
     data_registre = models.DateTimeField(auto_now_add=True)
@@ -41,3 +65,18 @@ class Immoble(models.Model):
 
     def __str__(self):
         return f"{self.nom_comercial} - {self.preu_base_nit}€/nit"
+
+
+class Temporada(models.Model):
+    immoble     = models.ForeignKey(Immoble, on_delete=models.CASCADE, related_name='temporades')
+    nom         = models.CharField(max_length=100)
+    data_inici  = models.DateField()
+    data_fi     = models.DateField()
+    preu_nit    = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        verbose_name_plural = 'Temporades'
+        ordering = ['data_inici']
+
+    def __str__(self):
+        return f"{self.nom} ({self.immoble.nom_comercial}): {self.data_inici} → {self.data_fi}"
