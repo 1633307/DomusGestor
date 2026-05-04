@@ -1,7 +1,37 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { bookingsApi } from '../../services/api';
-import styles from './inmoblesPage.module.css';
+import styles from './reservesPage.module.css';
+
+const RESERVA_STATUS_LABELS = {
+  prereservada: 'Prereservada',
+  reservada: 'Reservada',
+  lista: 'Llista',
+  cancelada: 'Cancel·lada',
+};
+
+const RESERVA_STATUS_CLASSES = {
+  prereservada: styles.statusPrereservada,
+  reservada: styles.statusReservada,
+  lista: styles.statusLista,
+  cancelada: styles.statusCancelada,
+};
+
+function getReservaStatusValue(reserva) {
+  return String(
+    reserva.estat_reserva ?? reserva.estadoReserva ?? reserva.estado_reserva ?? ''
+  )
+    .trim()
+    .toLowerCase();
+}
+
+function getReservaStatusLabel(status) {
+  return RESERVA_STATUS_LABELS[status] ?? 'Sense estat';
+}
+
+function getReservaStatusClass(status) {
+  return RESERVA_STATUS_CLASSES[status] ?? styles.statusUnknown;
+}
 
 export default function ReservesPage() {
   const [reserves, setReserves] = useState([]);
@@ -40,7 +70,18 @@ export default function ReservesPage() {
               <h3>Reserva #{reserva.id}</h3>
               <p>{reserva.immoble_nom} — {reserva.inquili_nom}</p>
               <p>{reserva.data_entrada} → {reserva.data_sortida}</p>
-              <p>{reserva.pagat ? 'Pagada' : 'Pendent'}</p>
+              <div className={styles.reservaStatus}>
+                <span
+                  className={`${styles.statusDot} ${getReservaStatusClass(
+                    getReservaStatusValue(reserva)
+                  )}`}
+                  aria-hidden="true"
+                />
+                <span>{getReservaStatusLabel(getReservaStatusValue(reserva))}</span>
+              </div>
+              <p className={styles.paymentStatus}>
+                {reserva.pagat ? 'Pagada' : 'Pendent'}
+              </p>
             </Link>
           </article>
         ))}

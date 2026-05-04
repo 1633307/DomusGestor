@@ -25,7 +25,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "domusgestor.settings")
 django.setup()
 
 from users.models import Usuari
-from properties.models import Immoble
+from properties.models import Immoble, Servei, Temporada
 from bookings.models import InquiliBasic, ReservaBasica, Hoste
 
 
@@ -46,7 +46,9 @@ def run():
     deleted_r = ReservaBasica.objects.all().delete()[0]
     deleted_i = InquiliBasic.objects.all().delete()[0]
     deleted_m = Immoble.objects.all().delete()[0]
-    print(f"Eliminats: {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles")
+    deleted_s = Servei.objects.all().delete()[0]
+    deleted_t = Temporada.objects.all().delete()[0]
+    print(f"Eliminats: {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
 
     # ── 20 Immobles ─────────────────────────────────────────────────────────
     # Columnes: nom, ref, adreca, ciutat, cp, tipus, capacitat, hab, banys,
@@ -76,8 +78,34 @@ def run():
         ("Duplex Vilanova Centre",    "DG-020", "Carrer de la Unio, 12, 1r 1a",      "Vilanova i la G.", "08800", "Duplex",     6, 3, 2, 140,  195.00, True,  "Teresa Oliveras Pou", "90101030T", "toliveras@vilanova.cat",  "+34 699 012 345", "Rambla de la Pau, 4, Vilanova",       "ES11 2100 0418 3102 0111 2233"),
     ]
 
+    # Fotos de placeholder per immoble (3-5 URLs per immoble).
+    # La primera URL de cada llista és la foto de portada.
+    # En producció aquestes URLs apuntaran al servidor d'emmagatzematge (veure README).
+    fotos_per_immoble = [
+        ["https://placehold.co/800x600?text=DG-001-1", "https://placehold.co/800x600?text=DG-001-2", "https://placehold.co/800x600?text=DG-001-3"],
+        ["https://placehold.co/800x600?text=DG-002-1", "https://placehold.co/800x600?text=DG-002-2", "https://placehold.co/800x600?text=DG-002-3", "https://placehold.co/800x600?text=DG-002-4"],
+        ["https://placehold.co/800x600?text=DG-003-1", "https://placehold.co/800x600?text=DG-003-2", "https://placehold.co/800x600?text=DG-003-3", "https://placehold.co/800x600?text=DG-003-4", "https://placehold.co/800x600?text=DG-003-5"],
+        ["https://placehold.co/800x600?text=DG-004-1", "https://placehold.co/800x600?text=DG-004-2"],
+        ["https://placehold.co/800x600?text=DG-005-1", "https://placehold.co/800x600?text=DG-005-2", "https://placehold.co/800x600?text=DG-005-3", "https://placehold.co/800x600?text=DG-005-4", "https://placehold.co/800x600?text=DG-005-5"],
+        ["https://placehold.co/800x600?text=DG-006-1", "https://placehold.co/800x600?text=DG-006-2", "https://placehold.co/800x600?text=DG-006-3"],
+        ["https://placehold.co/800x600?text=DG-007-1", "https://placehold.co/800x600?text=DG-007-2", "https://placehold.co/800x600?text=DG-007-3"],
+        ["https://placehold.co/800x600?text=DG-008-1", "https://placehold.co/800x600?text=DG-008-2", "https://placehold.co/800x600?text=DG-008-3", "https://placehold.co/800x600?text=DG-008-4"],
+        ["https://placehold.co/800x600?text=DG-009-1", "https://placehold.co/800x600?text=DG-009-2", "https://placehold.co/800x600?text=DG-009-3", "https://placehold.co/800x600?text=DG-009-4", "https://placehold.co/800x600?text=DG-009-5"],
+        ["https://placehold.co/800x600?text=DG-010-1", "https://placehold.co/800x600?text=DG-010-2"],
+        ["https://placehold.co/800x600?text=DG-011-1", "https://placehold.co/800x600?text=DG-011-2", "https://placehold.co/800x600?text=DG-011-3"],
+        ["https://placehold.co/800x600?text=DG-012-1", "https://placehold.co/800x600?text=DG-012-2", "https://placehold.co/800x600?text=DG-012-3", "https://placehold.co/800x600?text=DG-012-4"],
+        ["https://placehold.co/800x600?text=DG-013-1", "https://placehold.co/800x600?text=DG-013-2", "https://placehold.co/800x600?text=DG-013-3"],
+        ["https://placehold.co/800x600?text=DG-014-1", "https://placehold.co/800x600?text=DG-014-2"],
+        ["https://placehold.co/800x600?text=DG-015-1", "https://placehold.co/800x600?text=DG-015-2", "https://placehold.co/800x600?text=DG-015-3"],
+        ["https://placehold.co/800x600?text=DG-016-1", "https://placehold.co/800x600?text=DG-016-2", "https://placehold.co/800x600?text=DG-016-3", "https://placehold.co/800x600?text=DG-016-4", "https://placehold.co/800x600?text=DG-016-5"],
+        ["https://placehold.co/800x600?text=DG-017-1", "https://placehold.co/800x600?text=DG-017-2", "https://placehold.co/800x600?text=DG-017-3"],
+        ["https://placehold.co/800x600?text=DG-018-1", "https://placehold.co/800x600?text=DG-018-2", "https://placehold.co/800x600?text=DG-018-3", "https://placehold.co/800x600?text=DG-018-4"],
+        ["https://placehold.co/800x600?text=DG-019-1", "https://placehold.co/800x600?text=DG-019-2", "https://placehold.co/800x600?text=DG-019-3"],
+        ["https://placehold.co/800x600?text=DG-020-1", "https://placehold.co/800x600?text=DG-020-2", "https://placehold.co/800x600?text=DG-020-3", "https://placehold.co/800x600?text=DG-020-4"],
+    ]
+
     immobles = []
-    for row in immobles_data:
+    for row, fotos in zip(immobles_data, fotos_per_immoble):
         (nom, ref, adr, ciutat, cp, tipus, cap, hab, banys, m2, preu, actiu,
          prop_nom, prop_dni, prop_email, prop_tel, prop_adr, prop_iban) = row
         imm = Immoble.objects.create(
@@ -88,10 +116,295 @@ def run():
             propietari_nom=prop_nom, propietari_dni=prop_dni,
             propietari_email=prop_email, propietari_telefon=prop_tel,
             propietari_adreca=prop_adr, propietari_iban=prop_iban,
+            fotos=fotos,
         )
         immobles.append(imm)
 
     print(f"{len(immobles)} immobles creats")
+
+    # ── Serveis ──────────────────────────────────────────────────────────────
+    # (nom, icona, categoria)
+    serveis_data = [
+        # Climatització
+        ("Aire acondicionat",        "AirVent",       "climatitzacio"),
+        ("Calefacció",               "Flame",          "climatitzacio"),
+        ("Ventilador de sostre",     "Fan",            "climatitzacio"),
+        # Connectivitat
+        ("WiFi",                     "Wifi",           "conectivitat"),
+        ("TV pantalla plana",        "Tv",             "conectivitat"),
+        ("Netflix",                  "MonitorPlay",    "conectivitat"),
+        # Electrodomèstics
+        ("Rentadora",                "WashingMachine", "electrodomestics"),
+        ("Assecadora",               "Wind",           "electrodomestics"),
+        ("Rentavaixelles",           "Sparkles",       "electrodomestics"),
+        ("Cuina totalment equipada", "ChefHat",        "electrodomestics"),
+        ("Microones",                "Microwave",      "electrodomestics"),
+        ("Cafetera",                 "Coffee",         "electrodomestics"),
+        ("Planxa i taula de planxar","Shirt",          "electrodomestics"),
+        # Exterior
+        ("Piscina",                  "Waves",          "exterior"),
+        ("Jardí privat",             "TreePine",       "exterior"),
+        ("Terrassa",                 "Armchair",       "exterior"),
+        ("Barbacoa",                 "Drumstick",      "exterior"),
+        ("Aparcament gratuït",       "Car",            "exterior"),
+        ("Garatge privat",           "Warehouse",      "exterior"),
+        # Altres
+        ("Ascensor",                 "ArrowUpDown",    "altres"),
+        ("Caixa forta",              "Lock",           "altres"),
+        ("Admeten mascotes",         "Dog",            "altres"),
+        ("Accés adaptat",            "Accessibility",  "altres"),
+        ("Llençols inclosos",        "Bed",            "altres"),
+        ("Tovalloles incloses",      "Bath",           "altres"),
+        ("Bressol disponible",       "Baby",           "altres"),
+        ("Check-in autònom",         "Key",            "altres"),
+    ]
+
+    serveis_obj = {}
+    for nom, icona, categoria in serveis_data:
+        s = Servei.objects.create(nom=nom, icona=icona, categoria=categoria)
+        serveis_obj[nom] = s
+
+    print(f"{len(serveis_obj)} serveis creats")
+
+    # ── Assignació de serveis per immoble ────────────────────────────────────
+    # Cada llista conté els noms dels serveis que té l'immoble (per índex).
+    assignacions = [
+        # 0 · Apartament Gracia Centre — Pis Barcelona, 85m², 4 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Rentadora",
+         "TV pantalla plana", "Cuina totalment equipada", "Ascensor",
+         "Llençols inclosos", "Tovalloles incloses"],
+
+        # 1 · Atic Vista Mar — Àtic Barcelona, 65m², 2 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
+         "TV pantalla plana", "Netflix", "Cuina totalment equipada",
+         "Rentadora", "Ascensor", "Llençols inclosos"],
+
+        # 2 · Casa amb jardi Sitges — Casa, 200m², 8 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Piscina", "Jardí privat",
+         "Barbacoa", "Rentadora", "Assecadora", "Rentavaixelles",
+         "TV pantalla plana", "Cuina totalment equipada", "Aparcament gratuït",
+         "Admeten mascotes", "Llençols inclosos", "Tovalloles incloses"],
+
+        # 3 · Estudi Barceloneta — Estudi, 28m², 2 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "TV pantalla plana",
+         "Cuina totalment equipada", "Microones", "Cafetera", "Ascensor"],
+
+        # 4 · Xalet Costa Brava — Xalet, 320m², 10 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Piscina", "Jardí privat",
+         "Barbacoa", "Terrassa", "Rentadora", "Assecadora", "Rentavaixelles",
+         "Cuina totalment equipada", "TV pantalla plana", "Netflix",
+         "Aparcament gratuït", "Garatge privat", "Admeten mascotes",
+         "Bressol disponible", "Caixa forta"],
+
+        # 5 · Pis Modern Eixample — Pis, 90m², 4 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Rentadora", "Rentavaixelles",
+         "TV pantalla plana", "Netflix", "Cuina totalment equipada",
+         "Planxa i taula de planxar", "Ascensor", "Llençols inclosos",
+         "Tovalloles incloses", "Cafetera"],
+
+        # 6 · Apartament Girona Vella — Pis, 75m², 3 persones
+        ["WiFi", "Calefacció", "TV pantalla plana", "Cuina totalment equipada",
+         "Rentadora", "Ascensor", "Llençols inclosos", "Microones"],
+
+        # 7 · Duplex Tarragona Mar — Dúplex, 120m², 5 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
+         "TV pantalla plana", "Rentadora", "Cuina totalment equipada",
+         "Aparcament gratuït", "Llençols inclosos", "Admeten mascotes",
+         "Barbacoa"],
+
+        # 8 · Casa Rural Osona — Casa Rural, 350m², 12 persones
+        ["WiFi", "Calefacció", "Piscina", "Jardí privat", "Barbacoa",
+         "Rentadora", "Assecadora", "Cuina totalment equipada", "TV pantalla plana",
+         "Aparcament gratuït", "Admeten mascotes", "Bressol disponible",
+         "Check-in autònom", "Ventilador de sostre"],
+
+        # 9 · Apartament Lleida Centre — Pis, 80m², 4 persones
+        ["WiFi", "Calefacció", "TV pantalla plana", "Cuina totalment equipada",
+         "Rentadora", "Ascensor", "Microones", "Cafetera"],
+
+        # 10 · Atic Terrassa Vista — Àtic, 95m², 3 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
+         "TV pantalla plana", "Netflix", "Rentadora", "Cuina totalment equipada",
+         "Ascensor", "Planxa i taula de planxar"],
+
+        # 11 · Pis Badalona Platja — Pis, 100m², 5 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
+         "TV pantalla plana", "Rentadora", "Rentavaixelles",
+         "Cuina totalment equipada", "Aparcament gratuït", "Llençols inclosos",
+         "Tovalloles incloses"],
+
+        # 12 · Casa Adossada Sabadell — Casa (inactiva), 150m², 6 persones
+        ["WiFi", "Calefacció", "Jardí privat", "TV pantalla plana",
+         "Rentadora", "Cuina totalment equipada", "Garatge privat",
+         "Admeten mascotes"],
+
+        # 13 · Estudi Mataro Rambla — Estudi, 40m², 2 persones
+        ["WiFi", "Aire acondicionat", "TV pantalla plana",
+         "Cuina totalment equipada", "Microones", "Cafetera", "Ascensor"],
+
+        # 14 · Apartament Manresa Nou — Pis, 70m², 3 persones
+        ["WiFi", "Calefacció", "TV pantalla plana", "Rentadora",
+         "Cuina totalment equipada", "Ascensor", "Llençols inclosos",
+         "Planxa i taula de planxar"],
+
+        # 15 · Xalet Roses Costa — Xalet, 240m², 8 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Piscina", "Jardí privat",
+         "Barbacoa", "Terrassa", "Rentadora", "Assecadora",
+         "Cuina totalment equipada", "TV pantalla plana", "Netflix",
+         "Aparcament gratuït", "Admeten mascotes", "Caixa forta",
+         "Llençols inclosos", "Tovalloles incloses"],
+
+        # 16 · Pis Figueres Rambla — Pis, 85m², 4 persones
+        ["WiFi", "Calefacció", "TV pantalla plana", "Rentadora",
+         "Cuina totalment equipada", "Ascensor", "Planxa i taula de planxar",
+         "Microones"],
+
+        # 17 · Casa Rural Priorat — Casa Rural, 280m², 10 persones
+        ["WiFi", "Calefacció", "Jardí privat", "Barbacoa", "Rentadora",
+         "Assecadora", "Cuina totalment equipada", "TV pantalla plana",
+         "Aparcament gratuït", "Admeten mascotes", "Bressol disponible",
+         "Ventilador de sostre"],
+
+        # 18 · Apartament Tortosa Riu — Pis, 80m², 4 persones
+        ["WiFi", "Calefacció", "TV pantalla plana", "Cuina totalment equipada",
+         "Rentadora", "Ascensor", "Check-in autònom", "Microones"],
+
+        # 19 · Duplex Vilanova Centre — Dúplex, 140m², 6 persones
+        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
+         "TV pantalla plana", "Netflix", "Rentadora", "Rentavaixelles",
+         "Cuina totalment equipada", "Aparcament gratuït", "Llençols inclosos",
+         "Tovalloles incloses"],
+    ]
+
+    for imm, noms_serveis in zip(immobles, assignacions):
+        imm.serveis.set([serveis_obj[nom] for nom in noms_serveis])
+
+    print("Serveis assignats als immobles")
+
+    # ── Temporades ───────────────────────────────────────────────────────────
+    # Format: (immoble_idx, nom, data_inici, data_fi, preu_nit)
+    # Cada immoble té entre 2 i 4 temporades. Els rangs cobren tot l'any 2026.
+    # preu_nit sobreescriu preu_base_nit durant el període de la temporada.
+    temporades_data = [
+        # 0 · Apartament Gracia Centre (base 110 €)
+        (0, "Temporada Baixa",      "2026-01-01", "2026-03-31",  90.00),
+        (0, "Temporada Mitja",      "2026-04-01", "2026-06-30", 110.00),
+        (0, "Temporada Alta",       "2026-07-01", "2026-08-31", 155.00),
+        (0, "Temporada Mitja Tard", "2026-09-01", "2026-12-31", 105.00),
+
+        # 1 · Atic Vista Mar (base 220 €)
+        (1, "Temporada Baixa",      "2026-01-01", "2026-05-31", 180.00),
+        (1, "Temporada Alta",       "2026-06-01", "2026-09-15", 280.00),
+        (1, "Temporada Mitja",      "2026-09-16", "2026-12-31", 210.00),
+
+        # 2 · Casa amb jardi Sitges (base 350 €)
+        (2, "Hivern",               "2026-01-01", "2026-03-31", 270.00),
+        (2, "Primavera",            "2026-04-01", "2026-06-30", 340.00),
+        (2, "Estiu",                "2026-07-01", "2026-08-31", 480.00),
+        (2, "Tardor",               "2026-09-01", "2026-12-31", 310.00),
+
+        # 3 · Estudi Barceloneta (base 75 €)
+        (3, "Temporada Baixa",      "2026-01-01", "2026-06-14",  65.00),
+        (3, "Temporada Alta",       "2026-06-15", "2026-09-15",  95.00),
+        (3, "Temporada Baixa",      "2026-09-16", "2026-12-31",  65.00),
+
+        # 4 · Xalet Costa Brava (base 480 €)
+        (4, "Temporada Baixa",      "2026-01-01", "2026-03-31", 360.00),
+        (4, "Setmana Santa",        "2026-04-01", "2026-04-12", 520.00),
+        (4, "Primavera/Tardor",     "2026-04-13", "2026-06-30", 420.00),
+        (4, "Temporada Alta",       "2026-07-01", "2026-08-31", 650.00),
+        (4, "Tardor/Hivern",        "2026-09-01", "2026-12-31", 400.00),
+
+        # 5 · Pis Modern Eixample (base 150 €)
+        (5, "Temporada Baixa",      "2026-01-01", "2026-03-31", 120.00),
+        (5, "Temporada Mitja",      "2026-04-01", "2026-06-30", 150.00),
+        (5, "Temporada Alta",       "2026-07-01", "2026-08-31", 195.00),
+        (5, "Temporada Mitja Tard", "2026-09-01", "2026-12-31", 140.00),
+
+        # 6 · Apartament Girona Vella (base 95 €)
+        (6, "Hivern",               "2026-01-01", "2026-05-31",  80.00),
+        (6, "Estiu",                "2026-06-01", "2026-09-30", 115.00),
+        (6, "Tardor/Hivern",        "2026-10-01", "2026-12-31",  80.00),
+
+        # 7 · Duplex Tarragona Mar (base 180 €)
+        (7, "Temporada Baixa",      "2026-01-01", "2026-05-31", 145.00),
+        (7, "Temporada Alta",       "2026-06-01", "2026-09-15", 230.00),
+        (7, "Temporada Baixa",      "2026-09-16", "2026-12-31", 145.00),
+
+        # 8 · Casa Rural Osona (base 300 €)
+        (8, "Hivern",               "2026-01-01", "2026-03-31", 240.00),
+        (8, "Primavera",            "2026-04-01", "2026-06-30", 290.00),
+        (8, "Estiu",                "2026-07-01", "2026-08-31", 380.00),
+        (8, "Tardor",               "2026-09-01", "2026-12-31", 260.00),
+
+        # 9 · Apartament Lleida Centre (base 70 €)
+        (9, "Temporada Baixa",      "2026-01-01", "2026-06-30",  60.00),
+        (9, "Temporada Alta",       "2026-07-01", "2026-08-31",  85.00),
+        (9, "Temporada Baixa",      "2026-09-01", "2026-12-31",  60.00),
+
+        # 10 · Atic Terrassa Vista (base 130 €)
+        (10, "Temporada Baixa",     "2026-01-01", "2026-05-31", 105.00),
+        (10, "Temporada Alta",      "2026-06-01", "2026-09-15", 165.00),
+        (10, "Temporada Baixa",     "2026-09-16", "2026-12-31", 105.00),
+
+        # 11 · Pis Badalona Platja (base 120 €)
+        (11, "Temporada Baixa",     "2026-01-01", "2026-05-31",  95.00),
+        (11, "Temporada Alta",      "2026-06-01", "2026-09-15", 155.00),
+        (11, "Temporada Mitja",     "2026-09-16", "2026-12-31", 110.00),
+
+        # 12 · Casa Adossada Sabadell — inactiva (base 160 €)
+        (12, "Temporada Baixa",     "2026-01-01", "2026-06-30", 130.00),
+        (12, "Temporada Alta",      "2026-07-01", "2026-08-31", 190.00),
+        (12, "Temporada Baixa",     "2026-09-01", "2026-12-31", 130.00),
+
+        # 13 · Estudi Mataro Rambla (base 65 €)
+        (13, "Temporada Baixa",     "2026-01-01", "2026-06-14",  55.00),
+        (13, "Temporada Alta",      "2026-06-15", "2026-09-15",  80.00),
+        (13, "Temporada Baixa",     "2026-09-16", "2026-12-31",  55.00),
+
+        # 14 · Apartament Manresa Nou (base 80 €)
+        (14, "Temporada Única",     "2026-01-01", "2026-12-31",  80.00),
+
+        # 15 · Xalet Roses Costa (base 400 €)
+        (15, "Hivern",              "2026-01-01", "2026-03-31", 300.00),
+        (15, "Setmana Santa",       "2026-04-01", "2026-04-12", 450.00),
+        (15, "Primavera",           "2026-04-13", "2026-06-30", 380.00),
+        (15, "Temporada Alta",      "2026-07-01", "2026-08-31", 560.00),
+        (15, "Tardor/Hivern",       "2026-09-01", "2026-12-31", 350.00),
+
+        # 16 · Pis Figueres Rambla (base 85 €)
+        (16, "Temporada Baixa",     "2026-01-01", "2026-06-30",  70.00),
+        (16, "Temporada Alta",      "2026-07-01", "2026-08-31", 105.00),
+        (16, "Temporada Baixa",     "2026-09-01", "2026-12-31",  70.00),
+
+        # 17 · Casa Rural Priorat (base 260 €)
+        (17, "Hivern",              "2026-01-01", "2026-03-31", 200.00),
+        (17, "Primavera/Tardor",    "2026-04-01", "2026-06-30", 250.00),
+        (17, "Estiu",               "2026-07-01", "2026-08-31", 330.00),
+        (17, "Tardor",              "2026-09-01", "2026-12-31", 220.00),
+
+        # 18 · Apartament Tortosa Riu (base 75 €)
+        (18, "Temporada Baixa",     "2026-01-01", "2026-06-30",  65.00),
+        (18, "Temporada Alta",      "2026-07-01", "2026-08-31",  90.00),
+        (18, "Temporada Baixa",     "2026-09-01", "2026-12-31",  65.00),
+
+        # 19 · Duplex Vilanova Centre (base 195 €)
+        (19, "Temporada Baixa",     "2026-01-01", "2026-05-31", 155.00),
+        (19, "Temporada Alta",      "2026-06-01", "2026-09-15", 245.00),
+        (19, "Temporada Mitja",     "2026-09-16", "2026-12-31", 180.00),
+    ]
+
+    temporades = [
+        Temporada.objects.create(
+            immoble=immobles[idx],
+            nom=nom,
+            data_inici=inici,
+            data_fi=fi,
+            preu_nit=preu,
+        )
+        for idx, nom, inici, fi, preu in temporades_data
+    ]
+    print(f"{len(temporades)} temporades creades")
 
     # ── 20 Inquilins ─────────────────────────────────────────────────────────
     # DNIs ficticis (no coincideixen amb els propietaris per evitar colisions)

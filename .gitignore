@@ -34,3 +34,8 @@ frontend/.eslintcache
 
 .gitignore
 .claude
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

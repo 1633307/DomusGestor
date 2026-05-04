@@ -40,6 +40,12 @@ class ReservaBasica(models.Model):
         ('Direct', 'Directa'),
         ('Altres', 'Altres'),
     ]
+    ESTAT_RESERVA_CHOICES = [
+        ('prereservada', 'Prereservada'),
+        ('reservada', 'Reservada'),
+        ('lista', 'Lista'),
+        ('cancelada', 'Cancelada'),
+    ]
 
     immoble = models.ForeignKey(Immoble, on_delete=models.CASCADE, related_name='reserves')
     inquili = models.ForeignKey(InquiliBasic, on_delete=models.PROTECT, related_name='reserves')
@@ -49,8 +55,21 @@ class ReservaBasica(models.Model):
 
     codi_reserva = models.CharField(max_length=30, blank=True, default='')
     tipus_reserva = models.CharField(max_length=20, choices=TIPUS_CHOICES, blank=True, default='')
+    estat_reserva = models.CharField(
+        max_length=20,
+        choices=ESTAT_RESERVA_CHOICES,
+        blank=True,
+        null=True,
+        default=None,
+    )
+    net = models.BooleanField(default=False)
     comentaris_interns = models.TextField(blank=True, default='')
     num_hostes = models.PositiveIntegerField(default=0)
+    descompte_immoble_aplicat = models.BooleanField(default=False)
+    descompte_immoble_percentatge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    descompte_individual_aplicat = models.BooleanField(default=False)
+    descompte_individual_percentatge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    descompte_individual_motiu = models.TextField(blank=True, default='')
 
     class Meta:
         verbose_name = 'Reserva'

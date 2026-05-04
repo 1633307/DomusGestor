@@ -120,25 +120,6 @@ export default function PerfilCard({ data, isEditing, onChange }) {
             type="number"
           />
 
-          <div className={`${styles.field} ${styles.fullWidth}`}>
-            <label>Foto principal</label>
-
-            {!isEditing ? (
-              <div className={styles.imagePreview}>
-                {data.mainPhoto ? (
-                  <img src={data.mainPhoto} alt="Foto principal de l'immoble" />
-                ) : (
-                  <div className={styles.emptyImage}>Sense imatge</div>
-                )}
-              </div>
-            ) : (
-              <input
-                name="mainPhoto"
-                value={data.mainPhoto}
-                onChange={onChange}
-              />
-            )}
-          </div>
         </div>
       </section>
 
