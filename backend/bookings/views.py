@@ -16,6 +16,7 @@ class InquiliDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = InquiliBasic.objects.all()
     serializer_class = InquiliSerializer
 
+
 class ReservaListCreateView(generics.ListCreateAPIView):
     """RF-23: Llista i crea reserves."""
     queryset = (
