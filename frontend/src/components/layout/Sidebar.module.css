@@ -1,0 +1,45 @@
+.sidebar {
+  background: #eff6ff;
+  border-right: 1px solid #e2e8f0;
+  color: #1e293b;
+  padding: 24px 18px;
+
+  box-sizing: border-box;
+}
+
+.sidebarBrand p {
+  margin: 8px 0 0;
+  color: #8f8f97;
+  font-size: 0.95rem;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.link {
+  color: #00000079;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.link:hover {
+  background: #cccccc;
+}
+
+.activeLink {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #2f2f2f;
+  }
+}

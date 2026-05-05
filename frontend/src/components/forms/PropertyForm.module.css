@@ -1,0 +1,65 @@
+.propertyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.propertyFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #f4f4f5;
+  font-weight: 500;
+}
+
+.input,
+.select {
+  background: #232323;
+  color: #f4f4f5;
+  border: 1px solid #343434;
+  border-radius: 10px;
+  padding: 0.8em 1em;
+  font: inherit;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.propertyFormActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primaryButton {
+  border-radius: 10px;
+  border: 1px solid transparent;
+  padding: 0.75em 1.1em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #646cff;
+  color: white;
+}
+
+.primaryButton:hover {
+  background-color: #535bf2;
+}
+
+@media (max-width: 700px) {
+  .propertyFormGrid {
+    grid-template-columns: 1fr;
+  }
+}

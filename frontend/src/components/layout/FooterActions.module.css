@@ -1,0 +1,77 @@
+.footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  padding: 16px 24px;
+  background: linear-gradient(to top, #f5f7fb 100%, rgba(245, 247, 251, 0));
+  border-top: 1px solid rgba(203, 213, 225, 0.7);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.editButton,
+.cancelButton,
+.saveButton {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.editButton {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #0f172a;
+}
+
+.editButton:hover {
+  background: #f8fafc;
+}
+
+.cancelButton {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #0f172a;
+}
+
+.cancelButton:hover {
+  background: #f8fafc;
+}
+
+.saveButton {
+  border: none;
+  background: #c7d2fe;
+  color: #1e293b;
+}
+
+.saveButton:hover {
+  background: #a5b4fc;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 16px;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .editButton,
+  .cancelButton,
+  .saveButton {
+    flex: 1;
+  }
+}

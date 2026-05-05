@@ -1,0 +1,8 @@
+### Instalar BD LOCAL
+- Instalar https://dbngin.com/.
+- Un cop fet creas la bd en postgreeSQL
+- l'executes i quan estigui run veuras que al costat hi ha un play
+- Quan cliquis et sortira de descarregar aixo https://tableplus.com/download/
+- Quan el descarreguis tanques tot
+- Quan tornis a obrir el dbngin, cliques el play i set obrira la nova aplicacio ja vinculada a la bd
+
