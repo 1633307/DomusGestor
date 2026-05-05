@@ -22,13 +22,13 @@ export default function InmoblesPage() {
   return (
     <section>
       <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
-        <h2>Llistat Inmobles</h2>
+        <h2>Llistat Immobles</h2>
       </div>
 
       <div className={styles.propertiesToolbar}>
         <input
           type="text"
-          placeholder="Buscar inmoble"
+          placeholder="Cercar immobles..."
           className={styles.searchInput}
           value={search}
           onChange={(e) => setSearch(e.target.value)}

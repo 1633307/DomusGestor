@@ -50,7 +50,7 @@ export default function Header() {
                     : styles.link
                 }
               >
-                Inmobles
+                Immobles
               </NavLink>
               <NavLink
               to="/reserves"
