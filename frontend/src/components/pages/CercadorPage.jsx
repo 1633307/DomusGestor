@@ -11,12 +11,6 @@ import { useCollapse,useDisclosure } from '@mantine/hooks';
 import { IoFilter,IoBed,IoPersonAdd,IoCalendarOutline } from "react-icons/io5";
 
 export default function CercadorPage() {
-  const [properties, setProperties] = useState([]);
-  const [search, setSearch] = useState('');
-  const [filterActiu, setFilterActiu] = useState('Todos');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
   const [properties, setProperties] = useState(initialProperties);
   const [value, setValue] = useState([null,null]);
   const [showfilters, setShowfilters] = useState(false);
