@@ -32,13 +32,11 @@ export default function ServeisCard({
     };
   };
 
-  console.log(immoble?.serveis);
-
   return (
     <div className={styles.wrapper}>
       <h1>Serveis</h1>
 
-      <div className={""}>
+      <div>
         {serveis.length
           ? serveis.map((servei) => (
               <div>

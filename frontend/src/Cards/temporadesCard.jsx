@@ -6,8 +6,6 @@ export default function TemporadesCard({
   setImmoble,
   onSave: handleDesa,
 }) {
-  console.log(immoble);
-
   const handleNovaTemporada = () => {
     const darreraData = immoble.temporades?.reduce(
       (prev, curr, index, array) => {
@@ -58,13 +56,11 @@ export default function TemporadesCard({
     });
   };
 
-  console.log(immoble);
-
   return (
     <div className={styles.wrapper}>
       <h1>Temporades</h1>
 
-      <div className={""}>
+      <div>
         {immoble.temporades?.map((temporada) => (
           <div className={styles.temporada} key={temporada.id}>
             <input
