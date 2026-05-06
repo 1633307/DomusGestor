@@ -71,6 +71,25 @@ class ReservaBasica(models.Model):
     descompte_individual_percentatge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     descompte_individual_motiu = models.TextField(blank=True, default='')
 
+    ESTAT_PAGAMENT_CHOICES = [
+        ('pendent', 'Pendent'),
+        ('parcial', 'Parcial'),
+        ('pagada', 'Pagada'),
+        ('retornada', 'Retornada'),
+        ('rebutjada', 'Rebutjada'),
+    ]
+
+    estat_pagament = models.CharField(
+        max_length=20, choices=ESTAT_PAGAMENT_CHOICES, default='pendent'
+    )
+    import_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    import_pagat = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    import_pendent = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fianca = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    metode_pagament = models.CharField(max_length=50, blank=True, default='')
+    data_ultim_pagament = models.DateField(null=True, blank=True)
+    observacions_pagament = models.TextField(blank=True, default='')
+
     class Meta:
         verbose_name = 'Reserva'
         verbose_name_plural = 'Reserves'
@@ -136,3 +155,37 @@ class Hoste(models.Model):
     def __str__(self):
         prefix = 'Principal' if self.es_principal else 'Hoste'
         return f"{prefix}: {self.nom_complet}"
+
+
+class Comunicacio(models.Model):
+    CANAL_CHOICES = [
+        ('Email', 'Email'),
+        ('Telefon', 'Telèfon'),
+        ('WhatsApp', 'WhatsApp'),
+        ('Sistema', 'Sistema'),
+    ]
+    ESTAT_CHOICES = [
+        ('enviada', 'Enviada'),
+        ('pendent', 'Pendent'),
+        ('error', 'Error'),
+        ('programada', 'Programada'),
+    ]
+
+    reserva = models.ForeignKey(
+        ReservaBasica, on_delete=models.CASCADE, related_name='comunicacions'
+    )
+    canal = models.CharField(max_length=20, choices=CANAL_CHOICES)
+    titol = models.CharField(max_length=200)
+    destinatari = models.CharField(max_length=200, blank=True, default='')
+    data = models.DateField(null=True, blank=True)
+    estat = models.CharField(max_length=20, choices=ESTAT_CHOICES, default='pendent')
+    resum = models.TextField(blank=True, default='')
+    creat_el = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Comunicació'
+        verbose_name_plural = 'Comunicacions'
+        ordering = ['-creat_el']
+
+    def __str__(self):
+        return f"{self.canal}: {self.titol}"

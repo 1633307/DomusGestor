@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from core.fields import hmac_value
 from properties.models import Immoble
-from .models import InquiliBasic, ReservaBasica, Hoste
+from .models import InquiliBasic, ReservaBasica, Hoste, Comunicacio
 
 
 class InquiliSerializer(serializers.ModelSerializer):
@@ -55,6 +55,9 @@ class ReservaSerializer(serializers.ModelSerializer):
             'descompte_immoble_aplicat', 'descompte_immoble_percentatge',
             'descompte_individual_aplicat', 'descompte_individual_percentatge',
             'descompte_individual_motiu',
+            'estat_pagament', 'import_total', 'import_pagat', 'import_pendent',
+            'fianca', 'metode_pagament', 'data_ultim_pagament',
+            'observacions_pagament',
             'hostes',
         ]
         read_only_fields = ['id', 'codi_reserva']
@@ -111,6 +114,22 @@ class ReservaSerializer(serializers.ModelSerializer):
             instance.num_hostes = len(hostes_data)
             instance.save(update_fields=['num_hostes'])
         return instance
+
+
+class ComunicacioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comunicacio
+        fields = [
+            'id', 'reserva', 'canal', 'titol', 'destinatari',
+            'data', 'estat', 'resum', 'creat_el',
+        ]
+        read_only_fields = ['id', 'creat_el', 'reserva']
+
+    def to_internal_value(self, data):
+        cleaned = dict(data)
+        if cleaned.get('data') in ('', None):
+            cleaned['data'] = None
+        return super().to_internal_value(cleaned)
 
 
 class DashboardSerializer(serializers.Serializer):

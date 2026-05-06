@@ -76,3 +76,9 @@ export const inquilinsApi = {
   create: (data) => api.post('/bookings/inquilins/', data),
 };
 
+export const comunicacionsApi = {
+  list: (reservaId) => api.get(`/bookings/reserves/${reservaId}/comunicacions/`),
+  create: (reservaId, data) => api.post(`/bookings/reserves/${reservaId}/comunicacions/`, data),
+  remove: (reservaId, comId) => api.del(`/bookings/reserves/${reservaId}/comunicacions/${comId}/`),
+};
+
