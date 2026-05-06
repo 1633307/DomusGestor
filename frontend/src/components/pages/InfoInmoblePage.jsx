@@ -25,6 +25,7 @@ const initialData = {
   ownerIban: "ES21 2100 0418 4502 0005 1332",
 };
 
+
 export default function InfoInmoble() {
   const [seccioActiva, setSeccioActiva] = useState('perfil');
   const [isEditing, setIsEditing] = useState(false);

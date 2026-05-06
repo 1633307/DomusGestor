@@ -71,14 +71,24 @@
   color: var(--muted);
 }
 
-.propertiesToolbar {
+.propertiesSerchbar {
   display: flex;
   gap: 12px;
   margin-bottom: 22px;
+  
   flex-wrap: wrap;
+  
 }
 
-.searchInput,
+
+
+.searchNumberInputs {
+
+  width: 60px;
+
+
+}
+
 .filterSelect {
   background: var(--surface);
   color: var(--text);

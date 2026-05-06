@@ -2,6 +2,8 @@ import { useState } from 'react';
 import PropertyForm from '../forms/propertyForm';
 import styles from './cercadorPage.module.css';
 import { DatePickerInput } from '@mantine/dates';
+import { Autocomplete } from '@mantine/core';
+import { NumberInput } from '@mantine/core';
 
 
 
@@ -56,27 +58,32 @@ export default function CercadorPage() {
 
   return (
     <section>
-      <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
-        <div>
-          <h2>Cercador</h2>
-        </div>
-      </div>
+      
 
       
 
-      <div className={styles.propertiesToolbar}>
-        <input
-          type="text"
-          placeholder="Buscar inmueble..."
-          className={styles.searchInput}
-        />
-        <DatePickerInput
-          label="Escull una data"
+      <div className={styles.propertiesSerchbar}>
+        
+        <DatePickerInput 
+          label="Dates"
           placeholder='Escull una data'
           type="range"
           value={value}
           onChange={setValue}
-          />    
+          />
+          <Autocomplete 
+            label="Localització"
+            data={['Llafranc','Calella','Tamariu']} 
+          
+          />
+          <NumberInput className={styles.searchNumberInputs}
+            label="Viatgers"
+            
+          />
+          <NumberInput className={styles.searchNumberInputs}
+            label="Habitacions"
+          />
+
       </div>
 
       <div className={styles.propertiesGrid}>
