@@ -2,6 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { propertiesApi } from '../../services/api';
 import styles from './cercadorPage.module.css';
+import { DatePickerInput } from '@mantine/dates';
+import { Autocomplete } from '@mantine/core';
+import { NumberInput } from '@mantine/core';
+import { TextInput } from '@mantine/core';
+import { Button } from '@mantine/core';
+import { useCollapse,useDisclosure } from '@mantine/hooks';
+import { IoFilter,IoBed,IoPersonAdd,IoCalendarOutline } from "react-icons/io5";
 
 export default function CercadorPage() {
   const [properties, setProperties] = useState([]);
@@ -10,48 +17,51 @@ export default function CercadorPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    setLoading(true);
-    setError('');
-    propertiesApi
-      .list(search)
-      .then((data) => setProperties(data.results ?? data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [search]);
-
-  const filtered = properties.filter((p) => {
-    if (filterActiu === 'Actiu') return p.actiu === true;
-    if (filterActiu === 'Inactiu') return p.actiu === false;
-    return true;
-  });
+  const [properties, setProperties] = useState(initialProperties);
+  const [value, setValue] = useState([null,null]);
+  const [showfilters, setShowfilters] = useState(false);
 
   return (
     <section>
-      <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
-        <div>
-          <h2>Cercador</h2>
+      
+      <div className={styles.propertiesSerchbar}>
+        <div className={styles.propertiesFiltres}>
+          <TextInput area="Top"
+            label= "Inmoble" />
+
+          <Button area="Top" leftSection={<IoFilter size={14}/>} variant="default" 
+          type='button'
+          onClick={() => setShowfilters(!showfilters)} >
+            {showfilters ? "Tancar" : "Mostrar"} Filtres
+          </Button>
+
+          <Button area="Top" className={styles.right}>
+          BUSCAR
+          </Button>
         </div>
-      </div>
-
-      <div className={styles.propertiesToolbar}>
-        <input
-          type="text"
-          placeholder="Buscar inmueble..."
-          className={styles.searchInput}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <select
-          className={styles.filterSelect}
-          value={filterActiu}
-          onChange={(e) => setFilterActiu(e.target.value)}
-        >
-          <option value="Todos">Todos</option>
-          <option value="Actiu">Activo</option>
-          <option value="Inactiu">Inactivo</option>
-        </select>
+        <div area="Bottom" className={`${styles.Expansion} ${showfilters ? styles.isExpanded : ''}`}>
+          <div className={styles.propertiesFiltres}>
+       
+            <DatePickerInput 
+            label={<IoCalendarOutline size={25}/>}
+            placeholder='Escull una data'
+            type="range"
+            value={value}
+            onChange={setValue}
+            />
+            <Autocomplete 
+              label="Localització"
+              data={['Llafranc','Calella','Tamariu']} 
+            
+            />
+            <NumberInput className={styles.searchNumberInputs}
+              label={<IoPersonAdd size={25} />}
+            />
+            <NumberInput className={styles.searchNumberInputs}
+              label={<IoBed size={25} />}
+            />
+          </div>
+        </div>
       </div>
 
       {loading && <p>Carregant...</p>}
