@@ -2,7 +2,7 @@ from rest_framework import generics, filters
 
 from .models import Immoble
 from .serializers import ImmobleSerializer
-from ..bookings.models import ReservaBasica
+from bookings.models import ReservaBasica
 
 
 class ImmobleListCreateView(generics.ListCreateAPIView):
