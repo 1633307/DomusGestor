@@ -20,13 +20,27 @@ backend/media/
 backend/static_root/
 
 # --- Frontend (Node/React) ---
-frontend/node_modules/
-frontend/build/
-frontend/dist/
+frontend/!.vscode/extensions.json
+frontend/.DS_Store
+frontend/.eslintcache
+frontend/.idea
 frontend/.pnp
 frontend/.pnp.js
+frontend/.vscode/*
+frontend/*.local
+frontend/*.log
+frontend/*.njsproj
+frontend/*.ntvs*
+frontend/*.sln
+frontend/*.suo
+frontend/*.sw?
+frontend/build/
 frontend/coverage/
-frontend/.eslintcache
+frontend/dist-ssr
+frontend/dist/
+frontend/logs
+frontend/node_modules/
+frontend/npm-debug.log*
 
 # --- Base de dades ---
 *.sql
