@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { propertiesApi } from '../../services/api';
+import { useState } from 'react';
+import PropertyForm from '../forms/propertyForm';
 import styles from './cercadorPage.module.css';
 import { DatePickerInput } from '@mantine/dates';
 import { Autocomplete } from '@mantine/core';
@@ -9,6 +8,50 @@ import { TextInput } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { useCollapse,useDisclosure } from '@mantine/hooks';
 import { IoFilter,IoBed,IoPersonAdd,IoCalendarOutline } from "react-icons/io5";
+
+
+const initialProperties = [
+  {
+    id: 1,
+    name: 'Apartamento Costa',
+    city: 'Barcelona',
+    address: 'Carrer de Mallorca, 120',
+    status: 'Disponible',
+    capacity: 4,
+    price: 120,
+    image: '/placeHolderCasa.jpg',
+  },
+  {
+    id: 2,
+    name: 'Ático Central',
+    city: 'Girona',
+    address: 'Plaça Catalunya, 8',
+    status: 'Reservado',
+    capacity: 2,
+    price: 95,
+    image: '/placeHolderCasa.jpg',
+  },
+  {
+    id: 3,
+    name: 'Estudio Playa',
+    city: 'Tarragona',
+    address: 'Passeig Marítim, 22',
+    status: 'Mantenimiento',
+    capacity: 3,
+    price: 80,
+    image: '/placeHolderCasa.jpg',
+  },
+  {
+    id: 4,
+    name: 'Casa Jardín',
+    city: 'Sitges',
+    address: 'Avinguda del Mar, 14',
+    status: 'Disponible',
+    capacity: 6,
+    price: 180,
+    image: '/placeHolderCasa.jpg',
+  },
+];
 
 export default function CercadorPage() {
   const [properties, setProperties] = useState(initialProperties);
@@ -58,45 +101,39 @@ export default function CercadorPage() {
         </div>
       </div>
 
-      {loading && <p>Carregant...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
       <div className={styles.propertiesGrid}>
-        {filtered.map((property) => (
+        {properties.map((property) => (
           <article className={styles.propertyCard} key={property.id}>
             <div className={styles.propertyCardTop}>
               <div>
-                <h3>{property.nom_comercial}</h3>
-                <p>{property.ciutat}</p>
+                <h3>{property.name}</h3>
+                <p>{property.city}</p>
               </div>
+
+              
             </div>
 
             <div className={styles.propertyInfo}>
               <div>
                 <span className={styles.propertyLabel}>Dirección</span>
-                <strong>{property.adreca}</strong>
+                <strong>{property.address}</strong>
               </div>
 
               <div>
                 <span className={styles.propertyLabel}>Precio</span>
-                <strong>{property.preu_base_nit} €/noche</strong>
+                <strong>{property.price} €/noche</strong>
               </div>
 
-              {property.foto_principal && (
-                <div className={styles.propertyImage}>
-                  <img src={property.foto_principal} alt="foto" />
-                </div>
-              )}
+              <div className={styles.propertyImage}>
+              <img src={property.image} alt="foto"></img>
+              </div>
             </div>
 
             <div className={styles.propertyActions}>
-              <Link to={`/infoInmoble/${property.id}`} className={styles.secondaryButton}>
-                Ver detalle
-              </Link>
+              <button className={styles.secondaryButton}>Ver detalle</button>
             </div>
           </article>
         ))}
-        {!loading && filtered.length === 0 && <p>No hi ha immobles.</p>}
       </div>
     </section>
   );
