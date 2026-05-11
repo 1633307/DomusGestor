@@ -152,8 +152,8 @@ function hosteFrontToBackend(guest, index) {
   };
 }
 
-export default function CrearReservaCard({ immoble, onCreate, isCreating = false }) {
-  const [form, setForm] = useState(emptyForm);
+export default function CrearReservaCard({ immoble, onCreate, isCreating = false, initialDataEntrada = "", initialDataSortida = "" }) {
+  const [form, setForm] = useState({ ...emptyForm, dataEntrada: initialDataEntrada, dataSortida: initialDataSortida });
   const [errors, setErrors] = useState([]);
 
   const descompteImmobleActiu = toBoolean(immoble?.descompteActiu);
@@ -323,7 +323,7 @@ export default function CrearReservaCard({ immoble, onCreate, isCreating = false
               options={[
                 { value: "prereservada", label: "Prereservada" },
                 { value: "reservada", label: "Reservada" },
-                { value: "lista", label: "Llista" },
+                { value: "lista", label: "Llesta" },
                 { value: "cancelada", label: "Cancel·lada" },
               ]}
             />

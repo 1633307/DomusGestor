@@ -26,7 +26,7 @@ django.setup()
 
 from users.models import Usuari
 from properties.models import Immoble, Servei, Temporada
-from bookings.models import InquiliBasic, ReservaBasica, Hoste
+from bookings.models import InquiliBasic, ReservaBasica, Hoste, PagamentReserva
 
 
 def run():
@@ -43,12 +43,13 @@ def run():
         print("Usuari creat  →  NIP: ADM001 / Password: DomusGestor2026!")
 
     # ── Netejar dades existents ──────────────────────────────────────────────
+    deleted_p = PagamentReserva.objects.all().delete()[0]
     deleted_r = ReservaBasica.objects.all().delete()[0]
     deleted_i = InquiliBasic.objects.all().delete()[0]
     deleted_m = Immoble.objects.all().delete()[0]
     deleted_s = Servei.objects.all().delete()[0]
     deleted_t = Temporada.objects.all().delete()[0]
-    print(f"Eliminats: {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
+    print(f"Eliminats: {deleted_p} pagaments, {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
 
     # ── 20 Immobles ─────────────────────────────────────────────────────────
     # Columnes: nom, ref, adreca, ciutat, cp, tipus, capacitat, hab, banys,
@@ -572,6 +573,67 @@ def run():
         reserva.save(update_fields=['num_hostes'])
 
     print(f"{total_hostes} hostes creats")
+
+    # ── Pagaments de reserves ────────────────────────────────────────────────
+    # Format: (reserva_idx, data_pagament, import_pagament, metode, estat)
+    # Les reserves pagades (pagat=True) tenen 1-2 pagaments en estat 'pagat'.
+    # Algunes reserves no pagades tenen 1 pagament en estat 'pendent' o 'cancelat'.
+    pagaments_data = [
+        # Reserva 0 · Apartament Gracia Centre · 5 nits · Airbnb · pagada
+        (0,  "2026-01-08",  550.00, "targeta",       "pagat"),
+        # Reserva 1 · Atic Vista Mar · 3 nits · Booking · pagada
+        (1,  "2026-01-18",  660.00, "transferencia", "pagat"),
+        # Reserva 2 · Casa amb jardi Sitges · 7 nits · Direct · pagada (2 pagaments)
+        (2,  "2026-01-20", 1225.00, "transferencia", "pagat"),
+        (2,  "2026-02-01", 1225.00, "transferencia", "pagat"),
+        # Reserva 3 · Estudi Barceloneta · 2 nits · Airbnb · NO pagada
+        (3,  "2026-02-12",  150.00, "bizum",         "pendent"),
+        # Reserva 4 · Xalet Costa Brava · 7 nits · Direct · pagada (2 pagaments)
+        (4,  "2026-02-10", 1680.00, "transferencia", "pagat"),
+        (4,  "2026-02-25", 1680.00, "transferencia", "pagat"),
+        # Reserva 5 · Pis Modern Eixample · 3 nits · Booking · NO pagada
+        (5,  "2026-03-14",  450.00, "targeta",       "pendent"),
+        # Reserva 6 · Apartament Girona Vella · 2 nits · Airbnb · pagada
+        (6,  "2026-04-03",  190.00, "targeta",       "pagat"),
+        # Reserva 7 · Duplex Tarragona Mar · 5 nits · Direct · NO pagada (cancelat)
+        (7,  "2026-04-18",  900.00, "transferencia", "cancelat"),
+        # Reserva 8 · Casa Rural Osona · 4 nits · Booking · pagada
+        (8,  "2026-04-28", 1200.00, "transferencia", "pagat"),
+        # Reserva 9 · Apartament Lleida Centre · 7 nits · Airbnb · NO pagada
+        (9,  "2026-05-08",  490.00, "bizum",         "pendent"),
+        # Reserva 10 · Atic Terrassa Vista · 2 nits · Direct · pagada
+        (10, "2026-05-18",  260.00, "efectiu",       "pagat"),
+        # Reserva 11 · Pis Badalona Platja · 7 nits · Booking · NO pagada
+        (11, "2026-05-28",  840.00, "targeta",       "pendent"),
+        # Reserva 12 · Casa Adossada Sabadell · 5 nits · Airbnb · pagada
+        (12, "2026-06-12",  800.00, "transferencia", "pagat"),
+        # Reserva 13 · Estudi Mataro Rambla · 6 nits · Altres · NO pagada
+        (13, "2026-06-28",  390.00, "altres",        "pendent"),
+        # Reserva 14 · Apartament Manresa Nou · 4 nits · Direct · pagada
+        (14, "2026-07-08",  320.00, "bizum",         "pagat"),
+        # Reserva 15 · Xalet Roses Costa · 5 nits · Booking · NO pagada
+        (15, "2026-07-18", 2000.00, "transferencia", "pendent"),
+        # Reserva 16 · Pis Figueres Rambla · 9 nits · Airbnb · pagada
+        (16, "2026-07-30",  765.00, "targeta",       "pagat"),
+        # Reserva 17 · Casa Rural Priorat · 3 nits · Direct · pagada
+        (17, "2026-08-13",  780.00, "transferencia", "pagat"),
+        # Reserva 18 · Apartament Tortosa Riu · 4 nits · Booking · NO pagada
+        (18, "2026-08-28",  300.00, "bizum",         "pendent"),
+        # Reserva 19 · Duplex Vilanova Centre · 5 nits · Airbnb · pagada
+        (19, "2026-09-08",  975.00, "targeta",       "pagat"),
+    ]
+
+    pagaments = [
+        PagamentReserva.objects.create(
+            reserva=reserves[r_idx],
+            data_pagament=data,
+            import_pagament=imp,
+            metode_pagament=metode,
+            estat=estat,
+        )
+        for r_idx, data, imp, metode, estat in pagaments_data
+    ]
+    print(f"{len(pagaments)} pagaments creats")
     print("Tot OK!")
 
 

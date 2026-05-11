@@ -10,6 +10,8 @@ import FotosCard from "../../Cards/fotosCard";
 import { bookingsApi, inquilinsApi, propertiesApi } from "../../services/api";
 import TemporadesCard from "../../Cards/temporadesCard";
 import ServeisCard from "../../Cards/serveisCard";
+import HistoricPagamentsCard from "../../Cards/historicPagamentsCard";
+import ImmobleCalendariCard from "../../Cards/immobleCalendariCard";
 
 const emptyForm = {
   propertyName: "",
@@ -102,6 +104,7 @@ export default function InfoInmoble() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [creatingReserva, setCreatingReserva] = useState(false);
+  const [calendarDates, setCalendarDates] = useState({ dataEntrada: "", dataSortida: "" });
 
   useEffect(() => {
     if (!id) {
@@ -152,6 +155,11 @@ export default function InfoInmoble() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDraftData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFerReservaFromCalendari = (dataEntrada, dataSortida) => {
+    setCalendarDates({ dataEntrada, dataSortida });
+    setSeccioActiva("novaReserva");
   };
 
   const handleCreateReserva = async (form) => {
@@ -210,11 +218,13 @@ export default function InfoInmoble() {
           seccions={[
             { id: "perfil", label: "Perfil" },
             { id: "descompte", label: "Descompte" },
+            { id: "calendari", label: "Calendari" },
             { id: "novaReserva", label: "Nova reserva" },
             { id: "fotos", label: "Fotos" },
-            { id: "incidencies", label: "Incidències" },
             { id: "temporades", label: "Temporades" },
             { id: "serveis", label: "Serveis" },
+            { id: "pagaments", label: "Pagaments" },
+            { id: "incidencies", label: "Incidències" },
           ]}
         />
 
@@ -247,11 +257,20 @@ export default function InfoInmoble() {
               onChange={handleChange}
             />
           )}
+          {seccioActiva === "calendari" && (
+            <ImmobleCalendariCard
+              immobleId={id}
+              onFerReserva={handleFerReservaFromCalendari}
+            />
+          )}
           {seccioActiva === "novaReserva" && (
             <CrearReservaCard
+              key={`${calendarDates.dataEntrada}-${calendarDates.dataSortida}`}
               immoble={{ id, ...formData }}
               onCreate={handleCreateReserva}
               isCreating={creatingReserva}
+              initialDataEntrada={calendarDates.dataEntrada}
+              initialDataSortida={calendarDates.dataSortida}
             />
           )}
           {seccioActiva === "temporades" && (
@@ -267,6 +286,9 @@ export default function InfoInmoble() {
               setImmoble={setDraftData}
               onSave={handleSave}
             />
+          )}
+          {seccioActiva === "pagaments" && (
+            <HistoricPagamentsCard immobleId={id} />
           )}
 
           {(seccioActiva === "perfil" || seccioActiva === "descompte") && (
