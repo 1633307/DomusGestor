@@ -41,7 +41,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'nip', 'password']
 
     def validate_nip(self, value):
-        if Usuari.objects.filter(nip_hash=hmac_value(value)).exists():
+        if Usuari.objects.filter(nip=value).exists():
             raise serializers.ValidationError("Ja existeix un usuari amb aquest NIP.")
         return value
 

@@ -1,0 +1,116 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 100px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #d9dee7;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.cardHeader {
+  margin-bottom: 24px;
+}
+
+.cardHeader h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cardHeader p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.serveisGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.serveiItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #0f172a;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+
+.serveiItem:hover {
+  border-color: #818cf8;
+  background: #f0f1ff;
+}
+
+.serveiItem input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #818cf8;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.emptyState {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0 0 24px 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btnPrimary {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  background: #c7d2fe;
+  color: #1e293b;
+  font-family: inherit;
+  transition: background 0.2s ease;
+}
+
+.btnPrimary:hover {
+  background: #a5b4fc;
+}
+
+@media (max-width: 900px) {
+  .serveisGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  .serveisGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .btnPrimary {
+    width: 100%;
+  }
+}

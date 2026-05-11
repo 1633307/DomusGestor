@@ -8,6 +8,8 @@ import ImmobleDescompteCard from "../../Cards/immobleDescompteCard";
 import CrearReservaCard from "../../Cards/crearReservaCard";
 import FotosCard from "../../Cards/fotosCard";
 import { bookingsApi, inquilinsApi, propertiesApi } from "../../services/api";
+import TemporadesCard from "../../Cards/temporadesCard";
+import ServeisCard from "../../Cards/serveisCard";
 
 const emptyForm = {
   propertyName: "",
@@ -28,6 +30,7 @@ const emptyForm = {
   ownerIban: "",
   descompteActiu: false,
   descomptePercentatge: "",
+  temporades: [],
 };
 
 function toBoolean(value) {
@@ -54,6 +57,8 @@ function backendToForm(p) {
     ownerIban: p.propietari_iban ?? "",
     descompteActiu: p.descompte_actiu ?? false,
     descomptePercentatge: String(p.descompte_percentatge ?? ""),
+    temporades: p.temporades,
+    serveis: p.serveis,
   };
 }
 
@@ -80,6 +85,8 @@ function formToBackend(f, original) {
     metres_quadrats: original?.metres_quadrats ?? 0,
     descripcio: original?.descripcio ?? "",
     actiu: original?.actiu ?? true,
+    temporades: f.temporades,
+    serveis: f.serveis,
   };
 }
 
@@ -205,7 +212,9 @@ export default function InfoInmoble() {
             { id: "descompte", label: "Descompte" },
             { id: "novaReserva", label: "Nova reserva" },
             { id: "fotos", label: "Fotos" },
-            { id: "incidencies", label: "Incidéncies" },
+            { id: "incidencies", label: "Incidències" },
+            { id: "temporades", label: "Temporades" },
+            { id: "serveis", label: "Serveis" },
           ]}
         />
 
@@ -243,6 +252,20 @@ export default function InfoInmoble() {
               immoble={{ id, ...formData }}
               onCreate={handleCreateReserva}
               isCreating={creatingReserva}
+            />
+          )}
+          {seccioActiva === "temporades" && (
+            <TemporadesCard
+              immoble={{ id, ...draftData }}
+              setImmoble={setDraftData}
+              onSave={handleSave}
+            />
+          )}
+          {seccioActiva === "serveis" && (
+            <ServeisCard
+              immoble={{ id, ...draftData }}
+              setImmoble={setDraftData}
+              onSave={handleSave}
             />
           )}
 
