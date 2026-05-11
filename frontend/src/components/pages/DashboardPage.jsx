@@ -46,7 +46,7 @@ export default function DashboardPage() {
           tabIndex={0}
           onKeyDown={(e) => e.key === 'Enter' && navigate('/inmobles')}
         >
-          <h3>Inmobles</h3>
+          <h3>Immobles</h3>
           <p className={styles.metric}>{stats?.total_immobles ?? '—'}</p>
           <small>{stats ? `${stats.immobles_actius} actius` : 'Cargando...'}</small>
         </article>

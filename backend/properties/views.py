@@ -1,7 +1,7 @@
 from rest_framework import generics, filters
 
-from .models import Immoble
-from .serializers import ImmobleSerializer
+from .models import Immoble, Servei
+from .serializers import ImmobleSerializer, ServeiSerializer
 from bookings.models import ReservaBasica
 
 
@@ -23,10 +23,10 @@ class ImmobleListCreateView(generics.ListCreateAPIView):
         filtro_habit = self.request.query_params.get('habitacions')
         dataini_filtre = self.request.query_params.get('dataini')
         datafi_filtre = self.request.query_params.get('datafi')
-        
+
         if filtro_ciutat:
             queryset = queryset.filter(ciutat__icontains=filtro_ciutat)
-            
+
         if filtro_habit:
             queryset = queryset.filter(num_habitacions__gte=filtro_habit)
 
@@ -35,8 +35,9 @@ class ImmobleListCreateView(generics.ListCreateAPIView):
                 data_entrada__lt=datafi_filtre,
                 data_sortida__gt=dataini_filtre
             )
-            queryset = queryset.exclude(id__in=reservas_solapadas.values('immoble_id'))
-            
+            queryset = queryset.exclude(
+                id__in=reservas_solapadas.values('immoble_id'))
+
         return queryset
 
 
@@ -44,3 +45,8 @@ class ImmobleDetailView(generics.RetrieveUpdateDestroyAPIView):
     """RF-01: Detall, actualització i eliminació d'immoble."""
     queryset = Immoble.objects.all()
     serializer_class = ImmobleSerializer
+
+
+class ServeiListView(generics.ListAPIView):
+    queryset = Servei.objects.all()
+    serializer_class = ServeiSerializer
