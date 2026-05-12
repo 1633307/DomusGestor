@@ -43,6 +43,7 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       isAuthenticated: Boolean(user),
+      isAdmin: user?.is_admin ?? false,
       loading,
       login,
       logout,
