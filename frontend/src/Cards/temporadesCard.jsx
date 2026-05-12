@@ -43,6 +43,22 @@ const DIES = [
   [0, "Dl"], [1, "Dt"], [2, "Dc"], [3, "Dj"], [4, "Dv"], [5, "Ds"], [6, "Dg"],
 ];
 
+function detectaDataInvalida(temporades) {
+  for (const t of temporades) {
+    for (const [camp, valor] of [["inici", t.data_inici], ["fi", t.data_fi]]) {
+      if (!valor) continue;
+      const [, mm, dd] = valor.split("-");
+      const mes = parseInt(mm, 10);
+      const dia = parseInt(dd, 10);
+      const d = new Date(valor);
+      if (d.getMonth() + 1 !== mes || d.getDate() !== dia) {
+        return `La temporada "${t.nom}" té una data de ${camp} invàlida: el dia ${dia} no existeix al mes ${MESOS[mes - 1].toLowerCase()}.`;
+      }
+    }
+  }
+  return null;
+}
+
 function detectaSolapament(temporades) {
   const sorted = [...temporades].sort(
     (a, b) => new Date(a.data_inici) - new Date(b.data_inici)
@@ -113,6 +129,11 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
   };
 
   const handleDesar = () => {
+    const dataInvalida = detectaDataInvalida(immoble.temporades || []);
+    if (dataInvalida) {
+      setErrorSolapament(dataInvalida);
+      return;
+    }
     const solapament = detectaSolapament(immoble.temporades || []);
     if (solapament) {
       setErrorSolapament(`Les temporades ${solapament} es solapen. Corregeix els períodes abans de desar.`);
