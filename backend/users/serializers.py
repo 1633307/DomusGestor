@@ -29,7 +29,7 @@ class UsuariSerializer(serializers.ModelSerializer):
             'id', 'username', 'first_name', 'last_name',
             'email', 'nip', 'is_admin', 'is_active', 'date_joined',
         ]
-        read_only_fields = ['id', 'date_joined', 'is_admin']
+        read_only_fields = ['id', 'date_joined', 'is_admin', 'is_active']
 
 
 class CreateUsuariSerializer(serializers.ModelSerializer):
