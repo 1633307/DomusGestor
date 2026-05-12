@@ -12,12 +12,14 @@
 .pageTitle h2 {
   margin: 0;
   font-size: 1.8rem;
+  font-weight: 700;
   color: var(--text);
 }
 
 .pageTitle p {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .propertiesToolbar {
@@ -27,72 +29,133 @@
   flex-wrap: wrap;
 }
 
-.searchInput,
-.filterSelect {
+.searchInput {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.8em 1em;
   font: inherit;
-}
-
-.searchInput {
   flex: 1;
   min-width: 240px;
 }
 
-.filterSelect {
-  min-width: 180px;
+.searchInput:focus {
+  outline: none;
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
 }
 
 .propertiesGrid {
   display: flex;
   flex-direction: column;
- 
+  gap: 12px;
+}
+
+.propertyCardLink {
+  text-decoration: none;
+  color: inherit;
 }
 
 .propertyCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 16px 20px;
   display: flex;
-  flex-direction: column;
-  
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
 }
+
+.propertyCard:hover {
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px);
+}
+
 .propertyCard h3 {
   margin: 0;
   font-size: 1rem;
+  font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.propertyActions {
+.cardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardAddress {
+  margin: 2px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardFooter {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.link {
-  color: #9c9ca079;
-  text-decoration: none;
-  padding: 10px 12px;
-  border-radius: 10px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+.priceBadge {
+  display: inline-block;
+  background: #dbeafe;
+  color: var(--primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
-.link:hover {
-  background: #232323;
+.propertyCardDisabled {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
 }
 
-.activeLink {
-  background-color: #dbeafe;
-  color: #2563eb;
+.propertyCardDisabled:hover {
+  box-shadow: 0 6px 20px rgba(225, 29, 72, 0.12);
 }
+
+.propertyCardDisabled .priceBadge {
+  background: #fecdd3;
+  color: #e11d48;
+}
+
+.badgeDisabled {
+  display: inline-block;
+  background: #fecdd3;
+  color: #e11d48;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.stateMsg {
+  color: var(--muted);
+}
+
+.errorMsg {
+  color: var(--danger);
+}
+
 @media (max-width: 900px) {
   .pageTitleRow {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .propertyCard {
+    flex-wrap: wrap;
   }
 }

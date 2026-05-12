@@ -22,7 +22,10 @@ export default function InmoblesPage() {
   return (
     <section>
       <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
-        <h2>Llistat Immobles</h2>
+        <div>
+          <h2>Llistat Immobles</h2>
+          <p>Gestiona i consulta tots els immobles registrats</p>
+        </div>
       </div>
 
       <div className={styles.propertiesToolbar}>
@@ -35,20 +38,35 @@ export default function InmoblesPage() {
         />
       </div>
 
-      {loading && <p>Carregant...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {loading && <p className={styles.stateMsg}>Carregant...</p>}
+      {error && <p className={styles.errorMsg}>{error}</p>}
 
       <div className={styles.propertiesGrid}>
         {properties.map((property) => (
-          <article className={styles.propertyCard} key={property.id}>
-            <Link to={`/infoInmoble/${property.id}`}>
-              <h3>{property.nom_comercial}</h3>
-              <p>{property.adreca}</p>
-              <p>{property.preu_base_nit}€/nit</p>
-            </Link>
-          </article>
+          <Link
+            to={`/infoInmoble/${property.id}`}
+            key={property.id}
+            className={styles.propertyCardLink}
+          >
+            <article
+              className={`${styles.propertyCard} ${property.actiu === false ? styles.propertyCardDisabled : ""}`}
+            >
+              <div className={styles.cardInfo}>
+                <h3>{property.nom_comercial}</h3>
+                <p className={styles.cardAddress}>{property.adreca}</p>
+              </div>
+              <div className={styles.cardFooter}>
+                <span className={styles.priceBadge}>{property.preu_base_nit}€/nit</span>
+                {property.actiu === false && (
+                  <span className={styles.badgeDisabled}>Deshabilitat</span>
+                )}
+              </div>
+            </article>
+          </Link>
         ))}
-        {!loading && properties.length === 0 && <p>No hi ha immobles.</p>}
+        {!loading && properties.length === 0 && (
+          <p className={styles.stateMsg}>No hi ha immobles.</p>
+        )}
       </div>
     </section>
   );

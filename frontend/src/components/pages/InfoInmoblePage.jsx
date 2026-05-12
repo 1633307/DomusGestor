@@ -105,6 +105,7 @@ export default function InfoInmoble() {
   const [saving, setSaving] = useState(false);
   const [creatingReserva, setCreatingReserva] = useState(false);
   const [calendarDates, setCalendarDates] = useState({ dataEntrada: "", dataSortida: "" });
+  const [actiu, setActiu] = useState(true);
 
   useEffect(() => {
     if (!id) {
@@ -116,6 +117,7 @@ export default function InfoInmoble() {
       .get(id)
       .then((data) => {
         setOriginal(data);
+        setActiu(data.actiu ?? true);
         const mapped = backendToForm(data);
         setFormData(mapped);
         setDraftData(mapped);
@@ -207,6 +209,27 @@ export default function InfoInmoble() {
     }
   };
 
+  const handleDeshabilitar = async () => {
+    setError("");
+    try {
+      await propertiesApi.patch(id, { actiu: false });
+      setActiu(false);
+      setOriginal((prev) => ({ ...prev, actiu: false }));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleEliminar = async () => {
+    setError("");
+    try {
+      await propertiesApi.remove(id);
+      navigate("/inmobles");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <p>Carregant immoble...</p>;
 
   return (
@@ -226,6 +249,9 @@ export default function InfoInmoble() {
             { id: "pagaments", label: "Pagaments" },
             { id: "incidencies", label: "Incidències" },
           ]}
+          actiu={actiu}
+          onDeshabilitar={handleDeshabilitar}
+          onEliminar={handleEliminar}
         />
 
         <div className={style.perfilCard}>

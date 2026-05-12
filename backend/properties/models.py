@@ -68,11 +68,13 @@ class Immoble(models.Model):
 
 
 class Temporada(models.Model):
-    immoble     = models.ForeignKey(Immoble, on_delete=models.CASCADE, related_name='temporades')
-    nom         = models.CharField(max_length=100)
-    data_inici  = models.DateField()
-    data_fi     = models.DateField()
-    preu_nit    = models.DecimalField(max_digits=10, decimal_places=2)
+    immoble      = models.ForeignKey(Immoble, on_delete=models.CASCADE, related_name='temporades')
+    nom          = models.CharField(max_length=100)
+    data_inici   = models.DateField()
+    data_fi      = models.DateField()
+    preu_nit     = models.DecimalField(max_digits=10, decimal_places=2)
+    min_nits     = models.PositiveIntegerField(default=1)
+    dies_checkin = ArrayField(models.IntegerField(), blank=True, default=list)
 
     class Meta:
         verbose_name_plural = 'Temporades'

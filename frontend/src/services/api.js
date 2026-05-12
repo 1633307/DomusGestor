@@ -62,6 +62,7 @@ export const propertiesApi = {
   get: (id) => api.get(`/properties/${id}/`),
   create: (data) => api.post("/properties/", data),
   update: (id, data) => api.put(`/properties/${id}/`, data),
+  patch: (id, data) => api.patch(`/properties/${id}/`, data),
   remove: (id) => api.del(`/properties/${id}/`),
 };
 
