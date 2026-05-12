@@ -333,3 +333,25 @@
   font-size: 0.85rem;
   margin: 0 0 16px;
 }
+
+.btnSave {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnSave:hover {
+  background: #1d4ed8;
+}
+
+.btnSave:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}

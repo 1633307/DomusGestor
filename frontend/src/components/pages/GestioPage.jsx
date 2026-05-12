@@ -15,7 +15,7 @@ const emptyForm = {
 };
 
 export default function GestioPage() {
-  const { user: currentUser, isAdmin } = useAuth();
+  const { user: currentUser, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [users, setUsers]                         = useState([]);
@@ -28,14 +28,16 @@ export default function GestioPage() {
   const [form, setForm]                           = useState(emptyForm);
   const [formError, setFormError]                 = useState("");
   const [saving, setSaving]                       = useState(false);
+  const [operating, setOperating]                 = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAdmin) {
       navigate("/dashboard");
       return;
     }
     loadUsers();
-  }, [isAdmin]);
+  }, [isAdmin, authLoading]);
 
   const loadUsers = () => {
     setLoading(true);
@@ -47,6 +49,8 @@ export default function GestioPage() {
   };
 
   const handleDeshabilitar = async () => {
+    setOperating(true);
+    setError("");
     try {
       await usersApi.patch(modalDeshabilitar.id, { is_active: false });
       setUsers((prev) =>
@@ -57,11 +61,14 @@ export default function GestioPage() {
     } catch (err) {
       setError(err.message);
     } finally {
+      setOperating(false);
       setModalDeshabilitar(null);
     }
   };
 
   const handleHabilitar = async () => {
+    setOperating(true);
+    setError("");
     try {
       await usersApi.patch(modalHabilitar.id, { is_active: true });
       setUsers((prev) =>
@@ -72,17 +79,21 @@ export default function GestioPage() {
     } catch (err) {
       setError(err.message);
     } finally {
+      setOperating(false);
       setModalHabilitar(null);
     }
   };
 
   const handleEliminar = async () => {
+    setOperating(true);
+    setError("");
     try {
       await usersApi.remove(modalEliminar.id);
       setUsers((prev) => prev.filter((u) => u.id !== modalEliminar.id));
     } catch (err) {
       setError(err.message);
     } finally {
+      setOperating(false);
       setModalEliminar(null);
     }
   };
@@ -146,6 +157,7 @@ export default function GestioPage() {
     });
   };
 
+  if (authLoading) return null;
   if (loading) return <p>Carregant usuaris...</p>;
 
   return (
@@ -252,6 +264,7 @@ export default function GestioPage() {
               <button
                 className={styles.btnConfirmDeshabilitar}
                 onClick={handleDeshabilitar}
+                disabled={operating}
               >
                 Deshabilitar
               </button>
@@ -279,6 +292,7 @@ export default function GestioPage() {
               <button
                 className={styles.btnConfirmHabilitar}
                 onClick={handleHabilitar}
+                disabled={operating}
               >
                 Habilitar
               </button>
@@ -306,6 +320,7 @@ export default function GestioPage() {
               <button
                 className={styles.btnConfirmEliminar}
                 onClick={handleEliminar}
+                disabled={operating}
               >
                 Eliminar
               </button>
@@ -394,7 +409,7 @@ export default function GestioPage() {
                 Cancel·lar
               </button>
               <button
-                className={styles.btnConfirmHabilitar}
+                className={styles.btnSave}
                 onClick={handleFormSubmit}
                 disabled={saving}
               >
