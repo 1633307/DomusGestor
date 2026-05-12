@@ -55,6 +55,9 @@
   margin-top: 32px;
   padding-top: 16px;
   border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .btnDeshabilitar {
@@ -73,6 +76,24 @@
 
 .btnDeshabilitar:hover {
   background: #dc2626;
+}
+
+.btnHabilitar {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #93c5fd;
+  color: #1e40af;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnHabilitar:hover {
+  background: #60a5fa;
 }
 
 .btnEliminar {
@@ -163,6 +184,23 @@
 
 .btnConfirmDeshabilitar:hover {
   background: #dc2626;
+}
+
+.btnConfirmHabilitar {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #93c5fd;
+  color: #1e40af;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnConfirmHabilitar:hover {
+  background: #60a5fa;
 }
 
 .btnConfirmEliminar {

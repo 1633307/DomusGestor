@@ -26,14 +26,22 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
   if (res.status === 204) return null;
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    if (!res.ok) throw new Error(`Error ${res.status}: resposta inesperada del servidor.`);
+  }
 
   if (!res.ok) {
-    const message =
-      (data &&
-        (data.detail || data.non_field_errors?.[0] || JSON.stringify(data))) ||
+    const genericMessage =
+      (data && (data.detail || data.non_field_errors?.[0])) ||
       `Error ${res.status}`;
-    throw new Error(message);
+    const err = new Error(genericMessage);
+    if (data && typeof data === 'object' && !data.detail && !data.non_field_errors) {
+      err.fieldErrors = data;
+    }
+    throw err;
   }
   return data;
 }
@@ -88,4 +96,13 @@ export const serveisApi = {
 
 export const pagamentsApi = {
   listByImmoble: (immobleId) => api.get(`/properties/${immobleId}/pagaments/`),
+};
+
+export const usersApi = {
+  list:   ()         => api.get('/auth/users/'),
+  get:    (id)       => api.get(`/auth/users/${id}/`),
+  create: (data)     => api.post('/auth/users/', data),
+  update: (id, data) => api.put(`/auth/users/${id}/`, data),
+  patch:  (id, data) => api.patch(`/auth/users/${id}/`, data),
+  remove: (id)       => api.del(`/auth/users/${id}/`),
 };
