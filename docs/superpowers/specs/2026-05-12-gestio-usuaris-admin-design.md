@@ -1,6 +1,6 @@
 ---
 name: gestio-usuaris-admin
-description: Disseny de la pàgina de gestió d'usuaris per a admins, incloent CRUD complet, model is_admin, i canvi de AbstractUser a AbstractBaseUser per eliminar is_staff/is_superuser de la BD.
+description: Disseny de la pàgina de gestió d'usuaris per a admins, incloent CRUD complet, model is_admin, i canvi de AbstractUser a AbstractBaseUser per eliminar is_staff/is_superuser/groups/user_permissions de la BD. Es conserven first_name, last_name, date_joined.
 metadata:
   type: project
 ---
@@ -12,7 +12,8 @@ metadata:
 L'aplicació no tenia cap sistema de rols. Els usuaris s'autenticaven amb NIP+password i tots tenien el mateix accés. Cal afegir:
 - Un camp `is_admin` per diferenciar admins d'usuaris normals.
 - Una pàgina "Gestió" (només admins) amb CRUD complet d'usuaris.
-- Eliminació de `is_staff` i `is_superuser` de la BD (camps de Django no usats).
+- Eliminació de `is_staff`, `is_superuser`, `groups` i `user_permissions` de la BD (camps de Django no usats).
+- Es conserven `first_name`, `last_name` i `date_joined` (aquest últim s'usa per ordenar usuaris per data de creació i mostrar-se a la taula de gestió).
 
 ---
 
@@ -25,11 +26,14 @@ Per eliminar `is_staff` i `is_superuser` completament de la BD (no estan en `Abs
 **Nou model:**
 ```python
 class Usuari(AbstractBaseUser):
-    username  = CharField(max_length=150, unique=True)
-    email     = EmailField(unique=True)
-    nip       = CharField(max_length=20, unique=True)
-    is_active = BooleanField(default=True)
-    is_admin  = BooleanField(default=False)
+    username    = CharField(max_length=150, unique=True)
+    first_name  = CharField(max_length=150, blank=True)
+    last_name   = CharField(max_length=150, blank=True)
+    email       = EmailField(unique=True)
+    nip         = CharField(max_length=20, unique=True)
+    is_active   = BooleanField(default=True)
+    is_admin    = BooleanField(default=False)
+    date_joined = DateTimeField(default=timezone.now)
 
     USERNAME_FIELD  = 'nip'
     REQUIRED_FIELDS = ['username', 'email']
@@ -37,7 +41,9 @@ class Usuari(AbstractBaseUser):
     objects = UsuariManager()
 ```
 
-**Camps eliminats de la BD:** `is_staff`, `is_superuser`, `first_name`, `last_name`, `date_joined`, `groups`, `user_permissions`.
+**Camps eliminats de la BD:** `is_staff`, `is_superuser`, `groups`, `user_permissions`.
+
+**Camps conservats:** `first_name`, `last_name`, `date_joined` (data de creació, usada per ordenar).
 
 **Camps que queden de `AbstractBaseUser`:** `password`, `last_login`.
 
@@ -52,18 +58,18 @@ class UsuariManager(BaseUserManager):
 ```
 
 ### Migració
-Nova migració que recrea la taula `users_usuari` sense `is_staff`, `is_superuser`, `first_name`, `last_name`, `date_joined`, `groups`, `user_permissions`. Migra les dades existents.
+Nova migració que recrea la taula `users_usuari` eliminant `is_staff`, `is_superuser`, `groups` i `user_permissions`. Conserva `first_name`, `last_name`, `date_joined`. Afegeix `is_admin`. Migra les dades existents.
 
 ---
 
 ## 2. Backend — Serialitzadors
 
 ### `UsuariSerializer` (ampliat)
-Camps exposats: `id`, `username`, `email`, `nip`, `is_admin`, `is_active`.
-`is_active` és read-only des d'aquest serialitzador (es gestiona per endpoints específics de patch).
+Camps exposats: `id`, `username`, `first_name`, `last_name`, `email`, `nip`, `is_admin`, `is_active`, `date_joined`.
+`is_active` i `date_joined` són read-only (el primer es gestiona per patch; el segon s'assigna automàticament).
 
 ### `CreateUsuariSerializer`
-Camps: `username`, `email`, `nip`, `password` (write-only, min 6 chars), `is_admin`.
+Camps: `username`, `first_name`, `last_name`, `email`, `nip`, `password` (write-only, min 6 chars), `is_admin`.
 
 ---
 
@@ -129,7 +135,8 @@ Component: `GestioPage`.
 
 ### Estructura
 - Títol "Gestió d'usuaris" + botó "Nou usuari" (obre modal de creació)
-- Taula amb columnes: **NIP**, **Nom d'usuari**, **Email**, **Admin**, **Estat**, **Accions**
+- Taula amb columnes: **NIP**, **Nom d'usuari**, **Email**, **Admin**, **Estat**, **Data alta**, **Accions**
+- Ordenació per defecte: `date_joined` descendent (usuari més nou a dalt)
 - Fila activa (`is_active=true`): botó **Deshabilitar**
 - Fila inactiva (`is_active=false`): botons **Habilitar** + **Eliminar**
 - Botó **Editar** a totes les files (excepto la pròpia)
@@ -139,7 +146,7 @@ Component: `GestioPage`.
 - **Deshabilitar**: "Estàs segur que vols deshabilitar aquest usuari? L'usuari deixarà d'estar actiu."
 - **Habilitar**: "Estàs segur que vols habilitar aquest usuari? L'usuari tornarà a estar actiu."
 - **Eliminar**: "Estàs segur que vols eliminar aquest usuari? Aquesta acció és irreversible i s'eliminaran totes les dades associades."
-- **Crear/Editar**: modal amb formulari (camps: username, email, nip, is_admin, password [només crear])
+- **Crear/Editar**: modal amb formulari (camps: username, first_name, last_name, email, nip, is_admin, password [només crear])
 
 ### Flux deshabilitar/eliminar
 ```
