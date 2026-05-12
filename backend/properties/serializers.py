@@ -40,6 +40,20 @@ class ImmobleSerializer(serializers.ModelSerializer):
                 "El descompte ha d'estar entre 0 i 100.")
         return value
 
+    def validate(self, attrs):
+        temporades = attrs.get('temporades', [])
+        sorted_temps = sorted(temporades, key=lambda t: t['data_inici'])
+        for i in range(len(sorted_temps) - 1):
+            a = sorted_temps[i]
+            b = sorted_temps[i + 1]
+            if a['data_fi'] >= b['data_inici']:
+                raise serializers.ValidationError({
+                    'temporades': (
+                        f"Les temporades '{a['nom']}' i '{b['nom']}' es solapen."
+                    )
+                })
+        return attrs
+
     def update(self, instance, validated_data):
         temporades_data = validated_data.pop('temporades', [])
 

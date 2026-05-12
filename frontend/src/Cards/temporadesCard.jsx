@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styles from "./temporadesCard.module.css";
 
 const MESOS = [
@@ -42,7 +43,22 @@ const DIES = [
   [0, "Dl"], [1, "Dt"], [2, "Dc"], [3, "Dj"], [4, "Dv"], [5, "Ds"], [6, "Dg"],
 ];
 
+function detectaSolapament(temporades) {
+  const sorted = [...temporades].sort(
+    (a, b) => new Date(a.data_inici) - new Date(b.data_inici)
+  );
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const a = sorted[i];
+    const b = sorted[i + 1];
+    if (new Date(a.data_fi) >= new Date(b.data_inici)) {
+      return `"${a.nom}" i "${b.nom}"`;
+    }
+  }
+  return null;
+}
+
 export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa }) {
+  const [errorSolapament, setErrorSolapament] = useState(null);
   const handleNovaTemporada = () => {
     const darreraData = immoble.temporades?.reduce(
       (prev, curr) => {
@@ -64,6 +80,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
   };
 
   const handleEliminarTemporada = (id) => () => {
+    setErrorSolapament(null);
     setImmoble((prev) => ({
       ...prev,
       temporades: (prev.temporades || []).filter((t) => t.id !== id),
@@ -71,6 +88,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
   };
 
   const handleChange = (id, key) => (e) => {
+    setErrorSolapament(null);
     const value = key === "min_nits" ? Number(e.target.value) : e.target.value;
     setImmoble((prev) => ({
       ...prev,
@@ -92,6 +110,16 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
         return { ...t, dies_checkin: updated };
       }),
     }));
+  };
+
+  const handleDesar = () => {
+    const solapament = detectaSolapament(immoble.temporades || []);
+    if (solapament) {
+      setErrorSolapament(`Les temporades ${solapament} es solapen. Corregeix els períodes abans de desar.`);
+      return;
+    }
+    setErrorSolapament(null);
+    handleDesa();
   };
 
   return (
@@ -182,11 +210,15 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
           <p className={styles.emptyState}>No s'ha trobat cap temporada</p>
         )}
 
+        {errorSolapament && (
+          <p className={styles.errorSolapament}>{errorSolapament}</p>
+        )}
+
         <div className={styles.actions}>
           <button className={styles.btnSecondary} onClick={handleNovaTemporada}>
             + Afegeix temporada
           </button>
-          <button className={styles.btnPrimary} onClick={handleDesa}>
+          <button className={styles.btnPrimary} onClick={handleDesar}>
             Desa
           </button>
         </div>
