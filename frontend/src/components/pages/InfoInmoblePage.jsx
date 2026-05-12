@@ -10,6 +10,8 @@ import FotosCard from "../../Cards/fotosCard";
 import { bookingsApi, inquilinsApi, propertiesApi } from "../../services/api";
 import TemporadesCard from "../../Cards/temporadesCard";
 import ServeisCard from "../../Cards/serveisCard";
+import HistoricPagamentsCard from "../../Cards/historicPagamentsCard";
+import ImmobleCalendariCard from "../../Cards/immobleCalendariCard";
 
 const emptyForm = {
   propertyName: "",
@@ -101,7 +103,10 @@ export default function InfoInmoble() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [hasDraftChanges, setHasDraftChanges] = useState(false);
   const [creatingReserva, setCreatingReserva] = useState(false);
+  const [calendarDates, setCalendarDates] = useState({ dataEntrada: "", dataSortida: "" });
+  const [actiu, setActiu] = useState(true);
 
   useEffect(() => {
     if (!id) {
@@ -113,6 +118,7 @@ export default function InfoInmoble() {
       .get(id)
       .then((data) => {
         setOriginal(data);
+        setActiu(data.actiu ?? true);
         const mapped = backendToForm(data);
         setFormData(mapped);
         setDraftData(mapped);
@@ -123,11 +129,13 @@ export default function InfoInmoble() {
 
   const handleEdit = () => {
     setDraftData(formData);
+    setHasDraftChanges(false);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setDraftData(formData);
+    setHasDraftChanges(false);
     setIsEditing(false);
   };
 
@@ -141,7 +149,9 @@ export default function InfoInmoble() {
       const mapped = backendToForm(updated);
       setFormData(mapped);
       setDraftData(mapped);
+      setHasDraftChanges(false);
       setIsEditing(false);
+      return true;
     } catch (err) {
       setError(err.message);
     } finally {
@@ -151,7 +161,13 @@ export default function InfoInmoble() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setHasDraftChanges(true);
     setDraftData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFerReservaFromCalendari = (dataEntrada, dataSortida) => {
+    setCalendarDates({ dataEntrada, dataSortida });
+    setSeccioActiva("novaReserva");
   };
 
   const handleCreateReserva = async (form) => {
@@ -199,6 +215,27 @@ export default function InfoInmoble() {
     }
   };
 
+  const handleDeshabilitar = async () => {
+    setError("");
+    try {
+      await propertiesApi.patch(id, { actiu: false });
+      setActiu(false);
+      setOriginal((prev) => ({ ...prev, actiu: false }));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleEliminar = async () => {
+    setError("");
+    try {
+      await propertiesApi.remove(id);
+      navigate("/inmobles");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <p>Carregant immoble...</p>;
 
   return (
@@ -210,12 +247,17 @@ export default function InfoInmoble() {
           seccions={[
             { id: "perfil", label: "Perfil" },
             { id: "descompte", label: "Descompte" },
+            { id: "calendari", label: "Calendari" },
             { id: "novaReserva", label: "Nova reserva" },
             { id: "fotos", label: "Fotos" },
-            { id: "incidencies", label: "Incidències" },
             { id: "temporades", label: "Temporades" },
             { id: "serveis", label: "Serveis" },
+            { id: "pagaments", label: "Pagaments" },
+            { id: "incidencies", label: "Incidències" },
           ]}
+          actiu={actiu}
+          onDeshabilitar={handleDeshabilitar}
+          onEliminar={handleEliminar}
         />
 
         <div className={style.perfilCard}>
@@ -247,11 +289,20 @@ export default function InfoInmoble() {
               onChange={handleChange}
             />
           )}
+          {seccioActiva === "calendari" && (
+            <ImmobleCalendariCard
+              immobleId={id}
+              onFerReserva={handleFerReservaFromCalendari}
+            />
+          )}
           {seccioActiva === "novaReserva" && (
             <CrearReservaCard
+              key={`${calendarDates.dataEntrada}-${calendarDates.dataSortida}`}
               immoble={{ id, ...formData }}
               onCreate={handleCreateReserva}
               isCreating={creatingReserva}
+              initialDataEntrada={calendarDates.dataEntrada}
+              initialDataSortida={calendarDates.dataSortida}
             />
           )}
           {seccioActiva === "temporades" && (
@@ -268,6 +319,9 @@ export default function InfoInmoble() {
               onSave={handleSave}
             />
           )}
+          {seccioActiva === "pagaments" && (
+            <HistoricPagamentsCard immobleId={id} />
+          )}
 
           {(seccioActiva === "perfil" || seccioActiva === "descompte") && (
             <FooterActions
@@ -277,6 +331,7 @@ export default function InfoInmoble() {
               onSave={handleSave}
               isSaveDisabled={saving}
               saveLabel={saving ? "Guardant..." : "Guardar"}
+              hasChanges={hasDraftChanges}
             />
           )}
         </div>

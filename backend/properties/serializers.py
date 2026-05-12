@@ -19,6 +19,12 @@ class TemporadaSerializer(serializers.ModelSerializer):
             "immoble": {"required": False}
         }
 
+    def validate_data_inici(self, value):
+        return value.replace(year=2000)
+
+    def validate_data_fi(self, value):
+        return value.replace(year=2000)
+
 
 class ImmobleSerializer(serializers.ModelSerializer):
     temporades = TemporadaSerializer(many=True, required=False)
@@ -33,6 +39,20 @@ class ImmobleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "El descompte ha d'estar entre 0 i 100.")
         return value
+
+    def validate(self, attrs):
+        temporades = attrs.get('temporades', [])
+        sorted_temps = sorted(temporades, key=lambda t: t['data_inici'])
+        for i in range(len(sorted_temps) - 1):
+            a = sorted_temps[i]
+            b = sorted_temps[i + 1]
+            if a['data_fi'] >= b['data_inici']:
+                raise serializers.ValidationError({
+                    'temporades': (
+                        f"Les temporades '{a['nom']}' i '{b['nom']}' es solapen."
+                    )
+                })
+        return attrs
 
     def update(self, instance, validated_data):
         temporades_data = validated_data.pop('temporades', [])
@@ -60,6 +80,8 @@ class ImmobleSerializer(serializers.ModelSerializer):
                     data_inici=t_data['data_inici'],
                     data_fi=t_data['data_fi'],
                     preu_nit=t_data['preu_nit'],
+                    min_nits=t_data.get('min_nits', 1),
+                    dies_checkin=t_data.get('dies_checkin', []),
                 )
             else:
                 Temporada.objects.create(

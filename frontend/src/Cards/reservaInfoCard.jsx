@@ -133,7 +133,7 @@ export default function ReservaInfoCard({ data, isEditing, onChange }) {
               { value: "", label: "-" },
               { value: "prereservada", label: "Prereservada" },
               { value: "reservada", label: "Reservada" },
-              { value: "lista", label: "Llista" },
+              { value: "lista", label: "Llesta" },
               { value: "cancelada", label: "Cancel·lada" },
             ]}
           />

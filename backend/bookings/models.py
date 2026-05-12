@@ -88,6 +88,35 @@ class ReservaBasica(models.Model):
         return f"Reserva {self.codi_reserva or self.id}: {self.immoble.nom_comercial}"
 
 
+class PagamentReserva(models.Model):
+    METODE_CHOICES = [
+        ('efectiu',       'Efectiu'),
+        ('transferencia', 'Transferència'),
+        ('targeta',       'Targeta'),
+        ('bizum',         'Bizum'),
+        ('altres',        'Altres'),
+    ]
+    ESTAT_CHOICES = [
+        ('pendent',  'Pendent'),
+        ('pagat',    'Pagat'),
+        ('cancelat', 'Cancel·lat'),
+    ]
+
+    reserva          = models.ForeignKey(ReservaBasica, on_delete=models.CASCADE, related_name='pagaments')
+    data_pagament    = models.DateField()
+    import_pagament  = models.DecimalField(max_digits=10, decimal_places=2)
+    metode_pagament  = models.CharField(max_length=20, choices=METODE_CHOICES, default='transferencia')
+    estat            = models.CharField(max_length=20, choices=ESTAT_CHOICES, default='pendent')
+
+    class Meta:
+        verbose_name = 'Pagament'
+        verbose_name_plural = 'Pagaments'
+        ordering = ['-data_pagament']
+
+    def __str__(self):
+        return f"{self.import_pagament}€ · {self.reserva.codi_reserva} ({self.estat})"
+
+
 class Hoste(models.Model):
     """
     RF-25: Informació d'identitat dels hostes que ocupen una reserva.

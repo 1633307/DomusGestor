@@ -62,11 +62,13 @@ export const propertiesApi = {
   get: (id) => api.get(`/properties/${id}/`),
   create: (data) => api.post("/properties/", data),
   update: (id, data) => api.put(`/properties/${id}/`, data),
+  patch: (id, data) => api.patch(`/properties/${id}/`, data),
   remove: (id) => api.del(`/properties/${id}/`),
 };
 
 export const bookingsApi = {
   list: () => api.get("/bookings/reserves/"),
+  listByImmoble: (immobleId) => api.get(`/bookings/reserves/?immoble=${immobleId}`),
   get: (id) => api.get(`/bookings/reserves/${id}/`),
   create: (data) => api.post("/bookings/reserves/", data),
   // PATCH (partial update) perquè la pestanya d'edició només envia
@@ -82,4 +84,8 @@ export const inquilinsApi = {
 
 export const serveisApi = {
   list: () => api.get("/properties/serveis/"),
+};
+
+export const pagamentsApi = {
+  listByImmoble: (immobleId) => api.get(`/properties/${immobleId}/pagaments/`),
 };

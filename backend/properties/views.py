@@ -2,7 +2,8 @@ from rest_framework import generics, filters
 
 from .models import Immoble, Servei
 from .serializers import ImmobleSerializer, ServeiSerializer
-from bookings.models import ReservaBasica
+from bookings.models import ReservaBasica, PagamentReserva
+from bookings.serializers import PagamentReservaSerializer
 
 
 class ImmobleListCreateView(generics.ListCreateAPIView):
@@ -50,3 +51,14 @@ class ImmobleDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ServeiListView(generics.ListAPIView):
     queryset = Servei.objects.all()
     serializer_class = ServeiSerializer
+
+
+class ImmobleHistoricPagamentsView(generics.ListAPIView):
+    serializer_class = PagamentReservaSerializer
+
+    def get_queryset(self):
+        return (
+            PagamentReserva.objects
+            .filter(reserva__immoble_id=self.kwargs['pk'])
+            .select_related('reserva', 'reserva__inquili')
+        )
