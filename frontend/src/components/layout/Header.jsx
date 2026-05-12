@@ -7,18 +7,18 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <div class="col1">
+      <div>
         <h1 className={styles.title}>Domus Gestor</h1>
       </div>
 
-      <div class="col2" className={styles.headerActions}>
+      <div className={styles.headerActions}>
         <span>{user?.username || 'Usuari'}</span>
         <button className={styles.secondaryButton} onClick={logout}>
           Cerrar sesión
         </button>
       </div>
 
-      <div class="fila">
+      <div>
         <nav className={styles.sidebarNav}>
           <NavLink
             to="/dashboard"
