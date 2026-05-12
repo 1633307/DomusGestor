@@ -49,7 +49,7 @@
 
 .temporadaGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -65,7 +65,9 @@
   color: #334155;
 }
 
-.field input {
+.field input[type="text"],
+.field input[type="date"],
+.field input[type="number"] {
   height: 40px;
   padding: 0 12px;
   border: 1px solid #cbd5e1;
@@ -76,11 +78,89 @@
   outline: none;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.field input:focus {
+.field input[type="text"]:focus,
+.field input[type="date"]:focus,
+.field input[type="number"]:focus {
   border-color: #818cf8;
   box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+.mesDia {
+  display: flex;
+  gap: 4px;
+}
+
+.select {
+  height: 40px;
+  padding: 0 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.select:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.checksGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 0 4px;
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  padding: 5px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+
+.checkItem:has(input:checked) {
+  border-color: #818cf8;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.checkItem input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #818cf8;
+  cursor: pointer;
+}
+
+.anyDay {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 0.85rem;
 }
 
 .emptyState {
@@ -145,6 +225,12 @@
 @media (max-width: 900px) {
   .temporadaGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .temporadaGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

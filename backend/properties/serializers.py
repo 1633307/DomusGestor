@@ -19,6 +19,12 @@ class TemporadaSerializer(serializers.ModelSerializer):
             "immoble": {"required": False}
         }
 
+    def validate_data_inici(self, value):
+        return value.replace(year=2000)
+
+    def validate_data_fi(self, value):
+        return value.replace(year=2000)
+
 
 class ImmobleSerializer(serializers.ModelSerializer):
     temporades = TemporadaSerializer(many=True, required=False)
@@ -60,6 +66,8 @@ class ImmobleSerializer(serializers.ModelSerializer):
                     data_inici=t_data['data_inici'],
                     data_fi=t_data['data_fi'],
                     preu_nit=t_data['preu_nit'],
+                    min_nits=t_data.get('min_nits', 1),
+                    dies_checkin=t_data.get('dies_checkin', []),
                 )
             else:
                 Temporada.objects.create(
