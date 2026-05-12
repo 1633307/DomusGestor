@@ -90,6 +90,11 @@ class UserDetailView(APIView):
 
     def put(self, request, pk):
         user = self.get_object(pk)
+        if request.user.pk == pk and 'is_admin' in request.data and not request.data['is_admin']:
+            return Response(
+                {'detail': "No pots eliminar el teu propi rol d'administrador."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         serializer = UpdateUsuariSerializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
