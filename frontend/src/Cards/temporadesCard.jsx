@@ -6,14 +6,23 @@ const MESOS = [
   "Juliol", "Agost", "Setembre", "Octubre", "Novembre", "Desembre",
 ];
 
-function SelectMesDia({ value, onChange }) {
+function SelectMesDia({ value, onChange, onError }) {
   const pad = (n) => String(n).padStart(2, "0");
   const parts = value ? value.split("-") : [];
   const mes = parseInt(parts[1], 10) || 1;
   const dia = parseInt(parts[2], 10) || 1;
 
-  const emit = (nouMes, nouDia) =>
-    onChange({ target: { value: `2000-${pad(nouMes)}-${pad(nouDia)}` } });
+  const emit = (nouMes, nouDia) => {
+    const mInt = parseInt(nouMes, 10);
+    const dInt = parseInt(nouDia, 10);
+    const nouValor = `2000-${pad(mInt)}-${pad(dInt)}`;
+    const d = new Date(nouValor);
+    if (d.getMonth() + 1 !== mInt || d.getDate() !== dInt) {
+      onError?.(`El dia ${dInt} no existeix al mes ${MESOS[mInt - 1].toLowerCase()}.`);
+      return;
+    }
+    onChange({ target: { value: nouValor } });
+  };
 
   return (
     <div className={styles.mesDia}>
@@ -171,6 +180,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
                     <SelectMesDia
                       value={temporada.data_inici}
                       onChange={handleChange(temporada.id, "data_inici")}
+                      onError={setErrorSolapament}
                     />
                   </div>
                   <div className={styles.field}>
@@ -178,6 +188,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
                     <SelectMesDia
                       value={temporada.data_fi}
                       onChange={handleChange(temporada.id, "data_fi")}
+                      onError={setErrorSolapament}
                     />
                   </div>
                   <div className={styles.field}>
