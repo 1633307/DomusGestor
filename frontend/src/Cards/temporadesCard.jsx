@@ -84,6 +84,9 @@ function detectaSolapament(temporades) {
 
 export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa }) {
   const [errorSolapament, setErrorSolapament] = useState(null);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const handleNovaTemporada = () => {
     const darreraData = immoble.temporades?.reduce(
       (prev, curr) => {
@@ -95,6 +98,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
     const pad = (n) => String(n).padStart(2, "0");
     const darreraDataString = `2000-${pad(darreraData.getMonth() + 1)}-${pad(darreraData.getDate())}`;
 
+    setHasChanges(true);
     setImmoble((prev) => ({
       ...prev,
       temporades: [
@@ -106,6 +110,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
 
   const handleEliminarTemporada = (id) => () => {
     setErrorSolapament(null);
+    setHasChanges(true);
     setImmoble((prev) => ({
       ...prev,
       temporades: (prev.temporades || []).filter((t) => t.id !== id),
@@ -114,6 +119,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
 
   const handleChange = (id, key) => (e) => {
     setErrorSolapament(null);
+    setHasChanges(true);
     const value = key === "min_nits" ? Number(e.target.value) : e.target.value;
     setImmoble((prev) => ({
       ...prev,
@@ -124,6 +130,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
   };
 
   const handleCheckinChange = (id, dia) => {
+    setHasChanges(true);
     setImmoble((prev) => ({
       ...prev,
       temporades: prev.temporades.map((t) => {
@@ -137,7 +144,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
     }));
   };
 
-  const handleDesar = () => {
+  const handleDesar = async () => {
     const dataInvalida = detectaDataInvalida(immoble.temporades || []);
     if (dataInvalida) {
       setErrorSolapament(dataInvalida);
@@ -149,7 +156,10 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
       return;
     }
     setErrorSolapament(null);
-    handleDesa();
+    setSaving(true);
+    const ok = await handleDesa();
+    setSaving(false);
+    if (ok) setHasChanges(false);
   };
 
   return (
@@ -250,8 +260,12 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
           <button className={styles.btnSecondary} onClick={handleNovaTemporada}>
             + Afegeix temporada
           </button>
-          <button className={styles.btnPrimary} onClick={handleDesar}>
-            Desa
+          <button
+            className={hasChanges ? styles.btnPrimary : styles.btnPrimaryClean}
+            onClick={handleDesar}
+            disabled={saving}
+          >
+            {saving ? "Desant..." : "Desa"}
           </button>
         </div>
       </section>

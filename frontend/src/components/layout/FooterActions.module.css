@@ -15,7 +15,8 @@
 
 .editButton,
 .cancelButton,
-.saveButton {
+.saveButton,
+.saveButtonClean {
   height: 44px;
   padding: 0 18px;
   border-radius: 10px;
@@ -46,7 +47,7 @@
 }
 
 .saveButton {
-  border: none;
+  border: 1.5px solid transparent;
   background: #c7d2fe;
   color: #1e293b;
 }
@@ -56,6 +57,21 @@
 }
 
 .saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saveButtonClean {
+  border: 1.5px solid #818cf8;
+  background: white;
+  color: #1e293b;
+}
+
+.saveButtonClean:hover:not(:disabled) {
+  background: #eef2ff;
+}
+
+.saveButtonClean:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

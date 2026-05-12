@@ -83,15 +83,38 @@
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  border: none;
+  border: 1.5px solid transparent;
   background: #c7d2fe;
   color: #1e293b;
   font-family: inherit;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .btnPrimary:hover {
   background: #a5b4fc;
+}
+
+.btnPrimaryClean {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1.5px solid #818cf8;
+  background: white;
+  color: #1e293b;
+  font-family: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btnPrimaryClean:hover:not(:disabled) {
+  background: #eef2ff;
+}
+
+.btnPrimaryClean:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 900px) {

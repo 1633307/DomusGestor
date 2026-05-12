@@ -4,6 +4,8 @@ import styles from "./serveisCard.module.css";
 
 export default function ServeisCard({ immoble, setImmoble, onSave: handleDesa }) {
   const [serveis, setServeis] = useState([]);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     serveisApi.list().then((s) => {
@@ -14,12 +16,20 @@ export default function ServeisCard({ immoble, setImmoble, onSave: handleDesa })
   }, []);
 
   const handleChange = (id) => (e) => {
+    setHasChanges(true);
     setImmoble((prev) => {
       if (e.target.checked) {
         return { ...prev, serveis: [...(prev.serveis || []), id] };
       }
       return { ...prev, serveis: (prev.serveis || []).filter((s) => s !== id) };
     });
+  };
+
+  const handleDesar = async () => {
+    setSaving(true);
+    const ok = await handleDesa();
+    setSaving(false);
+    if (ok) setHasChanges(false);
   };
 
   return (
@@ -50,8 +60,12 @@ export default function ServeisCard({ immoble, setImmoble, onSave: handleDesa })
         )}
 
         <div className={styles.actions}>
-          <button className={styles.btnPrimary} onClick={handleDesa}>
-            Desa
+          <button
+            className={hasChanges ? styles.btnPrimary : styles.btnPrimaryClean}
+            onClick={handleDesar}
+            disabled={saving}
+          >
+            {saving ? "Desant..." : "Desa"}
           </button>
         </div>
       </section>

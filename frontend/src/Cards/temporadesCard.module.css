@@ -186,6 +186,7 @@
 }
 
 .btnPrimary,
+.btnPrimaryClean,
 .btnSecondary,
 .btnDanger {
   height: 40px;
@@ -199,13 +200,28 @@
 }
 
 .btnPrimary {
-  border: none;
+  border: 1.5px solid transparent;
   background: #c7d2fe;
   color: #1e293b;
 }
 
 .btnPrimary:hover {
   background: #a5b4fc;
+}
+
+.btnPrimaryClean {
+  border: 1.5px solid #818cf8;
+  background: white;
+  color: #1e293b;
+}
+
+.btnPrimaryClean:hover:not(:disabled) {
+  background: #eef2ff;
+}
+
+.btnPrimaryClean:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btnSecondary {

@@ -103,6 +103,7 @@ export default function InfoInmoble() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [hasDraftChanges, setHasDraftChanges] = useState(false);
   const [creatingReserva, setCreatingReserva] = useState(false);
   const [calendarDates, setCalendarDates] = useState({ dataEntrada: "", dataSortida: "" });
   const [actiu, setActiu] = useState(true);
@@ -128,11 +129,13 @@ export default function InfoInmoble() {
 
   const handleEdit = () => {
     setDraftData(formData);
+    setHasDraftChanges(false);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setDraftData(formData);
+    setHasDraftChanges(false);
     setIsEditing(false);
   };
 
@@ -146,7 +149,9 @@ export default function InfoInmoble() {
       const mapped = backendToForm(updated);
       setFormData(mapped);
       setDraftData(mapped);
+      setHasDraftChanges(false);
       setIsEditing(false);
+      return true;
     } catch (err) {
       setError(err.message);
     } finally {
@@ -156,6 +161,7 @@ export default function InfoInmoble() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setHasDraftChanges(true);
     setDraftData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -325,6 +331,7 @@ export default function InfoInmoble() {
               onSave={handleSave}
               isSaveDisabled={saving}
               saveLabel={saving ? "Guardant..." : "Guardar"}
+              hasChanges={hasDraftChanges}
             />
           )}
         </div>
