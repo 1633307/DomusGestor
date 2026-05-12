@@ -1,18 +1,13 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 
 from .models import Usuari, InfoImmobiliaria
 
 
 @admin.register(Usuari)
-class UsuariAdmin(UserAdmin):
-    list_display = ['username', 'email', 'is_active']
-    fieldsets = UserAdmin.fieldsets + (
-        ('DomusGestor', {'fields': ('nip',)}),
-    )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ('DomusGestor', {'fields': ('nip', 'email')}),
-    )
+class UsuariAdmin(admin.ModelAdmin):
+    list_display = ['username', 'email', 'nip', 'is_active', 'is_admin']
+    list_filter  = ['is_active', 'is_admin']
+    search_fields = ['username', 'email', 'nip']
 
 
 @admin.register(InfoImmobiliaria)
