@@ -7,9 +7,11 @@ export default function Sidebar({
   seccions = [],
   actiu,
   onDeshabilitar,
+  onHabilitar,
   onEliminar,
 }) {
   const [modalDeshabilitar, setModalDeshabilitar] = useState(false);
+  const [modalHabilitar, setModalHabilitar] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
 
   const sidebarClass = actiu === false
@@ -31,7 +33,7 @@ export default function Sidebar({
           ))}
         </nav>
 
-        {(onDeshabilitar || onEliminar) && (
+        {(onDeshabilitar || onHabilitar || onEliminar) && (
           <div className={styles.sidebarActions}>
             {actiu !== false ? (
               <button
@@ -41,12 +43,20 @@ export default function Sidebar({
                 Deshabilitar
               </button>
             ) : (
-              <button
-                className={styles.btnEliminar}
-                onClick={() => setModalEliminar(true)}
-              >
-                Eliminar
-              </button>
+              <>
+                <button
+                  className={styles.btnHabilitar}
+                  onClick={() => setModalHabilitar(true)}
+                >
+                  Habilitar
+                </button>
+                <button
+                  className={styles.btnEliminar}
+                  onClick={() => setModalEliminar(true)}
+                >
+                  Eliminar
+                </button>
+              </>
             )}
           </div>
         )}
@@ -72,6 +82,32 @@ export default function Sidebar({
                 }}
               >
                 Deshabilitar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalHabilitar && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Habilitar immoble</h3>
+            <p>Estàs segur que vols habilitar aquest immoble? L'immoble tornarà a estar actiu.</p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.btnCancel}
+                onClick={() => setModalHabilitar(false)}
+              >
+                Cancel·lar
+              </button>
+              <button
+                className={styles.btnConfirmHabilitar}
+                onClick={() => {
+                  setModalHabilitar(false);
+                  onHabilitar?.();
+                }}
+              >
+                Habilitar
               </button>
             </div>
           </div>

@@ -105,10 +105,56 @@ def run():
         ["https://placehold.co/800x600?text=DG-020-1", "https://placehold.co/800x600?text=DG-020-2", "https://placehold.co/800x600?text=DG-020-3", "https://placehold.co/800x600?text=DG-020-4"],
     ]
 
+    # Horaris de check-in / check-out per immoble (mateixa ordre que immobles_data).
+    # Format: (hora_checkin_inici, hora_checkin_fi, hora_checkout_inici, hora_checkout_fi)
+    horaris_per_immoble = [
+        # 0 · Apartament Gracia Centre — pis urbà Barcelona
+        ("15:00", "21:00", "07:00", "11:00"),
+        # 1 · Atic Vista Mar — àtic Barcelona
+        ("16:00", "21:00", "08:00", "11:00"),
+        # 2 · Casa amb jardi Sitges — casa costa
+        ("16:00", "20:00", "09:00", "12:00"),
+        # 3 · Estudi Barceloneta — estudi urbà costa
+        ("15:00", "22:00", "07:00", "11:00"),
+        # 4 · Xalet Costa Brava — xalet gran costa
+        ("17:00", "21:00", "09:00", "12:00"),
+        # 5 · Pis Modern Eixample — pis urbà Barcelona
+        ("15:00", "21:00", "08:00", "11:00"),
+        # 6 · Apartament Girona Vella — pis urbà Girona
+        ("15:00", "20:00", "08:00", "11:00"),
+        # 7 · Duplex Tarragona Mar — dúplex costa
+        ("16:00", "21:00", "09:00", "12:00"),
+        # 8 · Casa Rural Osona — casa rural
+        ("17:00", "20:00", "09:00", "12:00"),
+        # 9 · Apartament Lleida Centre — pis urbà Lleida
+        ("14:00", "20:00", "08:00", "11:00"),
+        # 10 · Atic Terrassa Vista — àtic urbà
+        ("15:00", "21:00", "08:00", "11:00"),
+        # 11 · Pis Badalona Platja — pis costa urbana
+        ("16:00", "21:00", "08:00", "11:00"),
+        # 12 · Casa Adossada Sabadell — casa (inactiva)
+        ("15:00", "20:00", "08:00", "11:00"),
+        # 13 · Estudi Mataro Rambla — estudi costa
+        ("15:00", "21:00", "07:00", "11:00"),
+        # 14 · Apartament Manresa Nou — pis urbà
+        ("14:00", "20:00", "08:00", "11:00"),
+        # 15 · Xalet Roses Costa — xalet gran costa
+        ("17:00", "21:00", "09:00", "12:00"),
+        # 16 · Pis Figueres Rambla — pis urbà
+        ("15:00", "20:00", "08:00", "11:00"),
+        # 17 · Casa Rural Priorat — casa rural
+        ("17:00", "20:00", "09:00", "12:00"),
+        # 18 · Apartament Tortosa Riu — pis urbà (check-in autònom)
+        ("15:00", "23:00", "07:00", "11:00"),
+        # 19 · Duplex Vilanova Centre — dúplex costa
+        ("16:00", "21:00", "08:00", "12:00"),
+    ]
+
     immobles = []
-    for row, fotos in zip(immobles_data, fotos_per_immoble):
+    for row, fotos, horaris in zip(immobles_data, fotos_per_immoble, horaris_per_immoble):
         (nom, ref, adr, ciutat, cp, tipus, cap, hab, banys, m2, preu, actiu,
          prop_nom, prop_dni, prop_email, prop_tel, prop_adr, prop_iban) = row
+        ci_inici, ci_fi, co_inici, co_fi = horaris
         imm = Immoble.objects.create(
             nom_comercial=nom, referencia=ref, adreca=adr, ciutat=ciutat,
             codi_postal=cp, tipus_immoble=tipus, capacitat_maxima=cap,
@@ -118,6 +164,10 @@ def run():
             propietari_email=prop_email, propietari_telefon=prop_tel,
             propietari_adreca=prop_adr, propietari_iban=prop_iban,
             fotos=fotos,
+            hora_checkin_inici=ci_inici,
+            hora_checkin_fi=ci_fi,
+            hora_checkout_inici=co_inici,
+            hora_checkout_fi=co_fi,
         )
         immobles.append(imm)
 

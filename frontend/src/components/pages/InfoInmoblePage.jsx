@@ -10,6 +10,7 @@ import FotosCard from "../../Cards/fotosCard";
 import { bookingsApi, inquilinsApi, propertiesApi } from "../../services/api";
 import TemporadesCard from "../../Cards/temporadesCard";
 import ServeisCard from "../../Cards/serveisCard";
+import HorarisCard from "../../Cards/horarisCard";
 import HistoricPagamentsCard from "../../Cards/historicPagamentsCard";
 import ImmobleCalendariCard from "../../Cards/immobleCalendariCard";
 
@@ -33,6 +34,10 @@ const emptyForm = {
   descompteActiu: false,
   descomptePercentatge: "",
   temporades: [],
+  horaCheckinInici: "",
+  horaCheckinFi: "",
+  horaCheckoutInici: "",
+  horaCheckoutFi: "",
 };
 
 function toBoolean(value) {
@@ -61,6 +66,10 @@ function backendToForm(p) {
     descomptePercentatge: String(p.descompte_percentatge ?? ""),
     temporades: p.temporades,
     serveis: p.serveis,
+    horaCheckinInici: p.hora_checkin_inici ?? "",
+    horaCheckinFi: p.hora_checkin_fi ?? "",
+    horaCheckoutInici: p.hora_checkout_inici ?? "",
+    horaCheckoutFi: p.hora_checkout_fi ?? "",
   };
 }
 
@@ -89,6 +98,10 @@ function formToBackend(f, original) {
     actiu: original?.actiu ?? true,
     temporades: f.temporades,
     serveis: f.serveis,
+    hora_checkin_inici: f.horaCheckinInici || null,
+    hora_checkin_fi: f.horaCheckinFi || null,
+    hora_checkout_inici: f.horaCheckoutInici || null,
+    hora_checkout_fi: f.horaCheckoutFi || null,
   };
 }
 
@@ -226,6 +239,17 @@ export default function InfoInmoble() {
     }
   };
 
+  const handleHabilitar = async () => {
+    setError("");
+    try {
+      await propertiesApi.patch(id, { actiu: true });
+      setActiu(true);
+      setOriginal((prev) => ({ ...prev, actiu: true }));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleEliminar = async () => {
     setError("");
     try {
@@ -250,6 +274,7 @@ export default function InfoInmoble() {
             { id: "calendari", label: "Calendari" },
             { id: "novaReserva", label: "Nova reserva" },
             { id: "fotos", label: "Fotos" },
+            { id: "horaris", label: "Horaris" },
             { id: "temporades", label: "Temporades" },
             { id: "serveis", label: "Serveis" },
             { id: "pagaments", label: "Pagaments" },
@@ -257,6 +282,7 @@ export default function InfoInmoble() {
           ]}
           actiu={actiu}
           onDeshabilitar={handleDeshabilitar}
+          onHabilitar={handleHabilitar}
           onEliminar={handleEliminar}
         />
 
@@ -305,6 +331,13 @@ export default function InfoInmoble() {
               initialDataSortida={calendarDates.dataSortida}
             />
           )}
+          {seccioActiva === "horaris" && (
+            <HorarisCard
+              data={isEditing ? draftData : formData}
+              isEditing={isEditing}
+              onChange={handleChange}
+            />
+          )}
           {seccioActiva === "temporades" && (
             <TemporadesCard
               immoble={{ id, ...draftData }}
@@ -323,7 +356,7 @@ export default function InfoInmoble() {
             <HistoricPagamentsCard immobleId={id} />
           )}
 
-          {(seccioActiva === "perfil" || seccioActiva === "descompte") && (
+          {(seccioActiva === "perfil" || seccioActiva === "descompte" || seccioActiva === "horaris") && (
             <FooterActions
               isEditing={isEditing}
               onEdit={handleEdit}

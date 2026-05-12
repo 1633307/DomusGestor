@@ -55,6 +55,11 @@ class Immoble(models.Model):
     propietari_adreca = models.TextField(blank=True, default='')
     propietari_iban = models.CharField(max_length=34, blank=True, default='')
 
+    hora_checkin_inici  = models.TimeField(null=True, blank=True)
+    hora_checkin_fi     = models.TimeField(null=True, blank=True)
+    hora_checkout_inici = models.TimeField(null=True, blank=True)
+    hora_checkout_fi    = models.TimeField(null=True, blank=True)
+
     serveis = models.ManyToManyField(Servei, blank=True, related_name='immobles')
 
     actiu = models.BooleanField(default=True)
