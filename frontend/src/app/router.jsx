@@ -8,6 +8,7 @@ import InmoblesPage from '../components/pages/InmoblesPage';
 import InfoInmoble from '../components/pages/InfoInmoblePage';
 import ReservesPage from '../components/pages/reservesPage';
 import InfoReserva from '../components/pages/infoReservaPage';
+import PerfilImmobiliariaPage from '../components/pages/PerfilImmobiliariaPage';
 
 export default function AppRouter() {
   return (
@@ -29,6 +30,7 @@ export default function AppRouter() {
         <Route path="reserves" element={<ReservesPage />} />
         <Route path="infoInmoble/:id" element={<InfoInmoble />} />
         <Route path="infoReserva/:id" element={<InfoReserva />} />
+        <Route path="perfil-immobiliaria" element={<PerfilImmobiliariaPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

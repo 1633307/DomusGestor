@@ -61,6 +61,12 @@ export const propertiesApi = {
   remove: (id) => api.del(`/properties/${id}/`),
 };
 
+export const immobiliariaApi = {
+  list: () => api.get('/auth/info-immobiliaria/'),
+  create: (data) => api.post('/auth/info-immobiliaria/', data),
+  update: (id, data) => api.put(`/auth/info-immobiliaria/${id}/`, data),
+};
+
 export const bookingsApi = {
   list: () => api.get('/bookings/reserves/'),
   get: (id) => api.get(`/bookings/reserves/${id}/`),
