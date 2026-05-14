@@ -82,6 +82,7 @@ class ImmobleSerializer(serializers.ModelSerializer):
                     preu_nit=t_data['preu_nit'],
                     min_nits=t_data.get('min_nits', 1),
                     dies_checkin=t_data.get('dies_checkin', []),
+                    comissio=t_data.get('comissio', 15.00),  # <--- AFEGEIX AQUESTA LÍNIA
                 )
             else:
                 Temporada.objects.create(
