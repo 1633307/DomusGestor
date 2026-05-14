@@ -73,6 +73,7 @@ class Immoble(models.Model):
 
 
 class Temporada(models.Model):
+    comissio = models.DecimalField(max_digits=5, decimal_places=2, default=15.00)
     immoble      = models.ForeignKey(Immoble, on_delete=models.CASCADE, related_name='temporades')
     nom          = models.CharField(max_length=100)
     data_inici   = models.DateField()
