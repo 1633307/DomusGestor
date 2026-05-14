@@ -24,9 +24,11 @@ class ImmobleListCreateView(generics.ListCreateAPIView):
         filtro_habit = self.request.query_params.get('habitacions')
         dataini_filtre = self.request.query_params.get('dataini')
         datafi_filtre = self.request.query_params.get('datafi')
-
+        capacitat_filtre = self.request.query_params.get('capacitat')
         if filtro_ciutat:
             queryset = queryset.filter(ciutat__icontains=filtro_ciutat)
+        if capacitat_filtre:
+            queryset = queryset.filter(capacitat_maxima__gte=capacitat_filtre)
 
         if filtro_habit:
             queryset = queryset.filter(num_habitacions__gte=filtro_habit)
