@@ -10,12 +10,12 @@ from .serializers import (
 
 
 class InquiliListCreateView(generics.ListCreateAPIView):
-    queryset = InquiliBasic.objects.all()
+    queryset = InquiliBasic.objects.all().order_by('nom_complet')
     serializer_class = InquiliSerializer
 
 
 class InquiliDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = InquiliBasic.objects.all()
+    queryset = InquiliBasic.objects.all().order_by('nom_complet')
     serializer_class = InquiliSerializer
 
 

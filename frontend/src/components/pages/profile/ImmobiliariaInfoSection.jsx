@@ -30,14 +30,6 @@ export default function ImmobiliariaInfoSection({ data, isEditing, onChange }) {
     <div className={styles.profileForm}>
       <Section title="Dades generals">
         <Field
-          label="Nom comercial"
-          name="nomComercial"
-          value={data.nomComercial}
-          isEditing={isEditing}
-          onChange={onChange}
-        />
-
-        <Field
           label="Raó social"
           name="raoSocial"
           value={data.raoSocial}

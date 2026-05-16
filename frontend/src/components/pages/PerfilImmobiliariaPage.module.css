@@ -1,7 +1,7 @@
 .page {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 16px 8px 32px;
+  padding: 16px 8px 120px;
 }
 
 .pageHeader {
@@ -23,37 +23,117 @@
 
 .profileSummary {
   display: flex;
-  align-items: center;
-  gap: 18px;
+  align-items: flex-start;
+  gap: 24px;
   margin-bottom: 28px;
-  padding: 22px 0 26px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.logoColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
 }
 
 .profileAvatar {
-  width: 72px;
-  height: 72px;
-  flex: 0 0 72px;
+  width: 104px;
+  height: 104px;
+  flex: 0 0 104px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   border-radius: 50%;
   background: #dbeafe;
   color: #1e3a8a;
-  font-size: 1.45rem;
+  font-size: 2rem;
   font-weight: 800;
 }
 
-.profileSummary h2 {
+.profileAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logoActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.logoButton,
+.logoRemoveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border-radius: 10px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logoButton {
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.logoButton input {
+  display: none;
+}
+
+.logoRemoveButton {
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #b91c1c;
+}
+
+.profileIdentity {
+  min-width: 0;
+  padding-top: 8px;
+}
+
+.profileIdentity h2 {
   margin: 0 0 4px 0;
   color: #0f172a;
-  font-size: 1.35rem;
+  font-size: 2rem;
   font-weight: 700;
 }
 
-.profileSummary p {
+.profileIdentity p {
   margin: 0;
   color: #64748b;
+}
+
+.profileNameInput {
+  width: 100%;
+  max-width: 620px;
+  height: 52px;
+  margin-bottom: 8px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  color: #0f172a;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 1.6rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.profileNameInput:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
 }
 
 .error,
@@ -77,7 +157,7 @@
 
 @media (max-width: 768px) {
   .page {
-    padding: 8px 0 24px;
+    padding: 8px 0 110px;
   }
 
   .pageHeader h1 {
@@ -85,15 +165,28 @@
   }
 
   .profileSummary {
-    align-items: flex-start;
+    flex-direction: column;
     margin-bottom: 20px;
-    padding: 18px 0 22px;
+    padding: 18px;
   }
 
   .profileAvatar {
-    width: 56px;
-    height: 56px;
-    flex-basis: 56px;
-    font-size: 1.1rem;
+    width: 76px;
+    height: 76px;
+    flex-basis: 76px;
+    font-size: 1.35rem;
+  }
+
+  .logoColumn {
+    align-items: flex-start;
+  }
+
+  .profileIdentity h2 {
+    font-size: 1.5rem;
+  }
+
+  .profileNameInput {
+    height: 46px;
+    font-size: 1.25rem;
   }
 }

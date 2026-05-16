@@ -5,8 +5,8 @@ from .models import InquiliBasic, ReservaBasica, Hoste, Comunicacio
 
 @admin.register(InquiliBasic)
 class InquiliAdmin(admin.ModelAdmin):
-    list_display = ['nom_complet', 'email']
-    search_fields = ['nom_complet', 'email']
+    list_display = ['nom_complet', 'email', 'telefon', 'nacionalitat']
+    search_fields = ['nom_complet', 'email', 'telefon', 'nacionalitat']
 
 
 class HosteInline(admin.TabularInline):

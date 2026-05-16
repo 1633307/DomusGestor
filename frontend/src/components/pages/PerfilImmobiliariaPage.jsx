@@ -5,6 +5,7 @@ import { immobiliariaApi } from "../../services/api";
 import styles from "./PerfilImmobiliariaPage.module.css";
 
 const STORAGE_KEY = "domus_immobiliaria_profile";
+const PROFILE_UPDATED_EVENT = "domus_immobiliaria_profile_updated";
 
 const emptyProfile = {
   id: null,
@@ -20,6 +21,7 @@ const emptyProfile = {
   pais: "",
   web: "",
   observacionsInternes: "",
+  logoBase64: "",
 };
 
 function loadLocalProfile() {
@@ -33,6 +35,11 @@ function loadLocalProfile() {
 
 function saveLocalProfile(profile) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+  window.dispatchEvent(
+    new CustomEvent(PROFILE_UPDATED_EVENT, {
+      detail: profile,
+    }),
+  );
 }
 
 function backendToForm(data, localProfile) {
@@ -120,7 +127,7 @@ export default function PerfilImmobiliariaPage() {
 
         savedProfile = backendToForm(backendSaved, draftProfile);
       } catch {
-        setNotice("Dades guardades localment. Restarà pendent sincronitzar-les amb el backend.");
+        setNotice("Dades guardades.");
       }
 
       saveLocalProfile(savedProfile);
@@ -137,6 +144,31 @@ export default function PerfilImmobiliariaPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDraftProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setError("El logo ha de ser una imatge PNG, JPG, JPEG o WEBP.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setDraftProfile((prev) => ({ ...prev, logoBase64: reader.result || "" }));
+      setError("");
+    };
+    reader.onerror = () => {
+      setError("No s'ha pogut carregar el logo.");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleRemoveLogo = () => {
+    setDraftProfile((prev) => ({ ...prev, logoBase64: "" }));
   };
 
   if (loading) return <p>Carregant perfil de la immobiliària...</p>;
@@ -164,10 +196,51 @@ export default function PerfilImmobiliariaPage() {
       {notice && <p className={styles.notice}>{notice}</p>}
 
       <div className={styles.profileSummary}>
-        <div className={styles.profileAvatar}>{initials || "IM"}</div>
-        <div>
-          <h2>{profileName}</h2>
-          <p>{profileMeta}</p>
+        <div className={styles.logoColumn}>
+          <div className={styles.profileAvatar}>
+            {currentProfile.logoBase64 ? (
+              <img src={currentProfile.logoBase64} alt="Logo de la immobiliària" />
+            ) : (
+              initials || "I"
+            )}
+          </div>
+
+          {isEditing && (
+            <div className={styles.logoActions}>
+              <label className={styles.logoButton}>
+                Canviar logo
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleLogoChange}
+                />
+              </label>
+              {currentProfile.logoBase64 && (
+                <button
+                  type="button"
+                  className={styles.logoRemoveButton}
+                  onClick={handleRemoveLogo}
+                >
+                  Eliminar logo
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className={styles.profileIdentity}>
+          {isEditing ? (
+            <input
+              className={styles.profileNameInput}
+              name="nomComercial"
+              value={currentProfile.nomComercial}
+              onChange={handleChange}
+              placeholder="Nom comercial"
+            />
+          ) : (
+            <h2>{profileName}</h2>
+          )}
+          <p>{currentProfile.raoSocial || profileMeta}</p>
         </div>
       </div>
 

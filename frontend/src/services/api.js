@@ -79,7 +79,11 @@ export const bookingsApi = {
 };
 
 export const inquilinsApi = {
+  list: () => api.get('/bookings/inquilins/'),
+  get: (id) => api.get(`/bookings/inquilins/${id}/`),
   create: (data) => api.post('/bookings/inquilins/', data),
+  update: (id, data) => api.patch(`/bookings/inquilins/${id}/`, data),
+  remove: (id) => api.del(`/bookings/inquilins/${id}/`),
 };
 
 export const comunicacionsApi = {

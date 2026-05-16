@@ -51,10 +51,17 @@ export default function DashboardPage() {
           <small>{stats ? `${stats.immobles_actius} actius` : 'Cargando...'}</small>
         </article>
 
-        <article className={styles.dashboardCard}>
-          <h3>Clientes</h3>
+        <article
+          className={styles.dashboardCard}
+          onClick={() => navigate('/persones')}
+          style={{ cursor: 'pointer' }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/persones')}
+        >
+          <h3>Persones</h3>
           <p className={styles.metric}>{stats?.total_inquilins ?? '—'}</p>
-          <small>{stats ? 'Inquilins registrats' : 'Cargando...'}</small>
+          <small>{stats ? 'Persones registrades' : 'Cargando...'}</small>
         </article>
       </div>
     </section>
