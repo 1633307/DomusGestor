@@ -183,6 +183,25 @@ export default function InfoInmoble() {
     setSeccioActiva("novaReserva");
   };
 
+  const handlePreviewReserva = async (form) => {
+    const payload = {
+      immoble: Number(id),
+      data_entrada: form.dataEntrada,
+      data_sortida: form.dataSortida,
+      num_hostes: form.hostes.length,
+      descompte_immoble_aplicat: toBoolean(form.descompteImmobleAplicat),
+      descompte_immoble_percentatge:
+        Number(form.descompteImmoblePercentatge) || 0,
+      descompte_individual_aplicat: toBoolean(
+        form.descompteIndividualAplicat,
+      ),
+      descompte_individual_percentatge:
+        Number(form.descompteIndividualPercentatge) || 0,
+    };
+
+    return bookingsApi.preview(payload);
+  };
+
   const handleCreateReserva = async (form) => {
     setCreatingReserva(true);
     setError("");
@@ -325,6 +344,7 @@ export default function InfoInmoble() {
             <CrearReservaCard
               key={`${calendarDates.dataEntrada}-${calendarDates.dataSortida}`}
               immoble={{ id, ...formData }}
+              onPreview={handlePreviewReserva}
               onCreate={handleCreateReserva}
               isCreating={creatingReserva}
               initialDataEntrada={calendarDates.dataEntrada}

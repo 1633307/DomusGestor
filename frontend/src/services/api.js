@@ -78,6 +78,7 @@ export const bookingsApi = {
   list: () => api.get("/bookings/reserves/"),
   listByImmoble: (immobleId) => api.get(`/bookings/reserves/?immoble=${immobleId}`),
   get: (id) => api.get(`/bookings/reserves/${id}/`),
+  preview: (data) => api.post("/bookings/reserves/preview/", data),
   create: (data) => api.post("/bookings/reserves/", data),
   // PATCH (partial update) perquè la pestanya d'edició només envia
   // alguns camps (comentaris, hostes, etc.) sense les FKs.

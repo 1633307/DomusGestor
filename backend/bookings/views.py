@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from properties.models import Immoble
 from .models import InquiliBasic, ReservaBasica
 from .serializers import InquiliSerializer, ReservaSerializer, DashboardSerializer
+from .services import calcular_preview_reserva
 
 
 class InquiliListCreateView(generics.ListCreateAPIView):
@@ -46,6 +47,13 @@ class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
         .all()
     )
     serializer_class = ReservaSerializer
+
+
+class ReservaPreviewView(APIView):
+    """Calcula el resum economic d'una reserva sense desar cap dada."""
+
+    def post(self, request):
+        return Response(calcular_preview_reserva(request.data))
 
 
 class DashboardView(APIView):
