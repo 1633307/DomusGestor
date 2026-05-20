@@ -30,11 +30,15 @@ class ReservaListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        
+
         filtro_reserva = self.request.query_params.get('reserva')
         if filtro_reserva:
             queryset = queryset.filter(id=filtro_reserva)
-            
+
+        filtro_immoble = self.request.query_params.get('immoble')
+        if filtro_immoble:
+            queryset = queryset.filter(immoble_id=filtro_immoble)
+
         return queryset
 
 

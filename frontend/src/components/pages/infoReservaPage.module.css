@@ -1,11 +1,33 @@
-.templateGrid{
-
-    display: grid;
-    grid-template-columns: 260px auto;
-    min-height: 100vh;
-    
+.templateGrid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  align-items: start;
+  min-height: 100vh;
 }
 
-.perfilCard{
-    padding: 24px;
+.perfilCard {
+  padding: 24px;
+  min-width: 0;
+}
+
+/* Toast */
+
+.successToast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(22, 163, 74, 0.28);
+  z-index: 200;
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
