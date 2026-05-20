@@ -1,0 +1,146 @@
+.pageTitle {
+  margin-bottom: 20px;
+}
+
+.pageTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageTitle h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: var(--text);
+}
+
+.pageTitle p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.Toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.searchInput,
+.filterSelect {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.8em 1em;
+  font: inherit;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 240px;
+}
+
+.filterSelect {
+  min-width: 180px;
+}
+
+.Grid {
+  display: flex;
+  flex-direction: column;
+ 
+}
+
+.Card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.Card h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.Card a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reservaStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 4px 0;
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+.statusPrereservada {
+  background: #f59e0b;
+}
+
+.statusReservada {
+  background: #2563eb;
+}
+
+.statusLista {
+  background: #16a34a;
+}
+
+.statusCancelada {
+  background: #dc2626;
+}
+
+.statusUnknown {
+  background: #94a3b8;
+}
+
+.paymentStatus {
+  margin-bottom: 0;
+}
+
+.Actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.link {
+  color: #9c9ca079;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.link:hover {
+  background: #232323;
+}
+
+.activeLink {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+@media (max-width: 900px) {
+  .pageTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
