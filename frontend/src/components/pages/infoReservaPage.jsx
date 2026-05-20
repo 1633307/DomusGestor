@@ -7,7 +7,7 @@ import ReservaInfoCard from "../../Cards/reservaInfoCard";
 import ReservaHostesCard from "../../Cards/reservaHostesCard";
 import ReservaPagamentsCard from "../../Cards/reservaPagamentsCard";
 import ReservaComunicacionsCard from "../../Cards/reservaComunicacionsCard";
-import { bookingsApi } from "../../services/api";
+import { bookingsApi, comunicacionsApi } from "../../services/api";
 
 // ── Mappers backend <-> frontend ────────────────────────────────────────────
 function reservaBackendToInfo(r) {
@@ -26,6 +26,14 @@ function reservaBackendToInfo(r) {
 
 function reservaBackendToPagaments(r) {
   return {
+    estatPagament: r.estat_pagament ?? "pendent",
+    importTotal: String(r.import_total ?? ""),
+    importPagat: String(r.import_pagat ?? ""),
+    importPendent: String(r.import_pendent ?? ""),
+    fianca: String(r.fianca ?? ""),
+    metodePagament: r.metode_pagament ?? "",
+    dataUltimPagament: r.data_ultim_pagament ?? "",
+    observacions: r.observacions_pagament ?? "",
     descompteImmobleAplicat: r.descompte_immoble_aplicat ?? false,
     descompteImmoblePercentatge: String(r.descompte_immoble_percentatge ?? ""),
     descompteIndividualAplicat: r.descompte_individual_aplicat ?? false,
@@ -112,38 +120,7 @@ const emptyComunicacio = {
   resum: "",
 };
 
-const initialComunicacions = [
-  {
-    id: 1,
-    canal: "Email",
-    titol: "Confirmació de reserva",
-    destinatari: "client@example.com",
-    data: "2026-05-02",
-    estat: "enviada",
-    resum:
-      "S'ha enviat la confirmació amb les dates, l'immoble i les dades principals de la reserva.",
-  },
-  {
-    id: 2,
-    canal: "WhatsApp",
-    titol: "Recordatori de check-in",
-    destinatari: "+34 600 000 000",
-    data: "2026-05-04",
-    estat: "programada",
-    resum:
-      "Missatge programat amb instruccions d'entrada i informació pràctica per al check-in.",
-  },
-  {
-    id: 3,
-    canal: "Sistema",
-    titol: "Avís de pagament pendent",
-    destinatari: "Equip Domus Gestor",
-    data: "2026-05-04",
-    estat: "pendent",
-    resum:
-      "Pendent de confirmar el pagament abans de tancar la reserva com a pagada.",
-  },
-];
+const initialComunicacions = [];
 
 export default function InfoReserva() {
   const { id } = useParams();
@@ -177,16 +154,14 @@ export default function InfoReserva() {
       return;
     }
     setLoading(true);
-    bookingsApi
-      .get(id)
-      .then((data) => {
+    Promise.all([bookingsApi.get(id), comunicacionsApi.list(id)])
+      .then(([data, coms]) => {
         const info = reservaBackendToInfo(data);
         const pagaments = {
           ...emptyPagaments,
           ...reservaBackendToPagaments(data),
         };
         const guests = (data.hostes || []).map(hosteBackendToFront);
-        // Garantim que hi hagi un principal
         if (guests.length && !guests.some((g) => g.isMainGuest)) {
           guests[0].isMainGuest = true;
         }
@@ -197,6 +172,7 @@ export default function InfoReserva() {
         setDraftPagamentsData(pagaments);
         setHostesData(hostes);
         setDraftHostesData(hostes);
+        setComunicacionsData(coms || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -250,19 +226,31 @@ export default function InfoReserva() {
         return;
       }
 
-      setComunicacionsData((prev) => [
-        {
-          ...draftComunicacio,
-          id: Date.now(),
-          titol: draftComunicacio.titol.trim(),
-        },
-        ...prev,
-      ]);
-      setDraftComunicacio(emptyComunicacio);
-      setIsEditing(false);
+      setSaving(true);
       setError("");
+<<<<<<< HEAD
       setSuccessMsg('Comunicació afegida correctament!');
       setTimeout(() => setSuccessMsg(''), 3500);
+=======
+      try {
+        const payload = {
+          canal: draftComunicacio.canal,
+          titol: draftComunicacio.titol.trim(),
+          destinatari: draftComunicacio.destinatari,
+          data: draftComunicacio.data || null,
+          estat: draftComunicacio.estat,
+          resum: draftComunicacio.resum,
+        };
+        const created = await comunicacionsApi.create(id, payload);
+        setComunicacionsData((prev) => [created, ...prev]);
+        setDraftComunicacio(emptyComunicacio);
+        setIsEditing(false);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setSaving(false);
+      }
+>>>>>>> 8453a3886295faaf1b5c6c4dc6a8253ae1c05756
       return;
     }
 
@@ -271,6 +259,14 @@ export default function InfoReserva() {
       setError("");
       try {
         const payload = {
+          estat_pagament: draftPagamentsData.estatPagament || "pendent",
+          import_total: Number(draftPagamentsData.importTotal) || 0,
+          import_pagat: Number(draftPagamentsData.importPagat) || 0,
+          import_pendent: Number(draftPagamentsData.importPendent) || 0,
+          fianca: Number(draftPagamentsData.fianca) || 0,
+          metode_pagament: draftPagamentsData.metodePagament ?? "",
+          data_ultim_pagament: draftPagamentsData.dataUltimPagament || null,
+          observacions_pagament: draftPagamentsData.observacions ?? "",
           descompte_immoble_aplicat: toBoolean(
             draftPagamentsData.descompteImmobleAplicat,
           ),
@@ -285,10 +281,7 @@ export default function InfoReserva() {
             draftPagamentsData.descompteIndividualMotiu ?? "",
         };
         const updated = await bookingsApi.update(id, payload);
-        const updatedPagaments = {
-          ...draftPagamentsData,
-          ...reservaBackendToPagaments(updated),
-        };
+        const updatedPagaments = reservaBackendToPagaments(updated);
         setPagamentsData(updatedPagaments);
         setDraftPagamentsData(updatedPagaments);
         setIsEditing(false);
@@ -305,23 +298,10 @@ export default function InfoReserva() {
     setSaving(true);
     setError("");
     try {
-      // num_hostes sempre derivat de la llista real (no del input pendent)
       const payload = {
         comentaris_interns: draftData.internalComments,
         estat_reserva: draftData.estadoReserva || null,
         net: toBoolean(draftData.limpio),
-        descompte_immoble_aplicat: toBoolean(
-          pagamentsData.descompteImmobleAplicat,
-        ),
-        descompte_immoble_percentatge:
-          Number(pagamentsData.descompteImmoblePercentatge) || 0,
-        descompte_individual_aplicat: toBoolean(
-          pagamentsData.descompteIndividualAplicat,
-        ),
-        descompte_individual_percentatge:
-          Number(pagamentsData.descompteIndividualPercentatge) || 0,
-        descompte_individual_motiu:
-          pagamentsData.descompteIndividualMotiu ?? "",
         num_hostes: draftHostesData.guests.length,
         hostes: draftHostesData.guests.map(hosteFrontToBackend),
       };

@@ -74,6 +74,12 @@ export const propertiesApi = {
   remove: (id) => api.del(`/properties/${id}/`),
 };
 
+export const immobiliariaApi = {
+  list: () => api.get('/auth/info-immobiliaria/'),
+  create: (data) => api.post('/auth/info-immobiliaria/', data),
+  update: (id, data) => api.put(`/auth/info-immobiliaria/${id}/`, data),
+};
+
 export const bookingsApi = {
   list: () => api.get("/bookings/reserves/"),
   listByImmoble: (immobleId) => api.get(`/bookings/reserves/?immoble=${immobleId}`),
@@ -88,6 +94,17 @@ export const bookingsApi = {
 };
 
 export const inquilinsApi = {
+  list: () => api.get('/bookings/inquilins/'),
+  get: (id) => api.get(`/bookings/inquilins/${id}/`),
+  create: (data) => api.post('/bookings/inquilins/', data),
+  update: (id, data) => api.patch(`/bookings/inquilins/${id}/`, data),
+  remove: (id) => api.del(`/bookings/inquilins/${id}/`),
+};
+
+export const comunicacionsApi = {
+  list: (reservaId) => api.get(`/bookings/reserves/${reservaId}/comunicacions/`),
+  create: (reservaId, data) => api.post(`/bookings/reserves/${reservaId}/comunicacions/`, data),
+  remove: (reservaId, comId) => api.del(`/bookings/reserves/${reservaId}/comunicacions/${comId}/`),
   create: (data) => api.post("/bookings/inquilins/", data),
 };
 

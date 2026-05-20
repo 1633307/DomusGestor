@@ -11,20 +11,52 @@ class InquiliBasic(models.Model):
     RF-25: Informació d'identitat de l'inquilí.
     RNF-02: dni_passaport i dades_facturacio s'emmagatzemen xifrats.
     """
+    GENERE_CHOICES = [
+        ('Home', 'Home'),
+        ('Dona', 'Dona'),
+        ('Altres', 'Altres'),
+    ]
+    DOCUMENT_CHOICES = [
+        ('DNI', 'DNI'),
+        ('NIE', 'NIE'),
+        ('Passaport', 'Passaport'),
+    ]
+
     nom_complet = models.CharField(max_length=150)
-    dni_passaport = EncryptedCharField()
-    dni_passaport_hash = models.CharField(max_length=64, unique=True, editable=False, default='')
-    email = models.EmailField()
+    dni_passaport = EncryptedCharField(blank=True, default='')
+    dni_passaport_hash = models.CharField(
+        max_length=64, unique=True, null=True, blank=True, editable=False, default=None
+    )
+    email = models.EmailField(blank=True, default='')
     dades_facturacio = EncryptedTextField(blank=True)
+    genere = models.CharField(max_length=10, choices=GENERE_CHOICES, blank=True, default='')
+    tipus_document = models.CharField(max_length=15, choices=DOCUMENT_CHOICES, blank=True, default='')
+    nacionalitat = models.CharField(max_length=80, blank=True, default='')
+    data_naixement = models.DateField(null=True, blank=True)
+    residencia = models.TextField(blank=True, default='')
+    telefon = models.CharField(max_length=30, blank=True, default='')
+    nom_fiscal = models.CharField(max_length=150, blank=True, default='')
+    nif_cif = models.CharField(max_length=30, blank=True, default='')
+    adreca_facturacio = models.TextField(blank=True, default='')
+    codi_postal_facturacio = models.CharField(max_length=12, blank=True, default='')
+    ciutat_facturacio = models.CharField(max_length=100, blank=True, default='')
+    provincia_facturacio = models.CharField(max_length=100, blank=True, default='')
+    pais_facturacio = models.CharField(max_length=100, blank=True, default='')
+    email_facturacio = models.EmailField(blank=True, default='')
+    telefon_facturacio = models.CharField(max_length=30, blank=True, default='')
+    observacions_facturacio = models.TextField(blank=True, default='')
 
     def save(self, *args, **kwargs):
         if self.dni_passaport:
             self.dni_passaport_hash = hmac_value(self.dni_passaport)
+        else:
+            self.dni_passaport_hash = None
         super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Inquilí'
         verbose_name_plural = 'Inquilins'
+        ordering = ['nom_complet']
 
     def __str__(self):
         return self.nom_complet
@@ -70,6 +102,25 @@ class ReservaBasica(models.Model):
     descompte_individual_aplicat = models.BooleanField(default=False)
     descompte_individual_percentatge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     descompte_individual_motiu = models.TextField(blank=True, default='')
+
+    ESTAT_PAGAMENT_CHOICES = [
+        ('pendent', 'Pendent'),
+        ('parcial', 'Parcial'),
+        ('pagada', 'Pagada'),
+        ('retornada', 'Retornada'),
+        ('rebutjada', 'Rebutjada'),
+    ]
+
+    estat_pagament = models.CharField(
+        max_length=20, choices=ESTAT_PAGAMENT_CHOICES, default='pendent'
+    )
+    import_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    import_pagat = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    import_pendent = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fianca = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    metode_pagament = models.CharField(max_length=50, blank=True, default='')
+    data_ultim_pagament = models.DateField(null=True, blank=True)
+    observacions_pagament = models.TextField(blank=True, default='')
 
     class Meta:
         verbose_name = 'Reserva'
@@ -165,3 +216,37 @@ class Hoste(models.Model):
     def __str__(self):
         prefix = 'Principal' if self.es_principal else 'Hoste'
         return f"{prefix}: {self.nom_complet}"
+
+
+class Comunicacio(models.Model):
+    CANAL_CHOICES = [
+        ('Email', 'Email'),
+        ('Telefon', 'Telèfon'),
+        ('WhatsApp', 'WhatsApp'),
+        ('Sistema', 'Sistema'),
+    ]
+    ESTAT_CHOICES = [
+        ('enviada', 'Enviada'),
+        ('pendent', 'Pendent'),
+        ('error', 'Error'),
+        ('programada', 'Programada'),
+    ]
+
+    reserva = models.ForeignKey(
+        ReservaBasica, on_delete=models.CASCADE, related_name='comunicacions'
+    )
+    canal = models.CharField(max_length=20, choices=CANAL_CHOICES)
+    titol = models.CharField(max_length=200)
+    destinatari = models.CharField(max_length=200, blank=True, default='')
+    data = models.DateField(null=True, blank=True)
+    estat = models.CharField(max_length=20, choices=ESTAT_CHOICES, default='pendent')
+    resum = models.TextField(blank=True, default='')
+    creat_el = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Comunicació'
+        verbose_name_plural = 'Comunicacions'
+        ordering = ['-creat_el']
+
+    def __str__(self):
+        return f"{self.canal}: {self.titol}"
