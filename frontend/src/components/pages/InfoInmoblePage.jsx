@@ -202,17 +202,33 @@ export default function InfoInmoble() {
     return bookingsApi.preview(payload);
   };
 
+  const getOrCreateInquili = async (mainGuest) => {
+    const document = mainGuest.numero_document || `PENDENT-${Date.now()}`;
+    const existing = await inquilinsApi.findByDocument(document);
+    if (existing?.length) return existing[0];
+
+    try {
+      return await inquilinsApi.create({
+        nom_complet: mainGuest.nom_complet || "Client sense nom",
+        dni_passaport: document,
+        email: mainGuest.email || "pendent@example.com",
+        dades_facturacio: "",
+      });
+    } catch (err) {
+      if (err.fieldErrors?.dni_passaport) {
+        const retry = await inquilinsApi.findByDocument(document);
+        if (retry?.length) return retry[0];
+      }
+      throw err;
+    }
+  };
+
   const handleCreateReserva = async (form) => {
     setCreatingReserva(true);
     setError("");
     try {
       const mainGuest = form.hostes[0];
-      const inquili = await inquilinsApi.create({
-        nom_complet: mainGuest.nom_complet || "Client sense nom",
-        dni_passaport: mainGuest.numero_document || `PENDENT-${Date.now()}`,
-        email: mainGuest.email || "pendent@example.com",
-        dades_facturacio: "",
-      });
+      const inquili = await getOrCreateInquili(mainGuest);
 
       const payload = {
         immoble: Number(id),
