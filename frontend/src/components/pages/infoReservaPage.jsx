@@ -129,6 +129,7 @@ export default function InfoReserva() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const [formData, setFormData] = useState(emptyReserva);
   const [draftData, setDraftData] = useState(emptyReserva);
@@ -227,6 +228,8 @@ export default function InfoReserva() {
 
       setSaving(true);
       setError("");
+      setSuccessMsg('Comunicació afegida correctament!');
+      setTimeout(() => setSuccessMsg(''), 3500);
       try {
         const payload = {
           canal: draftComunicacio.canal,
@@ -279,6 +282,8 @@ export default function InfoReserva() {
         setPagamentsData(updatedPagaments);
         setDraftPagamentsData(updatedPagaments);
         setIsEditing(false);
+        setSuccessMsg('Pagaments guardats correctament!');
+        setTimeout(() => setSuccessMsg(''), 3500);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -315,6 +320,8 @@ export default function InfoReserva() {
       setHostesData(hostes);
       setDraftHostesData(hostes);
       setIsEditing(false);
+      setSuccessMsg('Reserva guardada correctament!');
+      setTimeout(() => setSuccessMsg(''), 3500);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -519,6 +526,9 @@ export default function InfoReserva() {
           )}
         </div>
       </div>
+      {successMsg && (
+        <div className={style.successToast}>{successMsg}</div>
+      )}
     </section>
   );
 }

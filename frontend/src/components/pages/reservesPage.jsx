@@ -35,6 +35,7 @@ function getReservaStatusClass(status) {
 
 export default function ReservesPage() {
   const [reserves, setReserves] = useState([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -46,46 +47,77 @@ export default function ReservesPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredReserves = reserves.filter((reserva) => {
+    const q = search.toLowerCase();
+    return (
+      String(reserva.id).includes(q) ||
+      (reserva.immoble_nom ?? '').toLowerCase().includes(q) ||
+      (reserva.inquili_nom ?? '').toLowerCase().includes(q)
+    );
+  });
+
   return (
     <section>
       <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
-        <h2>Llistat Reserves</h2>
+        <div>
+          <h2>Llistat Reserves</h2>
+          <p>Gestiona i consulta totes les reserves registrades</p>
+        </div>
       </div>
 
-      <div className={styles.Toolbar}>
+      <div className={styles.reservesToolbar}>
         <input
           type="text"
-          placeholder="Buscar reserva"
+          placeholder="Cercar reserves..."
           className={styles.searchInput}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      {loading && <p>Carregant...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {loading && <p className={styles.stateMsg}>Carregant...</p>}
+      {error && <p className={styles.errorMsg}>{error}</p>}
 
-      <div className={styles.Grid}>
-        {reserves.map((reserva) => (
-          <article className={styles.Card} key={reserva.id}>
-            <Link to={`/infoReserva/${reserva.id}`}>
-              <h3>Reserva #{reserva.id}</h3>
-              <p>{reserva.immoble_nom} — {reserva.inquili_nom}</p>
-              <p>{reserva.data_entrada} → {reserva.data_sortida}</p>
-              <div className={styles.reservaStatus}>
-                <span
-                  className={`${styles.statusDot} ${getReservaStatusClass(
-                    getReservaStatusValue(reserva)
-                  )}`}
-                  aria-hidden="true"
-                />
-                <span>{getReservaStatusLabel(getReservaStatusValue(reserva))}</span>
-              </div>
-              <p className={styles.paymentStatus}>
-                {reserva.pagat ? 'Pagada' : 'Pendent'}
-              </p>
+      <div className={styles.reservesGrid}>
+        {filteredReserves.map((reserva) => {
+          const status = getReservaStatusValue(reserva);
+          return (
+            <Link
+              to={`/infoReserva/${reserva.id}`}
+              key={reserva.id}
+              className={styles.reservaCardLink}
+            >
+              <article
+                className={`${styles.reservaCard} ${styles[`card_${status}`] ?? ''}`}
+              >
+                <div className={styles.cardInfo}>
+                  <h3>Reserva #{reserva.id}</h3>
+                  <p className={styles.cardSub}>
+                    {reserva.immoble_nom} — {reserva.inquili_nom}
+                  </p>
+                  <p className={styles.cardDates}>
+                    {reserva.data_entrada} → {reserva.data_sortida}
+                  </p>
+                </div>
+                <div className={styles.cardFooter}>
+                  <span
+                    className={`${styles.statusBadge} ${getReservaStatusClass(status)}`}
+                  >
+                    {getReservaStatusLabel(status)}
+                  </span>
+                  <span
+                    className={`${styles.paymentBadge} ${reserva.pagat ? styles.paymentPagat : styles.paymentPendent}`}
+                  >
+                    {reserva.pagat ? 'Pagada' : 'Pendent'}
+                  </span>
+                </div>
+              </article>
             </Link>
-          </article>
-        ))}
-        {!loading && reserves.length === 0 && <p>No hi ha reserves.</p>}
+          );
+        })}
+        {!loading && filteredReserves.length === 0 && (
+          <p className={styles.stateMsg}>No hi ha reserves.</p>
+        )}
       </div>
     </section>
   );
