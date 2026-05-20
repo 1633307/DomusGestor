@@ -9,7 +9,7 @@ env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(str, 'django-insecure-change-this-in-production'),
     ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1']),
-    FERNET_KEY=(str, ''),
+    FERNET_KEY=(str, '7LZQO_Hw7CWyDdyw6vZAY0Ep9AdspHQvVr00iTs1_c4='),
 )
 
 env_file = BASE_DIR / '.env'

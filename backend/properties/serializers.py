@@ -25,6 +25,11 @@ class TemporadaSerializer(serializers.ModelSerializer):
     def validate_data_fi(self, value):
         return value.replace(year=2000)
 
+    def validate_comissio(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("La comissio ha d'estar entre 0 i 100.")
+        return value
+
 
 class ImmobleSerializer(serializers.ModelSerializer):
     temporades = TemporadaSerializer(many=True, required=False)

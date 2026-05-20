@@ -103,7 +103,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
       ...prev,
       temporades: [
         ...(prev.temporades || []),
-        { nom: "Nova temporada", data_inici: darreraDataString, data_fi: darreraDataString, preu_nit: 0, min_nits: 1, dies_checkin: [] },
+        { nom: "Nova temporada", data_inici: darreraDataString, data_fi: darreraDataString, preu_nit: 0, comissio: 15, min_nits: 1, dies_checkin: [] },
       ],
     }));
   };
@@ -120,7 +120,7 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
   const handleChange = (id, key) => (e) => {
     setErrorSolapament(null);
     setHasChanges(true);
-    const value = key === "min_nits" ? Number(e.target.value) : e.target.value;
+    const value = ["min_nits", "comissio"].includes(key) ? Number(e.target.value) : e.target.value;
     setImmoble((prev) => ({
       ...prev,
       temporades: prev.temporades.map((t) =>
@@ -207,6 +207,17 @@ export default function TemporadesCard({ immoble, setImmoble, onSave: handleDesa
                       type="number"
                       defaultValue={+temporada.preu_nit}
                       onChange={handleChange(temporada.id, "preu_nit")}
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label>Comissio (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      defaultValue={+(temporada.comissio ?? 15)}
+                      onChange={handleChange(temporada.id, "comissio")}
                     />
                   </div>
                   <div className={styles.field}>
