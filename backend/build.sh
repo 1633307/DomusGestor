@@ -15,3 +15,6 @@ python manage.py collectstatic --no-input
 
 # Run migrations
 python manage.py migrate
+
+# Seed initial data
+python seed_data.py
