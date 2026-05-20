@@ -55,6 +55,11 @@ class Immoble(models.Model):
     propietari_adreca = models.TextField(blank=True, default='')
     propietari_iban = models.CharField(max_length=34, blank=True, default='')
 
+    hora_checkin_inici  = models.TimeField(null=True, blank=True)
+    hora_checkin_fi     = models.TimeField(null=True, blank=True)
+    hora_checkout_inici = models.TimeField(null=True, blank=True)
+    hora_checkout_fi    = models.TimeField(null=True, blank=True)
+
     serveis = models.ManyToManyField(Servei, blank=True, related_name='immobles')
 
     actiu = models.BooleanField(default=True)
@@ -68,11 +73,14 @@ class Immoble(models.Model):
 
 
 class Temporada(models.Model):
-    immoble     = models.ForeignKey(Immoble, on_delete=models.CASCADE, related_name='temporades')
-    nom         = models.CharField(max_length=100)
-    data_inici  = models.DateField()
-    data_fi     = models.DateField()
-    preu_nit    = models.DecimalField(max_digits=10, decimal_places=2)
+    comissio = models.DecimalField(max_digits=5, decimal_places=2, default=15.00)
+    immoble      = models.ForeignKey(Immoble, on_delete=models.CASCADE, related_name='temporades')
+    nom          = models.CharField(max_length=100)
+    data_inici   = models.DateField()
+    data_fi      = models.DateField()
+    preu_nit     = models.DecimalField(max_digits=10, decimal_places=2)
+    min_nits     = models.PositiveIntegerField(default=1)
+    dies_checkin = ArrayField(models.IntegerField(), blank=True, default=list)
 
     class Meta:
         verbose_name_plural = 'Temporades'

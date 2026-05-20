@@ -3,7 +3,8 @@ from rest_framework import serializers
 
 from core.fields import hmac_value
 from properties.models import Immoble
-from .models import InquiliBasic, ReservaBasica, Hoste, Comunicacio
+
+from .models import InquiliBasic, ReservaBasica, Hoste, Comunicacio, PagamentReserva
 
 
 def _has_value(value):
@@ -207,6 +208,17 @@ class ComunicacioSerializer(serializers.ModelSerializer):
         if cleaned.get('data') in ('', None):
             cleaned['data'] = None
         return super().to_internal_value(cleaned)
+class PagamentReservaSerializer(serializers.ModelSerializer):
+    codi_reserva = serializers.CharField(source='reserva.codi_reserva', read_only=True)
+    inquili_nom  = serializers.CharField(source='reserva.inquili.nom_complet', read_only=True)
+
+    class Meta:
+        model = PagamentReserva
+        fields = [
+            'id', 'reserva', 'codi_reserva', 'inquili_nom',
+            'data_pagament', 'import_pagament', 'metode_pagament', 'estat',
+        ]
+        read_only_fields = ['id']
 
 
 class DashboardSerializer(serializers.Serializer):

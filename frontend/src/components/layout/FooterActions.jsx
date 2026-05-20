@@ -9,6 +9,7 @@ export default function FooterActions({
   cancelLabel = "Cancel·lar",
   saveLabel = "Guardar",
   isSaveDisabled = false,
+  hasChanges = false,
 }) {
   return (
     <div className={styles.footer}>
@@ -33,7 +34,7 @@ export default function FooterActions({
 
             <button
               type="button"
-              className={styles.saveButton}
+              className={hasChanges ? styles.saveButton : styles.saveButtonClean}
               onClick={onSave}
               disabled={isSaveDisabled}
             >

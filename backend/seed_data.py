@@ -26,7 +26,7 @@ django.setup()
 
 from users.models import Usuari
 from properties.models import Immoble, Servei, Temporada
-from bookings.models import InquiliBasic, ReservaBasica, Hoste
+from bookings.models import InquiliBasic, ReservaBasica, Hoste, PagamentReserva
 
 
 def run():
@@ -43,12 +43,13 @@ def run():
         print("Usuari creat  →  NIP: ADM001 / Password: DomusGestor2026!")
 
     # ── Netejar dades existents ──────────────────────────────────────────────
+    deleted_p = PagamentReserva.objects.all().delete()[0]
     deleted_r = ReservaBasica.objects.all().delete()[0]
     deleted_i = InquiliBasic.objects.all().delete()[0]
     deleted_m = Immoble.objects.all().delete()[0]
     deleted_s = Servei.objects.all().delete()[0]
     deleted_t = Temporada.objects.all().delete()[0]
-    print(f"Eliminats: {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
+    print(f"Eliminats: {deleted_p} pagaments, {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
 
     # ── 20 Immobles ─────────────────────────────────────────────────────────
     # Columnes: nom, ref, adreca, ciutat, cp, tipus, capacitat, hab, banys,
@@ -104,10 +105,56 @@ def run():
         ["https://placehold.co/800x600?text=DG-020-1", "https://placehold.co/800x600?text=DG-020-2", "https://placehold.co/800x600?text=DG-020-3", "https://placehold.co/800x600?text=DG-020-4"],
     ]
 
+    # Horaris de check-in / check-out per immoble (mateixa ordre que immobles_data).
+    # Format: (hora_checkin_inici, hora_checkin_fi, hora_checkout_inici, hora_checkout_fi)
+    horaris_per_immoble = [
+        # 0 · Apartament Gracia Centre — pis urbà Barcelona
+        ("15:00", "21:00", "07:00", "11:00"),
+        # 1 · Atic Vista Mar — àtic Barcelona
+        ("16:00", "21:00", "08:00", "11:00"),
+        # 2 · Casa amb jardi Sitges — casa costa
+        ("16:00", "20:00", "09:00", "12:00"),
+        # 3 · Estudi Barceloneta — estudi urbà costa
+        ("15:00", "22:00", "07:00", "11:00"),
+        # 4 · Xalet Costa Brava — xalet gran costa
+        ("17:00", "21:00", "09:00", "12:00"),
+        # 5 · Pis Modern Eixample — pis urbà Barcelona
+        ("15:00", "21:00", "08:00", "11:00"),
+        # 6 · Apartament Girona Vella — pis urbà Girona
+        ("15:00", "20:00", "08:00", "11:00"),
+        # 7 · Duplex Tarragona Mar — dúplex costa
+        ("16:00", "21:00", "09:00", "12:00"),
+        # 8 · Casa Rural Osona — casa rural
+        ("17:00", "20:00", "09:00", "12:00"),
+        # 9 · Apartament Lleida Centre — pis urbà Lleida
+        ("14:00", "20:00", "08:00", "11:00"),
+        # 10 · Atic Terrassa Vista — àtic urbà
+        ("15:00", "21:00", "08:00", "11:00"),
+        # 11 · Pis Badalona Platja — pis costa urbana
+        ("16:00", "21:00", "08:00", "11:00"),
+        # 12 · Casa Adossada Sabadell — casa (inactiva)
+        ("15:00", "20:00", "08:00", "11:00"),
+        # 13 · Estudi Mataro Rambla — estudi costa
+        ("15:00", "21:00", "07:00", "11:00"),
+        # 14 · Apartament Manresa Nou — pis urbà
+        ("14:00", "20:00", "08:00", "11:00"),
+        # 15 · Xalet Roses Costa — xalet gran costa
+        ("17:00", "21:00", "09:00", "12:00"),
+        # 16 · Pis Figueres Rambla — pis urbà
+        ("15:00", "20:00", "08:00", "11:00"),
+        # 17 · Casa Rural Priorat — casa rural
+        ("17:00", "20:00", "09:00", "12:00"),
+        # 18 · Apartament Tortosa Riu — pis urbà (check-in autònom)
+        ("15:00", "23:00", "07:00", "11:00"),
+        # 19 · Duplex Vilanova Centre — dúplex costa
+        ("16:00", "21:00", "08:00", "12:00"),
+    ]
+
     immobles = []
-    for row, fotos in zip(immobles_data, fotos_per_immoble):
+    for row, fotos, horaris in zip(immobles_data, fotos_per_immoble, horaris_per_immoble):
         (nom, ref, adr, ciutat, cp, tipus, cap, hab, banys, m2, preu, actiu,
          prop_nom, prop_dni, prop_email, prop_tel, prop_adr, prop_iban) = row
+        ci_inici, ci_fi, co_inici, co_fi = horaris
         imm = Immoble.objects.create(
             nom_comercial=nom, referencia=ref, adreca=adr, ciutat=ciutat,
             codi_postal=cp, tipus_immoble=tipus, capacitat_maxima=cap,
@@ -117,6 +164,10 @@ def run():
             propietari_email=prop_email, propietari_telefon=prop_tel,
             propietari_adreca=prop_adr, propietari_iban=prop_iban,
             fotos=fotos,
+            hora_checkin_inici=ci_inici,
+            hora_checkin_fi=ci_fi,
+            hora_checkout_inici=co_inici,
+            hora_checkout_fi=co_fi,
         )
         immobles.append(imm)
 
@@ -282,116 +333,120 @@ def run():
     print("Serveis assignats als immobles")
 
     # ── Temporades ───────────────────────────────────────────────────────────
-    # Format: (immoble_idx, nom, data_inici, data_fi, preu_nit)
-    # Cada immoble té entre 2 i 4 temporades. Els rangs cobren tot l'any 2026.
-    # preu_nit sobreescriu preu_base_nit durant el període de la temporada.
+    # Format: (immoble_idx, nom, data_inici, data_fi, preu_nit, min_nits, dies_checkin)
+    # dies_checkin: [] = qualsevol dia, [5] = dissabte, [5,6] = dissabte+diumenge, etc.
+    # 0=Dl 1=Dt 2=Dc 3=Dj 4=Dv 5=Ds 6=Dg
+    # ── Temporades ───────────────────────────────────────────────────────────
+    # Format: (immoble_idx, nom, data_inici, data_fi, preu_nit, min_nits, dies_checkin, comissio)
+    # dies_checkin: [] = qualsevol dia, [5] = dissabte, [5,6] = dissabte+diumenge, etc.
+    # 0=Dl 1=Dt 2=Dc 3=Dj 4=Dv 5=Ds 6=Dg
     temporades_data = [
-        # 0 · Apartament Gracia Centre (base 110 €)
-        (0, "Temporada Baixa",      "2026-01-01", "2026-03-31",  90.00),
-        (0, "Temporada Mitja",      "2026-04-01", "2026-06-30", 110.00),
-        (0, "Temporada Alta",       "2026-07-01", "2026-08-31", 155.00),
-        (0, "Temporada Mitja Tard", "2026-09-01", "2026-12-31", 105.00),
+        # 0 · Apartament Gracia Centre (base 110 €) — urbà Barcelona
+        (0, "Temporada Baixa",      "2000-01-01", "2000-03-31",  90.00, 2, [], 10.00),
+        (0, "Temporada Mitja",      "2000-04-01", "2000-06-30", 110.00, 3, [], 15.00),
+        (0, "Temporada Alta",       "2000-07-01", "2000-08-31", 155.00, 3, [], 20.00),
+        (0, "Temporada Mitja Tard", "2000-09-01", "2000-12-31", 105.00, 2, [], 15.00),
 
-        # 1 · Atic Vista Mar (base 220 €)
-        (1, "Temporada Baixa",      "2026-01-01", "2026-05-31", 180.00),
-        (1, "Temporada Alta",       "2026-06-01", "2026-09-15", 280.00),
-        (1, "Temporada Mitja",      "2026-09-16", "2026-12-31", 210.00),
+        # 1 · Atic Vista Mar (base 220 €) — urbà Barcelona
+        (1, "Temporada Baixa",      "2000-01-01", "2000-05-31", 180.00, 2, [], 15.00),
+        (1, "Temporada Alta",       "2000-06-01", "2000-09-15", 280.00, 3, [], 20.00),
+        (1, "Temporada Mitja",      "2000-09-16", "2000-12-31", 210.00, 2, [], 15.00),
 
-        # 2 · Casa amb jardi Sitges (base 350 €)
-        (2, "Hivern",               "2026-01-01", "2026-03-31", 270.00),
-        (2, "Primavera",            "2026-04-01", "2026-06-30", 340.00),
-        (2, "Estiu",                "2026-07-01", "2026-08-31", 480.00),
-        (2, "Tardor",               "2026-09-01", "2026-12-31", 310.00),
+        # 2 · Casa amb jardi Sitges (base 350 €) — costa
+        (2, "Hivern",               "2000-01-01", "2000-03-31", 270.00, 2, [], 10.00),
+        (2, "Primavera",            "2000-04-01", "2000-06-30", 340.00, 3, [], 15.00),
+        (2, "Estiu",                "2000-07-01", "2000-08-31", 480.00, 7, [5, 6], 20.00),
+        (2, "Tardor",               "2000-09-01", "2000-12-31", 310.00, 3, [], 10.00),
 
-        # 3 · Estudi Barceloneta (base 75 €)
-        (3, "Temporada Baixa",      "2026-01-01", "2026-06-14",  65.00),
-        (3, "Temporada Alta",       "2026-06-15", "2026-09-15",  95.00),
-        (3, "Temporada Baixa",      "2026-09-16", "2026-12-31",  65.00),
+        # 3 · Estudi Barceloneta (base 75 €) — urbà costa
+        (3, "Temporada Baixa",      "2000-01-01", "2000-06-14",  65.00, 2, [], 10.00),
+        (3, "Temporada Alta",       "2000-06-15", "2000-09-15",  95.00, 3, [], 15.00),
+        (3, "Temporada Baixa",      "2000-09-16", "2000-12-31",  65.00, 2, [], 10.00),
 
-        # 4 · Xalet Costa Brava (base 480 €)
-        (4, "Temporada Baixa",      "2026-01-01", "2026-03-31", 360.00),
-        (4, "Setmana Santa",        "2026-04-01", "2026-04-12", 520.00),
-        (4, "Primavera/Tardor",     "2026-04-13", "2026-06-30", 420.00),
-        (4, "Temporada Alta",       "2026-07-01", "2026-08-31", 650.00),
-        (4, "Tardor/Hivern",        "2026-09-01", "2026-12-31", 400.00),
+        # 4 · Xalet Costa Brava (base 480 €) — costa gran
+        (4, "Temporada Baixa",      "2000-01-01", "2000-03-31", 360.00, 2, [], 10.00),
+        (4, "Setmana Santa",        "2000-04-01", "2000-04-12", 520.00, 5, [5, 6], 20.00),
+        (4, "Primavera/Tardor",     "2000-04-13", "2000-06-30", 420.00, 3, [], 15.00),
+        (4, "Temporada Alta",       "2000-07-01", "2000-08-31", 650.00, 7, [5, 6], 20.00),
+        (4, "Tardor/Hivern",        "2000-09-01", "2000-12-31", 400.00, 3, [], 15.00),
 
-        # 5 · Pis Modern Eixample (base 150 €)
-        (5, "Temporada Baixa",      "2026-01-01", "2026-03-31", 120.00),
-        (5, "Temporada Mitja",      "2026-04-01", "2026-06-30", 150.00),
-        (5, "Temporada Alta",       "2026-07-01", "2026-08-31", 195.00),
-        (5, "Temporada Mitja Tard", "2026-09-01", "2026-12-31", 140.00),
+        # 5 · Pis Modern Eixample (base 150 €) — urbà Barcelona
+        (5, "Temporada Baixa",      "2000-01-01", "2000-03-31", 120.00, 2, [], 10.00),
+        (5, "Temporada Mitja",      "2000-04-01", "2000-06-30", 150.00, 3, [], 15.00),
+        (5, "Temporada Alta",       "2000-07-01", "2000-08-31", 195.00, 3, [], 18.00),
+        (5, "Temporada Mitja Tard", "2000-09-01", "2000-12-31", 140.00, 2, [], 15.00),
 
-        # 6 · Apartament Girona Vella (base 95 €)
-        (6, "Hivern",               "2026-01-01", "2026-05-31",  80.00),
-        (6, "Estiu",                "2026-06-01", "2026-09-30", 115.00),
-        (6, "Tardor/Hivern",        "2026-10-01", "2026-12-31",  80.00),
+        # 6 · Apartament Girona Vella (base 95 €) — urbà
+        (6, "Hivern",               "2000-01-01", "2000-05-31",  80.00, 2, [], 10.00),
+        (6, "Estiu",                "2000-06-01", "2000-09-30", 115.00, 3, [], 18.00),
+        (6, "Tardor/Hivern",        "2000-10-01", "2000-12-31",  80.00, 2, [], 10.00),
 
-        # 7 · Duplex Tarragona Mar (base 180 €)
-        (7, "Temporada Baixa",      "2026-01-01", "2026-05-31", 145.00),
-        (7, "Temporada Alta",       "2026-06-01", "2026-09-15", 230.00),
-        (7, "Temporada Baixa",      "2026-09-16", "2026-12-31", 145.00),
+        # 7 · Duplex Tarragona Mar (base 180 €) — costa
+        (7, "Temporada Baixa",      "2000-01-01", "2000-05-31", 145.00, 2, [], 12.00),
+        (7, "Temporada Alta",       "2000-06-01", "2000-09-15", 230.00, 7, [5, 6], 18.00),
+        (7, "Temporada Baixa",      "2000-09-16", "2000-12-31", 145.00, 2, [], 12.00),
 
-        # 8 · Casa Rural Osona (base 300 €)
-        (8, "Hivern",               "2026-01-01", "2026-03-31", 240.00),
-        (8, "Primavera",            "2026-04-01", "2026-06-30", 290.00),
-        (8, "Estiu",                "2026-07-01", "2026-08-31", 380.00),
-        (8, "Tardor",               "2026-09-01", "2026-12-31", 260.00),
+        # 8 · Casa Rural Osona (base 300 €) — rural
+        (8, "Hivern",               "2000-01-01", "2000-03-31", 240.00, 2, [], 15.00),
+        (8, "Primavera",            "2000-04-01", "2000-06-30", 290.00, 3, [5], 15.00),
+        (8, "Estiu",                "2000-07-01", "2000-08-31", 380.00, 7, [5, 6], 20.00),
+        (8, "Tardor",               "2000-09-01", "2000-12-31", 260.00, 3, [], 15.00),
 
-        # 9 · Apartament Lleida Centre (base 70 €)
-        (9, "Temporada Baixa",      "2026-01-01", "2026-06-30",  60.00),
-        (9, "Temporada Alta",       "2026-07-01", "2026-08-31",  85.00),
-        (9, "Temporada Baixa",      "2026-09-01", "2026-12-31",  60.00),
+        # 9 · Apartament Lleida Centre (base 70 €) — urbà
+        (9, "Temporada Baixa",      "2000-01-01", "2000-06-30",  60.00, 2, [], 10.00),
+        (9, "Temporada Alta",       "2000-07-01", "2000-08-31",  85.00, 3, [], 15.00),
+        (9, "Temporada Baixa",      "2000-09-01", "2000-12-31",  60.00, 2, [], 10.00),
 
-        # 10 · Atic Terrassa Vista (base 130 €)
-        (10, "Temporada Baixa",     "2026-01-01", "2026-05-31", 105.00),
-        (10, "Temporada Alta",      "2026-06-01", "2026-09-15", 165.00),
-        (10, "Temporada Baixa",     "2026-09-16", "2026-12-31", 105.00),
+        # 10 · Atic Terrassa Vista (base 130 €) — urbà
+        (10, "Temporada Baixa",     "2000-01-01", "2000-05-31", 105.00, 2, [], 12.00),
+        (10, "Temporada Alta",      "2000-06-01", "2000-09-15", 165.00, 3, [], 18.00),
+        (10, "Temporada Baixa",     "2000-09-16", "2000-12-31", 105.00, 2, [], 12.00),
 
-        # 11 · Pis Badalona Platja (base 120 €)
-        (11, "Temporada Baixa",     "2026-01-01", "2026-05-31",  95.00),
-        (11, "Temporada Alta",      "2026-06-01", "2026-09-15", 155.00),
-        (11, "Temporada Mitja",     "2026-09-16", "2026-12-31", 110.00),
+        # 11 · Pis Badalona Platja (base 120 €) — costa urbana
+        (11, "Temporada Baixa",     "2000-01-01", "2000-05-31",  95.00, 2, [], 10.00),
+        (11, "Temporada Alta",      "2000-06-01", "2000-09-15", 155.00, 7, [5, 6], 20.00),
+        (11, "Temporada Mitja",     "2000-09-16", "2000-12-31", 110.00, 3, [], 15.00),
 
         # 12 · Casa Adossada Sabadell — inactiva (base 160 €)
-        (12, "Temporada Baixa",     "2026-01-01", "2026-06-30", 130.00),
-        (12, "Temporada Alta",      "2026-07-01", "2026-08-31", 190.00),
-        (12, "Temporada Baixa",     "2026-09-01", "2026-12-31", 130.00),
+        (12, "Temporada Baixa",     "2000-01-01", "2000-06-30", 130.00, 2, [], 10.00),
+        (12, "Temporada Alta",      "2000-07-01", "2000-08-31", 190.00, 3, [], 15.00),
+        (12, "Temporada Baixa",     "2000-09-01", "2000-12-31", 130.00, 2, [], 10.00),
 
-        # 13 · Estudi Mataro Rambla (base 65 €)
-        (13, "Temporada Baixa",     "2026-01-01", "2026-06-14",  55.00),
-        (13, "Temporada Alta",      "2026-06-15", "2026-09-15",  80.00),
-        (13, "Temporada Baixa",     "2026-09-16", "2026-12-31",  55.00),
+        # 13 · Estudi Mataro Rambla (base 65 €) — costa
+        (13, "Temporada Baixa",     "2000-01-01", "2000-06-14",  55.00, 2, [], 10.00),
+        (13, "Temporada Alta",      "2000-06-15", "2000-09-15",  80.00, 7, [5, 6], 15.00),
+        (13, "Temporada Baixa",     "2000-09-16", "2000-12-31",  55.00, 2, [], 10.00),
 
-        # 14 · Apartament Manresa Nou (base 80 €)
-        (14, "Temporada Única",     "2026-01-01", "2026-12-31",  80.00),
+        # 14 · Apartament Manresa Nou (base 80 €) — urbà
+        (14, "Temporada Única",     "2000-01-01", "2000-12-31",  80.00, 2, [], 10.00),
 
-        # 15 · Xalet Roses Costa (base 400 €)
-        (15, "Hivern",              "2026-01-01", "2026-03-31", 300.00),
-        (15, "Setmana Santa",       "2026-04-01", "2026-04-12", 450.00),
-        (15, "Primavera",           "2026-04-13", "2026-06-30", 380.00),
-        (15, "Temporada Alta",      "2026-07-01", "2026-08-31", 560.00),
-        (15, "Tardor/Hivern",       "2026-09-01", "2026-12-31", 350.00),
+        # 15 · Xalet Roses Costa (base 400 €) — costa gran
+        (15, "Hivern",              "2000-01-01", "2000-03-31", 300.00, 2, [], 15.00),
+        (15, "Setmana Santa",       "2000-04-01", "2000-04-12", 450.00, 5, [5, 6], 20.00),
+        (15, "Primavera",           "2000-04-13", "2000-06-30", 380.00, 3, [], 15.00),
+        (15, "Temporada Alta",      "2000-07-01", "2000-08-31", 560.00, 7, [5, 6], 20.00),
+        (15, "Tardor/Hivern",       "2000-09-01", "2000-12-31", 350.00, 3, [], 15.00),
 
-        # 16 · Pis Figueres Rambla (base 85 €)
-        (16, "Temporada Baixa",     "2026-01-01", "2026-06-30",  70.00),
-        (16, "Temporada Alta",      "2026-07-01", "2026-08-31", 105.00),
-        (16, "Temporada Baixa",     "2026-09-01", "2026-12-31",  70.00),
+        # 16 · Pis Figueres Rambla (base 85 €) — urbà
+        (16, "Temporada Baixa",     "2000-01-01", "2000-06-30",  70.00, 2, [], 10.00),
+        (16, "Temporada Alta",      "2000-07-01", "2000-08-31", 105.00, 3, [], 15.00),
+        (16, "Temporada Baixa",     "2000-09-01", "2000-12-31",  70.00, 2, [], 10.00),
 
-        # 17 · Casa Rural Priorat (base 260 €)
-        (17, "Hivern",              "2026-01-01", "2026-03-31", 200.00),
-        (17, "Primavera/Tardor",    "2026-04-01", "2026-06-30", 250.00),
-        (17, "Estiu",               "2026-07-01", "2026-08-31", 330.00),
-        (17, "Tardor",              "2026-09-01", "2026-12-31", 220.00),
+        # 17 · Casa Rural Priorat (base 260 €) — rural
+        (17, "Hivern",              "2000-01-01", "2000-03-31", 200.00, 2, [], 15.00),
+        (17, "Primavera/Tardor",    "2000-04-01", "2000-06-30", 250.00, 3, [5], 15.00),
+        (17, "Estiu",               "2000-07-01", "2000-08-31", 330.00, 7, [5, 6], 20.00),
+        (17, "Tardor",              "2000-09-01", "2000-12-31", 220.00, 3, [], 15.00),
 
-        # 18 · Apartament Tortosa Riu (base 75 €)
-        (18, "Temporada Baixa",     "2026-01-01", "2026-06-30",  65.00),
-        (18, "Temporada Alta",      "2026-07-01", "2026-08-31",  90.00),
-        (18, "Temporada Baixa",     "2026-09-01", "2026-12-31",  65.00),
+        # 18 · Apartament Tortosa Riu (base 75 €) — urbà
+        (18, "Temporada Baixa",     "2000-01-01", "2000-06-30",  65.00, 2, [], 10.00),
+        (18, "Temporada Alta",      "2000-07-01", "2000-08-31",  90.00, 3, [], 15.00),
+        (18, "Temporada Baixa",     "2000-09-01", "2000-12-31",  65.00, 2, [], 10.00),
 
-        # 19 · Duplex Vilanova Centre (base 195 €)
-        (19, "Temporada Baixa",     "2026-01-01", "2026-05-31", 155.00),
-        (19, "Temporada Alta",      "2026-06-01", "2026-09-15", 245.00),
-        (19, "Temporada Mitja",     "2026-09-16", "2026-12-31", 180.00),
+        # 19 · Duplex Vilanova Centre (base 195 €) — costa
+        (19, "Temporada Baixa",     "2000-01-01", "2000-05-31", 155.00, 2, [], 15.00),
+        (19, "Temporada Alta",      "2000-06-01", "2000-09-15", 245.00, 7, [5, 6], 20.00),
+        (19, "Temporada Mitja",     "2000-09-16", "2000-12-31", 180.00, 3, [], 15.00),
     ]
 
     temporades = [
@@ -401,8 +456,11 @@ def run():
             data_inici=inici,
             data_fi=fi,
             preu_nit=preu,
+            min_nits=min_nits,
+            dies_checkin=dies_checkin,
+            comissio=comissio, # <-- AFEGIT AQUÍ
         )
-        for idx, nom, inici, fi, preu in temporades_data
+        for idx, nom, inici, fi, preu, min_nits, dies_checkin, comissio in temporades_data # <-- AFEGIT AQUÍ
     ]
     print(f"{len(temporades)} temporades creades")
 
@@ -572,6 +630,67 @@ def run():
         reserva.save(update_fields=['num_hostes'])
 
     print(f"{total_hostes} hostes creats")
+
+    # ── Pagaments de reserves ────────────────────────────────────────────────
+    # Format: (reserva_idx, data_pagament, import_pagament, metode, estat)
+    # Les reserves pagades (pagat=True) tenen 1-2 pagaments en estat 'pagat'.
+    # Algunes reserves no pagades tenen 1 pagament en estat 'pendent' o 'cancelat'.
+    pagaments_data = [
+        # Reserva 0 · Apartament Gracia Centre · 5 nits · Airbnb · pagada
+        (0,  "2026-01-08",  550.00, "targeta",       "pagat"),
+        # Reserva 1 · Atic Vista Mar · 3 nits · Booking · pagada
+        (1,  "2026-01-18",  660.00, "transferencia", "pagat"),
+        # Reserva 2 · Casa amb jardi Sitges · 7 nits · Direct · pagada (2 pagaments)
+        (2,  "2026-01-20", 1225.00, "transferencia", "pagat"),
+        (2,  "2026-02-01", 1225.00, "transferencia", "pagat"),
+        # Reserva 3 · Estudi Barceloneta · 2 nits · Airbnb · NO pagada
+        (3,  "2026-02-12",  150.00, "bizum",         "pendent"),
+        # Reserva 4 · Xalet Costa Brava · 7 nits · Direct · pagada (2 pagaments)
+        (4,  "2026-02-10", 1680.00, "transferencia", "pagat"),
+        (4,  "2026-02-25", 1680.00, "transferencia", "pagat"),
+        # Reserva 5 · Pis Modern Eixample · 3 nits · Booking · NO pagada
+        (5,  "2026-03-14",  450.00, "targeta",       "pendent"),
+        # Reserva 6 · Apartament Girona Vella · 2 nits · Airbnb · pagada
+        (6,  "2026-04-03",  190.00, "targeta",       "pagat"),
+        # Reserva 7 · Duplex Tarragona Mar · 5 nits · Direct · NO pagada (cancelat)
+        (7,  "2026-04-18",  900.00, "transferencia", "cancelat"),
+        # Reserva 8 · Casa Rural Osona · 4 nits · Booking · pagada
+        (8,  "2026-04-28", 1200.00, "transferencia", "pagat"),
+        # Reserva 9 · Apartament Lleida Centre · 7 nits · Airbnb · NO pagada
+        (9,  "2026-05-08",  490.00, "bizum",         "pendent"),
+        # Reserva 10 · Atic Terrassa Vista · 2 nits · Direct · pagada
+        (10, "2026-05-18",  260.00, "efectiu",       "pagat"),
+        # Reserva 11 · Pis Badalona Platja · 7 nits · Booking · NO pagada
+        (11, "2026-05-28",  840.00, "targeta",       "pendent"),
+        # Reserva 12 · Casa Adossada Sabadell · 5 nits · Airbnb · pagada
+        (12, "2026-06-12",  800.00, "transferencia", "pagat"),
+        # Reserva 13 · Estudi Mataro Rambla · 6 nits · Altres · NO pagada
+        (13, "2026-06-28",  390.00, "altres",        "pendent"),
+        # Reserva 14 · Apartament Manresa Nou · 4 nits · Direct · pagada
+        (14, "2026-07-08",  320.00, "bizum",         "pagat"),
+        # Reserva 15 · Xalet Roses Costa · 5 nits · Booking · NO pagada
+        (15, "2026-07-18", 2000.00, "transferencia", "pendent"),
+        # Reserva 16 · Pis Figueres Rambla · 9 nits · Airbnb · pagada
+        (16, "2026-07-30",  765.00, "targeta",       "pagat"),
+        # Reserva 17 · Casa Rural Priorat · 3 nits · Direct · pagada
+        (17, "2026-08-13",  780.00, "transferencia", "pagat"),
+        # Reserva 18 · Apartament Tortosa Riu · 4 nits · Booking · NO pagada
+        (18, "2026-08-28",  300.00, "bizum",         "pendent"),
+        # Reserva 19 · Duplex Vilanova Centre · 5 nits · Airbnb · pagada
+        (19, "2026-09-08",  975.00, "targeta",       "pagat"),
+    ]
+
+    pagaments = [
+        PagamentReserva.objects.create(
+            reserva=reserves[r_idx],
+            data_pagament=data,
+            import_pagament=imp,
+            metode_pagament=metode,
+            estat=estat,
+        )
+        for r_idx, data, imp, metode, estat in pagaments_data
+    ]
+    print(f"{len(pagaments)} pagaments creats")
     print("Tot OK!")
 
 

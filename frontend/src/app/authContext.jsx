@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
 
   const login = async ({ nip, password }) => {
     if (!nip || !password) {
-      throw new Error('Debes completar todos los campos');
+      throw new Error("Has d'omplir tots els camps");
     }
     const { token, user: userData } = await authApi.login(nip, password);
     setToken(token);
@@ -43,6 +43,7 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       isAuthenticated: Boolean(user),
+      isAdmin: user?.is_admin ?? false,
       loading,
       login,
       logout,
@@ -56,7 +57,7 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth debe usarse dentro de AuthProvider');
+    throw new Error("useAuth s'ha d'usar dins AuthProvider");
   }
   return context;
 }

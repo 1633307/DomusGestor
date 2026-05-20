@@ -152,9 +152,14 @@ function hosteFrontToBackend(guest, index) {
   };
 }
 
-export default function CrearReservaCard({ immoble, onCreate, isCreating = false }) {
-  const [form, setForm] = useState(emptyForm);
+export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreating = false, initialDataEntrada = "", initialDataSortida = "" }) {
+  const [form, setForm] = useState({ ...emptyForm, dataEntrada: initialDataEntrada, dataSortida: initialDataSortida });
   const [errors, setErrors] = useState([]);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+  const [previewReserva, setPreviewReserva] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [pendingForm, setPendingForm] = useState(null);
 
   const descompteImmobleActiu = toBoolean(immoble?.descompteActiu);
   const descompteImmoblePercentatge = immoble?.descomptePercentatge || "";
@@ -248,16 +253,47 @@ export default function CrearReservaCard({ immoble, onCreate, isCreating = false
     return nextErrors.length === 0;
   };
 
+  const buildSubmissionData = () => ({
+    ...form,
+    hostes: form.hostes.map(hosteFrontToBackend),
+    numHostes: String(form.hostes.length),
+    descompteImmobleAplicat: descompteImmobleActiu,
+    descompteImmoblePercentatge,
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    await onCreate({
-      ...form,
-      hostes: form.hostes.map(hosteFrontToBackend),
-      numHostes: String(form.hostes.length),
-      descompteImmobleAplicat: descompteImmobleActiu,
-      descompteImmoblePercentatge,
-    });
+
+    const submissionData = buildSubmissionData();
+    setIsPreviewing(true);
+    setPreviewError("");
+    setPreviewReserva(null);
+
+    try {
+      if (!onPreview) {
+        await onCreate(submissionData);
+        return;
+      }
+      const preview = await onPreview(submissionData);
+      setPendingForm(submissionData);
+      setPreviewReserva(preview);
+      setIsPreviewOpen(true);
+    } catch {
+      setPreviewError("No s'ha pogut calcular el resum econòmic de la reserva.");
+    } finally {
+      setIsPreviewing(false);
+    }
+  };
+
+  const handleConfirmReserva = async () => {
+    if (!pendingForm) return;
+    setIsPreviewOpen(false);
+    await onCreate(pendingForm);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
   };
 
   return (
@@ -275,6 +311,12 @@ export default function CrearReservaCard({ immoble, onCreate, isCreating = false
             {errors.map((error) => (
               <p key={error}>{error}</p>
             ))}
+          </div>
+        )}
+
+        {previewError && (
+          <div className={styles.errorBox}>
+            <p>{previewError}</p>
           </div>
         )}
 
@@ -323,7 +365,7 @@ export default function CrearReservaCard({ immoble, onCreate, isCreating = false
               options={[
                 { value: "prereservada", label: "Prereservada" },
                 { value: "reservada", label: "Reservada" },
-                { value: "lista", label: "Llista" },
+                { value: "lista", label: "Llesta" },
                 { value: "cancelada", label: "Cancel·lada" },
               ]}
             />
@@ -479,12 +521,111 @@ export default function CrearReservaCard({ immoble, onCreate, isCreating = false
           </div>
 
           <div className={styles.actions}>
-            <button type="submit" disabled={isCreating}>
-              {isCreating ? "Creant..." : "Crear reserva"}
+            <button type="submit" disabled={isCreating || isPreviewing}>
+              {isPreviewing ? "Calculant..." : isCreating ? "Creant..." : "Reservar"}
             </button>
           </div>
         </form>
       </section>
+
+      {isPreviewOpen && previewReserva && (
+        <div className={styles.previewOverlay} role="presentation">
+          <section
+            className={styles.previewModal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="resum-reserva-title"
+          >
+            <div className={styles.previewHeader}>
+              <div>
+                <h2 id="resum-reserva-title">Resum de la reserva</h2>
+                <p>
+                  {previewReserva.nits} nits · {previewReserva.num_hostes} hostes
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.previewRows}>
+              <div className={styles.previewRow}>
+                <span>Preu de l'allotjament</span>
+                <strong>{previewReserva.subtotal_allotjament} €</strong>
+              </div>
+              {Number(previewReserva.descompte_immoble_import) > 0 && (
+                <div className={styles.previewRow}>
+                  <span>
+                    Descompte de l'immoble ({previewReserva.descompte_immoble_percentatge}%)
+                  </span>
+                  <strong>-{previewReserva.descompte_immoble_import} €</strong>
+                </div>
+              )}
+              {Number(previewReserva.descompte_individual_import) > 0 && (
+                <div className={styles.previewRow}>
+                  <span>
+                    Descompte individual ({previewReserva.descompte_individual_percentatge}%)
+                  </span>
+                  <strong>-{previewReserva.descompte_individual_import} €</strong>
+                </div>
+              )}
+              <div className={`${styles.previewRow} ${styles.previewSubtotal}`}>
+                <span>Total allotjament</span>
+                <strong>{previewReserva.total_allotjament} €</strong>
+              </div>
+              <div className={styles.previewRow}>
+                <span>
+                  Comissió de la immobiliària ({previewReserva.comissio_percentatge_mitjana}%)
+                </span>
+                <strong>{previewReserva.comissio_import} €</strong>
+              </div>
+              <div className={styles.previewRow}>
+                <span>
+                  Taxa turistica oficial Catalunya ({previewReserva.taxa_turistica_zona} - {previewReserva.taxa_turistica_per_hoste_nit} €/hoste/nit - {previewReserva.taxa_turistica_nits_aplicades} nits)
+                </span>
+                <strong>{previewReserva.taxa_turistica_import} €</strong>
+              </div>
+              <div className={`${styles.previewRow} ${styles.previewTotal}`}>
+                <span>Total a abonar pel turista</span>
+                <strong>{previewReserva.total_a_abonar_turista} €</strong>
+              </div>
+            </div>
+
+            {previewReserva.linies_nits?.length > 0 && (
+              <div className={styles.previewNights}>
+                <h3>Detall per nit</h3>
+                <div className={styles.previewNightsList}>
+                  {previewReserva.linies_nits.map((linia) => (
+                    <div className={styles.previewNightRow} key={linia.data}>
+                      <span>
+                        {linia.data}
+                        {linia.temporada ? ` · ${linia.temporada}` : ""}
+                      </span>
+                      <strong>{linia.preu_nit} €</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className={styles.previewActions}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={handleClosePreview}
+                disabled={isCreating}
+              >
+                Tornar a editar
+              </button>
+              <button
+                type="button"
+                className={styles.confirmButton}
+                onClick={handleConfirmReserva}
+                disabled={isCreating}
+              >
+                {isCreating ? "Creant..." : "Confirmar reserva"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

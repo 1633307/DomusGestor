@@ -8,6 +8,11 @@ import ImmobleDescompteCard from "../../Cards/immobleDescompteCard";
 import CrearReservaCard from "../../Cards/crearReservaCard";
 import FotosCard from "../../Cards/fotosCard";
 import { bookingsApi, inquilinsApi, propertiesApi } from "../../services/api";
+import TemporadesCard from "../../Cards/temporadesCard";
+import ServeisCard from "../../Cards/serveisCard";
+import HorarisCard from "../../Cards/horarisCard";
+import HistoricPagamentsCard from "../../Cards/historicPagamentsCard";
+import ImmobleCalendariCard from "../../Cards/immobleCalendariCard";
 
 const emptyForm = {
   propertyName: "",
@@ -28,6 +33,11 @@ const emptyForm = {
   ownerIban: "",
   descompteActiu: false,
   descomptePercentatge: "",
+  temporades: [],
+  horaCheckinInici: "",
+  horaCheckinFi: "",
+  horaCheckoutInici: "",
+  horaCheckoutFi: "",
 };
 
 function toBoolean(value) {
@@ -54,6 +64,12 @@ function backendToForm(p) {
     ownerIban: p.propietari_iban ?? "",
     descompteActiu: p.descompte_actiu ?? false,
     descomptePercentatge: String(p.descompte_percentatge ?? ""),
+    temporades: p.temporades,
+    serveis: p.serveis,
+    horaCheckinInici: p.hora_checkin_inici ?? "",
+    horaCheckinFi: p.hora_checkin_fi ?? "",
+    horaCheckoutInici: p.hora_checkout_inici ?? "",
+    horaCheckoutFi: p.hora_checkout_fi ?? "",
   };
 }
 
@@ -80,6 +96,12 @@ function formToBackend(f, original) {
     metres_quadrats: original?.metres_quadrats ?? 0,
     descripcio: original?.descripcio ?? "",
     actiu: original?.actiu ?? true,
+    temporades: f.temporades,
+    serveis: f.serveis,
+    hora_checkin_inici: f.horaCheckinInici || null,
+    hora_checkin_fi: f.horaCheckinFi || null,
+    hora_checkout_inici: f.horaCheckoutInici || null,
+    hora_checkout_fi: f.horaCheckoutFi || null,
   };
 }
 
@@ -94,7 +116,10 @@ export default function InfoInmoble() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [hasDraftChanges, setHasDraftChanges] = useState(false);
   const [creatingReserva, setCreatingReserva] = useState(false);
+  const [calendarDates, setCalendarDates] = useState({ dataEntrada: "", dataSortida: "" });
+  const [actiu, setActiu] = useState(true);
 
   useEffect(() => {
     if (!id) {
@@ -106,6 +131,7 @@ export default function InfoInmoble() {
       .get(id)
       .then((data) => {
         setOriginal(data);
+        setActiu(data.actiu ?? true);
         const mapped = backendToForm(data);
         setFormData(mapped);
         setDraftData(mapped);
@@ -116,11 +142,13 @@ export default function InfoInmoble() {
 
   const handleEdit = () => {
     setDraftData(formData);
+    setHasDraftChanges(false);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setDraftData(formData);
+    setHasDraftChanges(false);
     setIsEditing(false);
   };
 
@@ -134,7 +162,9 @@ export default function InfoInmoble() {
       const mapped = backendToForm(updated);
       setFormData(mapped);
       setDraftData(mapped);
+      setHasDraftChanges(false);
       setIsEditing(false);
+      return true;
     } catch (err) {
       setError(err.message);
     } finally {
@@ -144,7 +174,32 @@ export default function InfoInmoble() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setHasDraftChanges(true);
     setDraftData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFerReservaFromCalendari = (dataEntrada, dataSortida) => {
+    setCalendarDates({ dataEntrada, dataSortida });
+    setSeccioActiva("novaReserva");
+  };
+
+  const handlePreviewReserva = async (form) => {
+    const payload = {
+      immoble: Number(id),
+      data_entrada: form.dataEntrada,
+      data_sortida: form.dataSortida,
+      num_hostes: form.hostes.length,
+      descompte_immoble_aplicat: toBoolean(form.descompteImmobleAplicat),
+      descompte_immoble_percentatge:
+        Number(form.descompteImmoblePercentatge) || 0,
+      descompte_individual_aplicat: toBoolean(
+        form.descompteIndividualAplicat,
+      ),
+      descompte_individual_percentatge:
+        Number(form.descompteIndividualPercentatge) || 0,
+    };
+
+    return bookingsApi.preview(payload);
   };
 
   const handleCreateReserva = async (form) => {
@@ -192,6 +247,38 @@ export default function InfoInmoble() {
     }
   };
 
+  const handleDeshabilitar = async () => {
+    setError("");
+    try {
+      await propertiesApi.patch(id, { actiu: false });
+      setActiu(false);
+      setOriginal((prev) => ({ ...prev, actiu: false }));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleHabilitar = async () => {
+    setError("");
+    try {
+      await propertiesApi.patch(id, { actiu: true });
+      setActiu(true);
+      setOriginal((prev) => ({ ...prev, actiu: true }));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleEliminar = async () => {
+    setError("");
+    try {
+      await propertiesApi.remove(id);
+      navigate("/inmobles");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return <p>Carregant immoble...</p>;
 
   return (
@@ -203,10 +290,19 @@ export default function InfoInmoble() {
           seccions={[
             { id: "perfil", label: "Perfil" },
             { id: "descompte", label: "Descompte" },
+            { id: "calendari", label: "Calendari" },
             { id: "novaReserva", label: "Nova reserva" },
             { id: "fotos", label: "Fotos" },
-            { id: "incidencies", label: "Incidéncies" },
+            { id: "horaris", label: "Horaris" },
+            { id: "temporades", label: "Temporades" },
+            { id: "serveis", label: "Serveis" },
+            { id: "pagaments", label: "Pagaments" },
+            { id: "incidencies", label: "Incidències" },
           ]}
+          actiu={actiu}
+          onDeshabilitar={handleDeshabilitar}
+          onHabilitar={handleHabilitar}
+          onEliminar={handleEliminar}
         />
 
         <div className={style.perfilCard}>
@@ -238,15 +334,49 @@ export default function InfoInmoble() {
               onChange={handleChange}
             />
           )}
-          {seccioActiva === "novaReserva" && (
-            <CrearReservaCard
-              immoble={{ id, ...formData }}
-              onCreate={handleCreateReserva}
-              isCreating={creatingReserva}
+          {seccioActiva === "calendari" && (
+            <ImmobleCalendariCard
+              immobleId={id}
+              onFerReserva={handleFerReservaFromCalendari}
             />
           )}
+          {seccioActiva === "novaReserva" && (
+            <CrearReservaCard
+              key={`${calendarDates.dataEntrada}-${calendarDates.dataSortida}`}
+              immoble={{ id, ...formData }}
+              onPreview={handlePreviewReserva}
+              onCreate={handleCreateReserva}
+              isCreating={creatingReserva}
+              initialDataEntrada={calendarDates.dataEntrada}
+              initialDataSortida={calendarDates.dataSortida}
+            />
+          )}
+          {seccioActiva === "horaris" && (
+            <HorarisCard
+              data={isEditing ? draftData : formData}
+              isEditing={isEditing}
+              onChange={handleChange}
+            />
+          )}
+          {seccioActiva === "temporades" && (
+            <TemporadesCard
+              immoble={{ id, ...draftData }}
+              setImmoble={setDraftData}
+              onSave={handleSave}
+            />
+          )}
+          {seccioActiva === "serveis" && (
+            <ServeisCard
+              immoble={{ id, ...draftData }}
+              setImmoble={setDraftData}
+              onSave={handleSave}
+            />
+          )}
+          {seccioActiva === "pagaments" && (
+            <HistoricPagamentsCard immobleId={id} />
+          )}
 
-          {(seccioActiva === "perfil" || seccioActiva === "descompte") && (
+          {(seccioActiva === "perfil" || seccioActiva === "descompte" || seccioActiva === "horaris") && (
             <FooterActions
               isEditing={isEditing}
               onEdit={handleEdit}
@@ -254,6 +384,7 @@ export default function InfoInmoble() {
               onSave={handleSave}
               isSaveDisabled={saving}
               saveLabel={saving ? "Guardant..." : "Guardar"}
+              hasChanges={hasDraftChanges}
             />
           )}
         </div>

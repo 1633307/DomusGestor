@@ -72,6 +72,12 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.col1}>
+export default function Header() {
+  const { user, logout, isAdmin } = useAuth();
+
+  return (
+    <header className={styles.header}>
+      <div>
         <h1 className={styles.title}>Domus Gestor</h1>
       </div>
 
@@ -90,12 +96,14 @@ export default function Header() {
           </span>
           <span>{displayName}</span>
         </Link>
+        <span>{user?.username || 'Usuari'}</span>
         <button className={styles.secondaryButton} onClick={logout}>
           Tancar sessió
         </button>
       </div>
 
       <div className={styles.fila}>
+      <div>
         <nav className={styles.sidebarNav}>
           <NavLink
             to="/dashboard"
@@ -122,6 +130,7 @@ export default function Header() {
             }
           >
             Inmobles
+            Immobles
           </NavLink>
 
           <NavLink
@@ -141,6 +150,16 @@ export default function Header() {
           >
             Persones
           </NavLink>
+          {isAdmin && (
+            <NavLink
+              to="/gestio"
+              className={({ isActive }) =>
+                isActive ? `${styles.link} ${styles.activeLink}` : styles.link
+              }
+            >
+              Gestió
+            </NavLink>
+          )}
         </nav>
       </div>
     </header>

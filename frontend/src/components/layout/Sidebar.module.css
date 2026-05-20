@@ -3,8 +3,15 @@
   border-right: 1px solid #e2e8f0;
   color: #1e293b;
   padding: 24px 18px;
-
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s ease;
+}
+
+.sidebarDisabled {
+  background: #fff1f2;
+  border-right: 1px solid #fecdd3;
 }
 
 .sidebarBrand p {
@@ -18,6 +25,7 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 28px;
+  flex: 1;
 }
 
 .link {
@@ -26,6 +34,7 @@
   padding: 10px 12px;
   border-radius: 10px;
   transition: background-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
 }
 
 .link:hover {
@@ -35,6 +44,180 @@
 .activeLink {
   background-color: #dbeafe;
   color: #2563eb;
+}
+
+.sidebarDisabled .activeLink {
+  background-color: #fecdd3;
+  color: #e11d48;
+}
+
+.sidebarActions {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btnDeshabilitar {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnDeshabilitar:hover {
+  background: #dc2626;
+}
+
+.btnHabilitar {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #93c5fd;
+  color: #1e40af;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnHabilitar:hover {
+  background: #60a5fa;
+}
+
+.btnEliminar {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnEliminar:hover {
+  background: #dc2626;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px 28px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modal h3 {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+  color: #1e293b;
+}
+
+.modal p {
+  margin: 0 0 24px;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btnCancel {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnCancel:hover {
+  background: #e2e8f0;
+}
+
+.btnConfirmDeshabilitar {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnConfirmDeshabilitar:hover {
+  background: #dc2626;
+}
+
+.btnConfirmHabilitar {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #93c5fd;
+  color: #1e40af;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnConfirmHabilitar:hover {
+  background: #60a5fa;
+}
+
+.btnConfirmEliminar {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btnConfirmEliminar:hover {
+  background: #dc2626;
 }
 
 @media (max-width: 900px) {

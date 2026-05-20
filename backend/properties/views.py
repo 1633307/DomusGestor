@@ -1,8 +1,9 @@
 from rest_framework import generics, filters
 
-from .models import Immoble
-from .serializers import ImmobleSerializer
-from bookings.models import ReservaBasica
+from .models import Immoble, Servei
+from .serializers import ImmobleSerializer, ServeiSerializer
+from bookings.models import ReservaBasica, PagamentReserva
+from bookings.serializers import PagamentReservaSerializer
 
 
 class ImmobleListCreateView(generics.ListCreateAPIView):
@@ -23,10 +24,12 @@ class ImmobleListCreateView(generics.ListCreateAPIView):
         filtro_habit = self.request.query_params.get('habitacions')
         dataini_filtre = self.request.query_params.get('dataini')
         datafi_filtre = self.request.query_params.get('datafi')
-        
+        capacitat_filtre = self.request.query_params.get('capacitat')
         if filtro_ciutat:
             queryset = queryset.filter(ciutat__icontains=filtro_ciutat)
-            
+        if capacitat_filtre:
+            queryset = queryset.filter(capacitat_maxima__gte=capacitat_filtre)
+
         if filtro_habit:
             queryset = queryset.filter(num_habitacions__gte=filtro_habit)
 
@@ -35,8 +38,9 @@ class ImmobleListCreateView(generics.ListCreateAPIView):
                 data_entrada__lt=datafi_filtre,
                 data_sortida__gt=dataini_filtre
             )
-            queryset = queryset.exclude(id__in=reservas_solapadas.values('immoble_id'))
-            
+            queryset = queryset.exclude(
+                id__in=reservas_solapadas.values('immoble_id'))
+
         return queryset
 
 
@@ -44,3 +48,19 @@ class ImmobleDetailView(generics.RetrieveUpdateDestroyAPIView):
     """RF-01: Detall, actualització i eliminació d'immoble."""
     queryset = Immoble.objects.all()
     serializer_class = ImmobleSerializer
+
+
+class ServeiListView(generics.ListAPIView):
+    queryset = Servei.objects.all()
+    serializer_class = ServeiSerializer
+
+
+class ImmobleHistoricPagamentsView(generics.ListAPIView):
+    serializer_class = PagamentReservaSerializer
+
+    def get_queryset(self):
+        return (
+            PagamentReserva.objects
+            .filter(reserva__immoble_id=self.kwargs['pk'])
+            .select_related('reserva', 'reserva__inquili')
+        )

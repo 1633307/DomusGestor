@@ -6,7 +6,7 @@ import styles from './reservesPage.module.css';
 const RESERVA_STATUS_LABELS = {
   prereservada: 'Prereservada',
   reservada: 'Reservada',
-  lista: 'Llista',
+  lista: 'Llesta',
   cancelada: 'Cancel·lada',
 };
 
