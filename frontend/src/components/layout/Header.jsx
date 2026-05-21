@@ -23,7 +23,6 @@ function loadLocalProfile() {
 
 function backendToHeaderProfile(data, localProfile) {
   if (!data) return localProfile;
-
   return {
     ...localProfile,
     nomComercial: data.nom_comercial ?? localProfile.nomComercial,
@@ -71,7 +70,11 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
+<<<<<<< HEAD
+      <div>
+=======
       <div className={styles.col1}>
+>>>>>>> feb3e81026a9a1688c593a325442ea98f3ce55dc
         <h1 className={styles.title}>Domus Gestor</h1>
       </div>
 
@@ -142,6 +145,7 @@ export default function Header() {
           >
             Persones
           </NavLink>
+
           {isAdmin && (
             <NavLink
               to="/gestio"

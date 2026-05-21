@@ -48,12 +48,13 @@ class Immoble(models.Model):
     descompte_percentatge = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     fotos = ArrayField(models.CharField(max_length=500), blank=True, default=list)
 
-    propietari_nom = models.CharField(max_length=150, blank=True, default='')
-    propietari_dni = models.CharField(max_length=20, blank=True, default='')
-    propietari_email = models.EmailField(blank=True, default='')
-    propietari_telefon = models.CharField(max_length=30, blank=True, default='')
-    propietari_adreca = models.TextField(blank=True, default='')
-    propietari_iban = models.CharField(max_length=34, blank=True, default='')
+    propietari = models.ForeignKey(
+        'bookings.Persona',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='immobles',
+    )
 
     hora_checkin_inici  = models.TimeField(null=True, blank=True)
     hora_checkin_fi     = models.TimeField(null=True, blank=True)

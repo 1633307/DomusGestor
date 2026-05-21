@@ -26,7 +26,7 @@ django.setup()
 
 from users.models import Usuari
 from properties.models import Immoble, Servei, Temporada
-from bookings.models import InquiliBasic, ReservaBasica, Hoste, PagamentReserva
+from bookings.models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, PagamentReserva
 
 
 def run():
@@ -45,11 +45,11 @@ def run():
     # ── Netejar dades existents ──────────────────────────────────────────────
     deleted_p = PagamentReserva.objects.all().delete()[0]
     deleted_r = ReservaBasica.objects.all().delete()[0]
-    deleted_i = InquiliBasic.objects.all().delete()[0]
+    deleted_per = Persona.objects.all().delete()[0]
     deleted_m = Immoble.objects.all().delete()[0]
     deleted_s = Servei.objects.all().delete()[0]
     deleted_t = Temporada.objects.all().delete()[0]
-    print(f"Eliminats: {deleted_p} pagaments, {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
+    print(f"Eliminats: {deleted_p} pagaments, {deleted_r} reserves, {deleted_per} persones, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
 
     # ── 20 Immobles ─────────────────────────────────────────────────────────
     # Columnes: nom, ref, adreca, ciutat, cp, tipus, capacitat, hab, banys,
@@ -155,14 +155,24 @@ def run():
         (nom, ref, adr, ciutat, cp, tipus, cap, hab, banys, m2, preu, actiu,
          prop_nom, prop_dni, prop_email, prop_tel, prop_adr, prop_iban) = row
         ci_inici, ci_fi, co_inici, co_fi = horaris
+        propietari = Persona.objects.create(
+            nom_complet=prop_nom,
+            dni_passaport=prop_dni,
+            email=prop_email,
+            telefon=prop_tel,
+            residencia=prop_adr,
+        )
+        PerfilPropietari.objects.create(
+            persona=propietari,
+            iban=prop_iban,
+            adreca_facturacio=prop_adr,
+        )
         imm = Immoble.objects.create(
             nom_comercial=nom, referencia=ref, adreca=adr, ciutat=ciutat,
             codi_postal=cp, tipus_immoble=tipus, capacitat_maxima=cap,
             num_habitacions=hab, num_banys=banys, metres_quadrats=m2,
             preu_base_nit=preu, actiu=actiu,
-            propietari_nom=prop_nom, propietari_dni=prop_dni,
-            propietari_email=prop_email, propietari_telefon=prop_tel,
-            propietari_adreca=prop_adr, propietari_iban=prop_iban,
+            propietari=propietari,
             fotos=fotos,
             hora_checkin_inici=ci_inici,
             hora_checkin_fi=ci_fi,
@@ -468,7 +478,7 @@ def run():
     # DNIs ficticis (no coincideixen amb els propietaris per evitar colisions)
     inquilins_data = [
         ("Marc Rovira Puig",      "98765432A", "marc.rovira@gmail.com",    "Carrer Major, 5, Barcelona"),
-        ("Laia Font Soler",       "87654321B", "laia.font@hotmail.com",    "Avinguda Diagonal, 10, Barcelona"),
+        ("Laia Font Soler",       "87654321X", "laia.font@hotmail.com",    "Avinguda Diagonal, 10, Barcelona"),
         ("Jordi Mestre Valls",    "76543210C", "jmestre@outlook.com",      "Carrer Nou, 3, Girona"),
         ("Silvia Soler Puig",     "65432109D", "silvia.soler@gmail.com",   "Placa Catalunya, 8, Tarragona"),
         ("Pere Mas Bosch",        "54321098E", "pere.mas@correu.cat",      "Carrer del Pi, 12, Lleida"),
@@ -490,16 +500,17 @@ def run():
     ]
 
     inquilins = []
-    for nom, dni, email, facturacio in inquilins_data:
-        inq = InquiliBasic.objects.create(
+    for nom, dni, email, residencia in inquilins_data:
+        inq = Persona.objects.create(
             nom_complet=nom,
             dni_passaport=dni,
             email=email,
-            dades_facturacio=facturacio,
+            residencia=residencia,
         )
+        PerfilInquili.objects.create(persona=inq)
         inquilins.append(inq)
 
-    print(f"{len(inquilins)} inquilins creats")
+    print(f"{len(inquilins)} inquilins (Persona+PerfilInquili) creats")
 
     # ── 20 Reserves ──────────────────────────────────────────────────────────
     # (immoble_idx, inquili_idx, data_entrada, data_sortida, pagat,
@@ -599,7 +610,7 @@ def run():
             numero_document=inq.dni_passaport,
             nacionalitat="Espanyola",
             data_naixement=f"19{70 + (idx % 30):02d}-0{1 + (idx % 9)}-15",
-            residencia=inq.dades_facturacio or "",
+            residencia=inq.residencia,
             email=inq.email,
             telefon=f"+34 6{idx:02d} 000 000",
         )

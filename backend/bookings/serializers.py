@@ -4,28 +4,27 @@ from rest_framework import serializers
 from core.fields import hmac_value
 from properties.models import Immoble
 
-from .models import InquiliBasic, ReservaBasica, Hoste, Comunicacio, PagamentReserva
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio, PagamentReserva
 
 
 def _has_value(value):
     return value is not None and value != ''
 
 
-def _can_use_document_for_inquili(inquili, document):
+def _can_use_document_for_persona(persona, document):
     if not document:
         return False
-
     document_hash = hmac_value(document)
     return not (
-        InquiliBasic.objects
+        Persona.objects
         .filter(dni_passaport_hash=document_hash)
-        .exclude(pk=inquili.pk)
+        .exclude(pk=persona.pk)
         .exists()
     )
 
 
-def sync_inquili_from_hoste(inquili, hoste, overwrite=False):
-    if inquili is None or hoste is None:
+def sync_persona_from_hoste(persona, hoste, overwrite=False):
+    if persona is None or hoste is None:
         return []
 
     changed_fields = []
@@ -40,39 +39,57 @@ def sync_inquili_from_hoste(inquili, hoste, overwrite=False):
         ('telefon', 'telefon'),
     ]
 
-    for hoste_field, inquili_field in field_map:
+    for hoste_field, persona_field in field_map:
         source_value = getattr(hoste, hoste_field, None)
-        current_value = getattr(inquili, inquili_field, None)
+        current_value = getattr(persona, persona_field, None)
         if _has_value(source_value) and (overwrite or not _has_value(current_value)):
-            setattr(inquili, inquili_field, source_value)
-            changed_fields.append(inquili_field)
+            setattr(persona, persona_field, source_value)
+            changed_fields.append(persona_field)
 
     if _has_value(getattr(hoste, 'numero_document', None)):
-        current_document = getattr(inquili, 'dni_passaport', None)
-        if (overwrite or not _has_value(current_document)) and _can_use_document_for_inquili(
-            inquili,
-            hoste.numero_document,
+        current_document = getattr(persona, 'dni_passaport', None)
+        if (overwrite or not _has_value(current_document)) and _can_use_document_for_persona(
+            persona, hoste.numero_document,
         ):
-            inquili.dni_passaport = hoste.numero_document
+            persona.dni_passaport = hoste.numero_document
             changed_fields.append('dni_passaport')
 
     if changed_fields:
         update_fields = sorted(set(changed_fields + ['dni_passaport_hash']))
-        inquili.save(update_fields=update_fields)
+        persona.save(update_fields=update_fields)
 
     return changed_fields
 
 
-class InquiliSerializer(serializers.ModelSerializer):
+class PerfilInquiliSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InquiliBasic
+        model = PerfilInquili
+        fields = ['id']
+
+
+class PerfilPropietariSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PerfilPropietari
         fields = [
-            'id', 'nom_complet', 'dni_passaport', 'email', 'dades_facturacio',
-            'genere', 'tipus_document', 'nacionalitat', 'data_naixement',
-            'residencia', 'telefon', 'nom_fiscal', 'nif_cif',
-            'adreca_facturacio', 'codi_postal_facturacio', 'ciutat_facturacio',
-            'provincia_facturacio', 'pais_facturacio', 'email_facturacio',
-            'telefon_facturacio', 'observacions_facturacio',
+            'id', 'persona', 'nom_fiscal', 'nif_cif', 'adreca_facturacio',
+            'codi_postal_facturacio', 'ciutat_facturacio', 'provincia_facturacio',
+            'pais_facturacio', 'email_facturacio', 'telefon_facturacio',
+            'iban', 'observacions_facturacio',
+        ]
+        extra_kwargs = {'persona': {'required': True}}
+
+
+class PersonaSerializer(serializers.ModelSerializer):
+    perfil_inquili = PerfilInquiliSerializer(read_only=True)
+    perfil_propietari = PerfilPropietariSerializer(read_only=True)
+    reserves = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Persona
+        fields = [
+            'id', 'nom_complet', 'genere', 'tipus_document', 'dni_passaport',
+            'nacionalitat', 'data_naixement', 'residencia', 'email', 'telefon',
+            'perfil_inquili', 'perfil_propietari', 'reserves',
         ]
         read_only_fields = ['id']
 
@@ -80,11 +97,11 @@ class InquiliSerializer(serializers.ModelSerializer):
         if not value:
             return value
         h = hmac_value(value)
-        qs = InquiliBasic.objects.filter(dni_passaport_hash=h)
+        qs = Persona.objects.filter(dni_passaport_hash=h)
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
-            raise serializers.ValidationError("Ja existeix un inquilí amb aquest DNI/Passaport.")
+            raise serializers.ValidationError("Ja existeix una persona amb aquest DNI/Passaport.")
         return value
 
     def to_internal_value(self, data):
@@ -92,6 +109,19 @@ class InquiliSerializer(serializers.ModelSerializer):
         if cleaned.get('data_naixement') in ('', None):
             cleaned['data_naixement'] = None
         return super().to_internal_value(cleaned)
+
+    def get_reserves(self, obj):
+        return [
+            {
+                'id': r.id,
+                'codi_reserva': r.codi_reserva,
+                'immoble_nom': r.immoble.nom_comercial,
+                'data_entrada': str(r.data_entrada),
+                'data_sortida': str(r.data_sortida),
+                'estat_reserva': r.estat_reserva,
+            }
+            for r in obj.reserves.select_related('immoble').all()
+        ]
 
 
 class HosteSerializer(serializers.ModelSerializer):
@@ -105,7 +135,6 @@ class HosteSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     def to_internal_value(self, data):
-        # Permet que data_naixement sigui '' (la frontend pot enviar string buit)
         cleaned = dict(data)
         if cleaned.get('data_naixement') in ('', None):
             cleaned['data_naixement'] = None
@@ -141,16 +170,14 @@ class ReservaSerializer(serializers.ModelSerializer):
 
     def validate_descompte_individual_percentatge(self, value):
         if value < 0 or value > 100:
-            raise serializers.ValidationError("El descompte individual ha d'estar entre 0 i 100.")
+            raise serializers.ValidationError("El descompte individual ha d'estat entre 0 i 100.")
         return value
 
     def _replace_hostes(self, reserva, hostes_data):
-        """Esborra els hostes existents i en crea de nous a partir de la llista."""
         reserva.hostes.all().delete()
         principal_assigned = False
         new_hostes = []
-        for idx, h_data in enumerate(hostes_data):
-            # Garantim que només hi hagi un hoste principal
+        for h_data in hostes_data:
             es_principal = bool(h_data.get('es_principal'))
             if es_principal and principal_assigned:
                 es_principal = False
@@ -158,16 +185,14 @@ class ReservaSerializer(serializers.ModelSerializer):
                 principal_assigned = True
             payload = {**h_data, 'es_principal': es_principal, 'reserva': reserva}
             new_hostes.append(Hoste(**payload))
-        # Si no n'hi ha cap de marcat, fem el primer com a principal
         if new_hostes and not principal_assigned:
             new_hostes[0].es_principal = True
-        # Crear-los individualment perquè el save() generi el hash del document
         for h in new_hostes:
             h.save()
 
-    def _sync_inquili_from_principal_hoste(self, reserva):
+    def _sync_persona_from_principal_hoste(self, reserva):
         hoste_principal = reserva.hostes.filter(es_principal=True).first()
-        sync_inquili_from_hoste(reserva.inquili, hoste_principal, overwrite=False)
+        sync_persona_from_hoste(reserva.inquili, hoste_principal, overwrite=False)
 
     @transaction.atomic
     def create(self, validated_data):
@@ -177,7 +202,7 @@ class ReservaSerializer(serializers.ModelSerializer):
             self._replace_hostes(reserva, hostes_data)
             reserva.num_hostes = len(hostes_data)
             reserva.save(update_fields=['num_hostes'])
-        self._sync_inquili_from_principal_hoste(reserva)
+        self._sync_persona_from_principal_hoste(reserva)
         return reserva
 
     @transaction.atomic
@@ -190,7 +215,7 @@ class ReservaSerializer(serializers.ModelSerializer):
             self._replace_hostes(instance, hostes_data)
             instance.num_hostes = len(hostes_data)
             instance.save(update_fields=['num_hostes'])
-        self._sync_inquili_from_principal_hoste(instance)
+        self._sync_persona_from_principal_hoste(instance)
         return instance
 
 
@@ -208,9 +233,11 @@ class ComunicacioSerializer(serializers.ModelSerializer):
         if cleaned.get('data') in ('', None):
             cleaned['data'] = None
         return super().to_internal_value(cleaned)
+
+
 class PagamentReservaSerializer(serializers.ModelSerializer):
     codi_reserva = serializers.CharField(source='reserva.codi_reserva', read_only=True)
-    inquili_nom  = serializers.CharField(source='reserva.inquili.nom_complet', read_only=True)
+    inquili_nom = serializers.CharField(source='reserva.inquili.nom_complet', read_only=True)
 
     class Meta:
         model = PagamentReserva

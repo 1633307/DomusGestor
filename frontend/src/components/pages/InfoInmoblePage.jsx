@@ -7,7 +7,7 @@ import PerfilCard from "../../Cards/perfilCard";
 import ImmobleDescompteCard from "../../Cards/immobleDescompteCard";
 import CrearReservaCard from "../../Cards/crearReservaCard";
 import FotosCard from "../../Cards/fotosCard";
-import { bookingsApi, inquilinsApi, propertiesApi } from "../../services/api";
+import { bookingsApi, personesApi, propertiesApi } from "../../services/api";
 import TemporadesCard from "../../Cards/temporadesCard";
 import ServeisCard from "../../Cards/serveisCard";
 import HorarisCard from "../../Cards/horarisCard";
@@ -25,6 +25,7 @@ const emptyForm = {
   bedrooms: "",
   bathrooms: "",
   basePrice: "",
+  propietariId: null,
   ownerName: "",
   ownerTaxId: "",
   ownerEmail: "",
@@ -56,6 +57,7 @@ function backendToForm(p) {
     bedrooms: String(p.num_habitacions ?? ""),
     bathrooms: String(p.num_banys ?? ""),
     basePrice: String(p.preu_base_nit ?? ""),
+    propietariId: p.propietari ?? null,
     ownerName: p.propietari_nom ?? "",
     ownerTaxId: p.propietari_dni ?? "",
     ownerEmail: p.propietari_email ?? "",
@@ -85,12 +87,7 @@ function formToBackend(f, original) {
     num_habitacions: Number(f.bedrooms) || 0,
     num_banys: Number(f.bathrooms) || 0,
     preu_base_nit: Number(f.basePrice) || 0,
-    propietari_nom: f.ownerName,
-    propietari_dni: f.ownerTaxId,
-    propietari_email: f.ownerEmail,
-    propietari_telefon: f.ownerPhone,
-    propietari_adreca: f.ownerAddress,
-    propietari_iban: f.ownerIban,
+    propietari: f.propietariId || null,
     descompte_actiu: toBoolean(f.descompteActiu),
     descompte_percentatge: Number(f.descomptePercentatge) || 0,
     metres_quadrats: original?.metres_quadrats ?? 0,
@@ -202,16 +199,29 @@ export default function InfoInmoble() {
     return bookingsApi.preview(payload);
   };
 
+  const handlePropietariChange = (id, data) => {
+    setHasDraftChanges(true);
+    setDraftData((prev) => ({
+      ...prev,
+      propietariId: id,
+      ownerName: data.ownerName,
+      ownerEmail: data.ownerEmail,
+      ownerPhone: data.ownerPhone,
+      ownerTaxId: data.ownerTaxId,
+      ownerAddress: data.ownerAddress,
+      ownerIban: data.ownerIban,
+    }));
+  };
+
   const handleCreateReserva = async (form) => {
     setCreatingReserva(true);
     setError("");
     try {
       const mainGuest = form.hostes[0];
-      const inquili = await inquilinsApi.create({
+      const inquili = await personesApi.create({
         nom_complet: mainGuest.nom_complet || "Client sense nom",
         dni_passaport: mainGuest.numero_document || `PENDENT-${Date.now()}`,
         email: mainGuest.email || "pendent@example.com",
-        dades_facturacio: "",
       });
 
       const payload = {
@@ -315,6 +325,7 @@ export default function InfoInmoble() {
                 data={isEditing ? draftData : formData}
                 isEditing={isEditing}
                 onChange={handleChange}
+                onPropietariChange={handlePropietariChange}
               />
             </>
           )}

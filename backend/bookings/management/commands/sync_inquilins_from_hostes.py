@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from bookings.models import ReservaBasica
-from bookings.serializers import sync_inquili_from_hoste
+from bookings.serializers import sync_persona_from_hoste
 
 
 class Command(BaseCommand):
@@ -55,7 +55,7 @@ class Command(BaseCommand):
                     sense_hoste_principal += 1
                     continue
 
-                changed_fields = sync_inquili_from_hoste(
+                changed_fields = sync_persona_from_hoste(
                     reserva.inquili,
                     hoste_principal,
                     overwrite=overwrite,

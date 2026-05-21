@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { inquilinsApi } from "../../services/api";
+import { personesApi } from "../../services/api";
 import styles from "./PersonesPage.module.css";
 
 function comparePersones(a, b) {
@@ -32,7 +32,7 @@ export default function PersonesPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    inquilinsApi
+    personesApi
       .list()
       .then((data) => setPersones(data.results ?? data))
       .catch(() => setError("No s'han pogut carregar les persones."))
