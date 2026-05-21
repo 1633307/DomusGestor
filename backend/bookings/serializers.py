@@ -4,7 +4,7 @@ from rest_framework import serializers
 from core.fields import hmac_value
 from properties.models import Immoble
 
-from .models import InquiliBasic, ReservaBasica, Hoste, Comunicacio, PagamentReserva
+from .models import Persona, ReservaBasica, Hoste, Comunicacio, PagamentReserva
 
 
 def _has_value(value):
@@ -17,7 +17,7 @@ def _can_use_document_for_inquili(inquili, document):
 
     document_hash = hmac_value(document)
     return not (
-        InquiliBasic.objects
+        Persona.objects
         .filter(dni_passaport_hash=document_hash)
         .exclude(pk=inquili.pk)
         .exists()
@@ -65,14 +65,11 @@ def sync_inquili_from_hoste(inquili, hoste, overwrite=False):
 
 class InquiliSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InquiliBasic
+        model = Persona
         fields = [
-            'id', 'nom_complet', 'dni_passaport', 'email', 'dades_facturacio',
+            'id', 'nom_complet', 'dni_passaport', 'email',
             'genere', 'tipus_document', 'nacionalitat', 'data_naixement',
-            'residencia', 'telefon', 'nom_fiscal', 'nif_cif',
-            'adreca_facturacio', 'codi_postal_facturacio', 'ciutat_facturacio',
-            'provincia_facturacio', 'pais_facturacio', 'email_facturacio',
-            'telefon_facturacio', 'observacions_facturacio',
+            'residencia', 'telefon',
         ]
         read_only_fields = ['id']
 
@@ -80,11 +77,11 @@ class InquiliSerializer(serializers.ModelSerializer):
         if not value:
             return value
         h = hmac_value(value)
-        qs = InquiliBasic.objects.filter(dni_passaport_hash=h)
+        qs = Persona.objects.filter(dni_passaport_hash=h)
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
-            raise serializers.ValidationError("Ja existeix un inquilí amb aquest DNI/Passaport.")
+            raise serializers.ValidationError("Ja existeix una persona amb aquest DNI/Passaport.")
         return value
 
     def to_internal_value(self, data):
@@ -161,7 +158,6 @@ class ReservaSerializer(serializers.ModelSerializer):
         # Si no n'hi ha cap de marcat, fem el primer com a principal
         if new_hostes and not principal_assigned:
             new_hostes[0].es_principal = True
-        # Crear-los individualment perquè el save() generi el hash del document
         for h in new_hostes:
             h.save()
 

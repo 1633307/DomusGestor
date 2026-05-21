@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 
 from properties.models import Immoble
 
-from .models import InquiliBasic, ReservaBasica, Comunicacio
+from .models import Persona, ReservaBasica, Comunicacio
 from .serializers import (
     InquiliSerializer, ReservaSerializer, ComunicacioSerializer, DashboardSerializer,
 )
@@ -12,12 +12,12 @@ from .services import calcular_preview_reserva
 
 
 class InquiliListCreateView(generics.ListCreateAPIView):
-    queryset = InquiliBasic.objects.all().order_by('nom_complet')
+    queryset = Persona.objects.all().order_by('nom_complet')
     serializer_class = InquiliSerializer
 
 
 class InquiliDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = InquiliBasic.objects.all().order_by('nom_complet')
+    queryset = Persona.objects.all().order_by('nom_complet')
     serializer_class = InquiliSerializer
 
 
@@ -83,7 +83,7 @@ class DashboardView(APIView):
         data = {
             'total_reserves': ReservaBasica.objects.count(),
             'total_immobles': Immoble.objects.count(),
-            'total_inquilins': InquiliBasic.objects.count(),
+            'total_inquilins': Persona.objects.count(),
             'immobles_actius': Immoble.objects.filter(actiu=True).count(),
             'reserves_pagades': ReservaBasica.objects.filter(pagat=True).count(),
         }
