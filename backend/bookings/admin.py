@@ -1,6 +1,26 @@
 from django.contrib import admin
 
-from .models import ReservaBasica, Hoste, Comunicacio
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio
+
+
+@admin.register(Persona)
+class PersonaAdmin(admin.ModelAdmin):
+    list_display = ['nom_complet', 'email', 'telefon', 'nacionalitat', 'es_inquili', 'es_propietari']
+    search_fields = ['nom_complet', 'email', 'telefon', 'dni_passaport']
+
+    @admin.display(boolean=True)
+    def es_inquili(self, obj):
+        return hasattr(obj, 'perfil_inquili')
+
+    @admin.display(boolean=True)
+    def es_propietari(self, obj):
+        return hasattr(obj, 'perfil_propietari')
+
+
+@admin.register(PerfilPropietari)
+class PerfilPropietariAdmin(admin.ModelAdmin):
+    list_display = ['persona', 'nom_fiscal', 'nif_cif', 'iban']
+    search_fields = ['persona__nom_complet', 'nom_fiscal', 'nif_cif']
 
 
 class HosteInline(admin.TabularInline):
