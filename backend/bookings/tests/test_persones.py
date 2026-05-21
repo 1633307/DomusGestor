@@ -1,6 +1,7 @@
 from django.test import TestCase
 from users.models import Usuari
 from bookings.models import Persona, PerfilInquili, PerfilPropietari
+from properties.models import Immoble
 
 
 class PersonaModelTest(TestCase):
@@ -41,3 +42,25 @@ class PersonaModelTest(TestCase):
         PerfilPropietari.objects.create(persona=p)
         self.assertTrue(hasattr(p, 'perfil_inquili'))
         self.assertTrue(hasattr(p, 'perfil_propietari'))
+
+
+class ImmoblePropietary(TestCase):
+    def test_immoble_pot_tenir_propietari_nul(self):
+        immoble = Immoble.objects.create(
+            nom_comercial='Pis Test',
+            adreca='Carrer Major 1',
+            preu_base_nit=100,
+        )
+        self.assertIsNone(immoble.propietari)
+
+    def test_immoble_vincula_persona_com_a_propietari(self):
+        persona = Persona.objects.create(nom_complet='Propietari Test', email='prop@test.com')
+        PerfilPropietari.objects.create(persona=persona)
+        immoble = Immoble.objects.create(
+            nom_comercial='Pis Test 2',
+            adreca='Carrer Nou 5',
+            preu_base_nit=80,
+            propietari=persona,
+        )
+        self.assertEqual(immoble.propietari, persona)
+        self.assertIn(immoble, persona.immobles.all())
