@@ -4,9 +4,10 @@ from rest_framework.views import APIView
 
 from properties.models import Immoble
 
-from .models import Persona, PerfilInquili, ReservaBasica, Comunicacio
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio
 from .serializers import (
-    PersonaSerializer, ReservaSerializer, ComunicacioSerializer, DashboardSerializer,
+    PersonaSerializer, PerfilPropietariSerializer,
+    ReservaSerializer, ComunicacioSerializer, DashboardSerializer,
 )
 from .services import calcular_preview_reserva
 
@@ -24,6 +25,16 @@ class PersonaDetailView(generics.RetrieveUpdateDestroyAPIView):
         .all()
     )
     serializer_class = PersonaSerializer
+
+
+class PerfilPropietariListCreateView(generics.ListCreateAPIView):
+    queryset = PerfilPropietari.objects.select_related('persona').all()
+    serializer_class = PerfilPropietariSerializer
+
+
+class PerfilPropietariDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = PerfilPropietari.objects.select_related('persona').all()
+    serializer_class = PerfilPropietariSerializer
 
 
 class ReservaListCreateView(generics.ListCreateAPIView):

@@ -23,7 +23,6 @@ function loadLocalProfile() {
 
 function backendToHeaderProfile(data, localProfile) {
   if (!data) return localProfile;
-
   return {
     ...localProfile,
     nomComercial: data.nom_comercial ?? localProfile.nomComercial,
@@ -31,7 +30,7 @@ function backendToHeaderProfile(data, localProfile) {
 }
 
 export default function Header() {
-  const { logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [profile, setProfile] = useState(() => loadLocalProfile());
   const displayName = profile.nomComercial || 'Immobiliària';
   const initial = displayName.charAt(0).toUpperCase() || 'I';
@@ -71,12 +70,6 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.col1}>
-export default function Header() {
-  const { user, logout, isAdmin } = useAuth();
-
-  return (
-    <header className={styles.header}>
       <div>
         <h1 className={styles.title}>Domus Gestor</h1>
       </div>
@@ -103,7 +96,6 @@ export default function Header() {
       </div>
 
       <div className={styles.fila}>
-      <div>
         <nav className={styles.sidebarNav}>
           <NavLink
             to="/dashboard"
@@ -129,7 +121,6 @@ export default function Header() {
               isActive ? `${styles.link} ${styles.activeLink}` : styles.link
             }
           >
-            Inmobles
             Immobles
           </NavLink>
 
@@ -150,6 +141,7 @@ export default function Header() {
           >
             Persones
           </NavLink>
+
           {isAdmin && (
             <NavLink
               to="/gestio"

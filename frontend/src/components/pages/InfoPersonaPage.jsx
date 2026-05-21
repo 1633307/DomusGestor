@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import FooterActions from "../layout/FooterActions";
-import { inquilinsApi } from "../../services/api";
+import { personesApi, perfilsPropietariApi } from "../../services/api";
 import PersonaFormSection from "./persones/PersonaFormSection";
 import styles from "./InfoPersonaPage.module.css";
 
@@ -16,6 +16,7 @@ const emptyPersona = {
   residence: "",
   email: "",
   phone: "",
+  perfilPropietariId: null,
   fiscalName: "",
   fiscalId: "",
   billingAddress: "",
@@ -30,33 +31,33 @@ const emptyPersona = {
 
 function backendToForm(persona) {
   if (!persona) return emptyPersona;
-
+  const p = persona.perfil_propietari;
   return {
     id: persona.id ?? null,
-    fullName: persona.nom_complet ?? persona.fullName ?? "",
+    fullName: persona.nom_complet ?? "",
     gender: persona.genere ?? "",
     documentType: persona.tipus_document ?? "",
-    documentNumber: persona.dni_passaport ?? persona.documentNumber ?? "",
-    nationality: persona.nacionalitat ?? persona.nationality ?? "",
+    documentNumber: persona.dni_passaport ?? "",
+    nationality: persona.nacionalitat ?? "",
     birthDate: persona.data_naixement ?? "",
     residence: persona.residencia ?? "",
     email: persona.email ?? "",
-    phone: persona.telefon ?? persona.phone ?? "",
-    fiscalName: persona.nom_fiscal ?? "",
-    fiscalId: persona.nif_cif ?? "",
-    billingAddress: persona.adreca_facturacio ?? "",
-    billingPostalCode: persona.codi_postal_facturacio ?? "",
-    billingCity: persona.ciutat_facturacio ?? "",
-    billingProvince: persona.provincia_facturacio ?? "",
-    billingCountry: persona.pais_facturacio ?? "",
-    billingEmail: persona.email_facturacio ?? "",
-    billingPhone: persona.telefon_facturacio ?? "",
-    billingNotes:
-      persona.observacions_facturacio || persona.dades_facturacio || "",
+    phone: persona.telefon ?? "",
+    perfilPropietariId: p?.id ?? null,
+    fiscalName: p?.nom_fiscal ?? "",
+    fiscalId: p?.nif_cif ?? "",
+    billingAddress: p?.adreca_facturacio ?? "",
+    billingPostalCode: p?.codi_postal_facturacio ?? "",
+    billingCity: p?.ciutat_facturacio ?? "",
+    billingProvince: p?.provincia_facturacio ?? "",
+    billingCountry: p?.pais_facturacio ?? "",
+    billingEmail: p?.email_facturacio ?? "",
+    billingPhone: p?.telefon_facturacio ?? "",
+    billingNotes: p?.observacions_facturacio ?? "",
   };
 }
 
-function formToBackend(form) {
+function personaToBackend(form) {
   return {
     nom_complet: form.fullName.trim(),
     genere: form.gender,
@@ -67,6 +68,12 @@ function formToBackend(form) {
     residencia: form.residence,
     email: form.email,
     telefon: form.phone,
+  };
+}
+
+function perfilToBackend(form, personaId) {
+  return {
+    persona: personaId,
     nom_fiscal: form.fiscalName,
     nif_cif: form.fiscalId,
     adreca_facturacio: form.billingAddress,
@@ -77,8 +84,14 @@ function formToBackend(form) {
     email_facturacio: form.billingEmail,
     telefon_facturacio: form.billingPhone,
     observacions_facturacio: form.billingNotes,
-    dades_facturacio: form.billingNotes,
   };
+}
+
+function hasBillingData(form) {
+  return !!(
+    form.fiscalName || form.fiscalId || form.billingAddress ||
+    form.billingCity || form.billingEmail || form.billingNotes || form.billingPhone
+  );
 }
 
 function validatePersona(form) {
@@ -115,7 +128,7 @@ export default function InfoPersonaPage() {
 
     setLoading(true);
     setError("");
-    inquilinsApi
+    personesApi
       .get(id)
       .then((data) => {
         const mapped = backendToForm(data);
@@ -158,19 +171,34 @@ export default function InfoPersonaPage() {
     setSaving(true);
     setError("");
     try {
-      const payload = formToBackend(draftPersona);
-      const saved = isNew
-        ? await inquilinsApi.create(payload)
-        : await inquilinsApi.update(id, payload);
-      const mapped = backendToForm(saved);
+      const personaPayload = personaToBackend(draftPersona);
+      const billingPresent = hasBillingData(draftPersona);
+
+      let savedId;
+      if (isNew) {
+        const saved = await personesApi.create(personaPayload);
+        savedId = saved.id;
+      } else {
+        await personesApi.update(id, personaPayload);
+        savedId = Number(id);
+      }
+
+      if (billingPresent) {
+        const perfilPayload = perfilToBackend(draftPersona, savedId);
+        if (draftPersona.perfilPropietariId) {
+          await perfilsPropietariApi.update(draftPersona.perfilPropietariId, perfilPayload);
+        } else {
+          await perfilsPropietariApi.create(perfilPayload);
+        }
+      }
+
+      const full = await personesApi.get(savedId);
+      const mapped = backendToForm(full);
       setPersona(mapped);
       setDraftPersona(mapped);
       setIsEditing(false);
 
-      if (isNew) {
-        if (saved?.id) navigate(`/persones/${saved.id}`);
-        else navigate("/persones");
-      }
+      if (isNew) navigate(`/persones/${savedId}`);
     } catch (err) {
       setError(err.message);
     } finally {

@@ -228,10 +228,8 @@ export default function InfoReserva() {
 
       setSaving(true);
       setError("");
-<<<<<<< HEAD
       setSuccessMsg('Comunicació afegida correctament!');
       setTimeout(() => setSuccessMsg(''), 3500);
-=======
       try {
         const payload = {
           canal: draftComunicacio.canal,
@@ -250,7 +248,6 @@ export default function InfoReserva() {
       } finally {
         setSaving(false);
       }
->>>>>>> 8453a3886295faaf1b5c6c4dc6a8253ae1c05756
       return;
     }
 

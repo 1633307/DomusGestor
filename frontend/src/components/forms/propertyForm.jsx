@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropietariSelector from './PropietariSelector';
 import styles from './PropertyForm.module.css';
 
 const emptyForm = {
@@ -13,12 +14,8 @@ const emptyForm = {
   bedrooms: '',
   bathrooms: '',
   basePrice: '',
-  ownerName: '',
-  ownerTaxId: '',
-  ownerEmail: '',
-  ownerPhone: '',
-  ownerAddress: '',
-  ownerIban: '',
+  propietariId: null,
+  propietariData: {},
 };
 
 const BACKEND_FIELD_MAP = {
@@ -33,12 +30,6 @@ const BACKEND_FIELD_MAP = {
   num_habitacions: 'bedrooms',
   num_banys: 'bathrooms',
   preu_base_nit: 'basePrice',
-  propietari_nom: 'ownerName',
-  propietari_dni: 'ownerTaxId',
-  propietari_email: 'ownerEmail',
-  propietari_telefon: 'ownerPhone',
-  propietari_adreca: 'ownerAddress',
-  propietari_iban: 'ownerIban',
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -52,7 +43,6 @@ function isPositiveInt(val) {
 function validate(form) {
   const errors = {};
 
-  // Camps obligatoris (model: no blank)
   if (!form.propertyName.trim())
     errors.propertyName = "El nom de l'immoble és obligatori.";
   else if (form.propertyName.length > 100)
@@ -61,27 +51,20 @@ function validate(form) {
   if (!form.address.trim())
     errors.address = "L'adreça és obligatòria.";
 
-  // Preu base: ha de ser un número vàlid i no negatiu
   if (form.basePrice !== '' && isNaN(Number(form.basePrice)))
     errors.basePrice = 'El preu base ha de ser un número.';
   else if (form.basePrice !== '' && Number(form.basePrice) < 0)
     errors.basePrice = 'El preu base no pot ser negatiu.';
 
-  // Camps numèrics enters positius
   if (!isPositiveInt(form.squareMeters))
     errors.squareMeters = 'Els metres quadrats han de ser un número enter positiu.';
   if (!isPositiveInt(form.capacity))
     errors.capacity = 'La capacitat màxima ha de ser un número enter positiu.';
   if (!isPositiveInt(form.bedrooms))
-    errors.bedrooms = 'El número d\'habitacions ha de ser un enter positiu.';
+    errors.bedrooms = "El número d'habitacions ha de ser un enter positiu.";
   if (!isPositiveInt(form.bathrooms))
     errors.bathrooms = 'El número de banys ha de ser un enter positiu.';
 
-  // Email del propietari
-  if (form.ownerEmail && !EMAIL_RE.test(form.ownerEmail))
-    errors.ownerEmail = "El format de l'email no és vàlid.";
-
-  // Longituds màximes del model
   if (form.reference.length > 50)
     errors.reference = 'La referència no pot superar els 50 caràcters.';
   if (form.city.length > 100)
@@ -89,15 +72,7 @@ function validate(form) {
   if (form.postalCode.length > 10)
     errors.postalCode = 'El codi postal no pot superar els 10 caràcters.';
   if (form.propertyType.length > 50)
-    errors.propertyType = 'El tipus d\'immoble no pot superar els 50 caràcters.';
-  if (form.ownerName.length > 150)
-    errors.ownerName = 'El nom no pot superar els 150 caràcters.';
-  if (form.ownerTaxId.length > 20)
-    errors.ownerTaxId = 'El DNI/NIF no pot superar els 20 caràcters.';
-  if (form.ownerPhone.length > 30)
-    errors.ownerPhone = 'El telèfon no pot superar els 30 caràcters.';
-  if (form.ownerIban.length > 34)
-    errors.ownerIban = "L'IBAN no pot superar els 34 caràcters.";
+    errors.propertyType = "El tipus d'immoble no pot superar els 50 caràcters.";
 
   return errors;
 }
@@ -115,12 +90,7 @@ function formToBackend(f) {
     num_habitacions: Number(f.bedrooms) || 0,
     num_banys: Number(f.bathrooms) || 0,
     preu_base_nit: Number(f.basePrice) || 0,
-    propietari_nom: f.ownerName,
-    propietari_dni: f.ownerTaxId,
-    propietari_email: f.ownerEmail,
-    propietari_telefon: f.ownerPhone,
-    propietari_adreca: f.ownerAddress,
-    propietari_iban: f.ownerIban,
+    propietari: f.propietariId || null,
     descompte_actiu: false,
     descompte_percentatge: 0,
     temporades: [],
@@ -144,6 +114,10 @@ export default function PropertyForm({ onSubmit, onCancel }) {
         return next;
       });
     }
+  };
+
+  const handlePropietariChange = (id, data) => {
+    setForm((prev) => ({ ...prev, propietariId: id, propietariData: data }));
   };
 
   const handleSubmit = async (e) => {
@@ -336,81 +310,13 @@ export default function PropertyForm({ onSubmit, onCancel }) {
       </section>
 
       <section className={styles.section}>
-        <h4 className={styles.sectionTitle}>Informació del propietari</h4>
-        <div className={styles.grid}>
-          <label className={styles.field}>
-            Nom complet
-            <input
-              name="ownerName"
-              value={form.ownerName}
-              onChange={handleChange}
-              placeholder="Ex. Joan Garcia"
-              className={inputClass('ownerName')}
-            />
-            {fe('ownerName')}
-          </label>
-
-          <label className={styles.field}>
-            DNI / NIF
-            <input
-              name="ownerTaxId"
-              value={form.ownerTaxId}
-              onChange={handleChange}
-              placeholder="Ex. 12345678A"
-              className={inputClass('ownerTaxId')}
-            />
-            {fe('ownerTaxId')}
-          </label>
-
-          <label className={styles.field}>
-            Email
-            <input
-              name="ownerEmail"
-              type="email"
-              value={form.ownerEmail}
-              onChange={handleChange}
-              placeholder="Ex. propietari@email.com"
-              className={inputClass('ownerEmail')}
-            />
-            {fe('ownerEmail')}
-          </label>
-
-          <label className={styles.field}>
-            Telèfon
-            <input
-              name="ownerPhone"
-              value={form.ownerPhone}
-              onChange={handleChange}
-              placeholder="Ex. 600 000 000"
-              className={inputClass('ownerPhone')}
-            />
-            {fe('ownerPhone')}
-          </label>
-
-          <label className={`${styles.field} ${styles.fullWidth}`}>
-            Adreça fiscal
-            <input
-              name="ownerAddress"
-              value={form.ownerAddress}
-              onChange={handleChange}
-              placeholder="Ex. Carrer Exemple 1, Barcelona"
-              className={inputClass('ownerAddress')}
-            />
-            {fe('ownerAddress')}
-          </label>
-
-          <label className={`${styles.field} ${styles.fullWidth}`}>
-            IBAN
-            <input
-              name="ownerIban"
-              value={form.ownerIban}
-              onChange={handleChange}
-              placeholder="Ex. ES12 3456 7890 1234 5678 9012"
-              className={inputClass('ownerIban')}
-            />
-            {fe('ownerIban')}
-          </label>
-        </div>
+        <h4 className={styles.sectionTitle}>Propietari</h4>
+        <PropietariSelector
+          propietariId={form.propietariId}
+          propietariData={form.propietariData}
+          isEditing={true}
+          onChange={handlePropietariChange}
+        />
       </section>
 
       {error && (

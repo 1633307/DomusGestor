@@ -71,11 +71,12 @@ class PerfilPropietariSerializer(serializers.ModelSerializer):
     class Meta:
         model = PerfilPropietari
         fields = [
-            'id', 'nom_fiscal', 'nif_cif', 'adreca_facturacio',
+            'id', 'persona', 'nom_fiscal', 'nif_cif', 'adreca_facturacio',
             'codi_postal_facturacio', 'ciutat_facturacio', 'provincia_facturacio',
             'pais_facturacio', 'email_facturacio', 'telefon_facturacio',
             'iban', 'observacions_facturacio',
         ]
+        extra_kwargs = {'persona': {'required': True}}
 
 
 class PersonaSerializer(serializers.ModelSerializer):

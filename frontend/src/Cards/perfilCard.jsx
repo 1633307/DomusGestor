@@ -1,3 +1,4 @@
+import PropietariSelector from "../components/forms/PropietariSelector";
 import styles from "./perfilCard.module.css";
 
 function Field({ label, value, name, isEditing, onChange, type = "text" }) {
@@ -19,7 +20,7 @@ function Field({ label, value, name, isEditing, onChange, type = "text" }) {
   );
 }
 
-export default function PerfilCard({ data, isEditing, onChange }) {
+export default function PerfilCard({ data, isEditing, onChange, onPropietariChange }) {
   return (
     <div className={styles.wrapper}>
       <section className={styles.card}>
@@ -119,7 +120,6 @@ export default function PerfilCard({ data, isEditing, onChange }) {
             onChange={onChange}
             type="number"
           />
-
         </div>
       </section>
 
@@ -131,66 +131,19 @@ export default function PerfilCard({ data, isEditing, onChange }) {
           </div>
         </div>
 
-        <div className={styles.formGrid}>
-          <Field
-            label="Nom complet"
-            name="ownerName"
-            value={data.ownerName}
-            isEditing={isEditing}
-            onChange={onChange}
-          />
-
-          <Field
-            label="DNI / NIF"
-            name="ownerTaxId"
-            value={data.ownerTaxId}
-            isEditing={isEditing}
-            onChange={onChange}
-          />
-
-          <Field
-            label="Email"
-            name="ownerEmail"
-            value={data.ownerEmail}
-            isEditing={isEditing}
-            onChange={onChange}
-            type="email"
-          />
-
-          <Field
-            label="Telèfon"
-            name="ownerPhone"
-            value={data.ownerPhone}
-            isEditing={isEditing}
-            onChange={onChange}
-          />
-
-          <div className={`${styles.field} ${styles.fullWidth}`}>
-            <label>Adreça fiscal</label>
-            {isEditing ? (
-              <input
-                name="ownerAddress"
-                value={data.ownerAddress}
-                onChange={onChange}
-              />
-            ) : (
-              <div className={styles.fieldValue}>{data.ownerAddress || "-"}</div>
-            )}
-          </div>
-
-          <div className={`${styles.field} ${styles.fullWidth}`}>
-            <label>IBAN</label>
-            {isEditing ? (
-              <input
-                name="ownerIban"
-                value={data.ownerIban}
-                onChange={onChange}
-              />
-            ) : (
-              <div className={styles.fieldValue}>{data.ownerIban || "-"}</div>
-            )}
-          </div>
-        </div>
+        <PropietariSelector
+          propietariId={data.propietariId}
+          propietariData={{
+            ownerName: data.ownerName,
+            ownerEmail: data.ownerEmail,
+            ownerPhone: data.ownerPhone,
+            ownerTaxId: data.ownerTaxId,
+            ownerAddress: data.ownerAddress,
+            ownerIban: data.ownerIban,
+          }}
+          isEditing={isEditing}
+          onChange={onPropietariChange}
+        />
       </section>
     </div>
   );

@@ -93,19 +93,26 @@ export const bookingsApi = {
   dashboard: () => api.get("/bookings/dashboard/"),
 };
 
-export const inquilinsApi = {
-  list: () => api.get('/bookings/inquilins/'),
-  get: (id) => api.get(`/bookings/inquilins/${id}/`),
-  create: (data) => api.post('/bookings/inquilins/', data),
-  update: (id, data) => api.patch(`/bookings/inquilins/${id}/`, data),
-  remove: (id) => api.del(`/bookings/inquilins/${id}/`),
+export const personesApi = {
+  list: () => api.get('/bookings/persones/'),
+  get: (id) => api.get(`/bookings/persones/${id}/`),
+  create: (data) => api.post('/bookings/persones/', data),
+  update: (id, data) => api.patch(`/bookings/persones/${id}/`, data),
+  remove: (id) => api.del(`/bookings/persones/${id}/`),
+};
+
+// àlies per compatibilitat — eliminar quan tots els usos estiguin migrats
+export const inquilinsApi = personesApi;
+
+export const perfilsPropietariApi = {
+  create: (data) => api.post('/bookings/perfils-propietari/', data),
+  update: (id, data) => api.patch(`/bookings/perfils-propietari/${id}/`, data),
 };
 
 export const comunicacionsApi = {
   list: (reservaId) => api.get(`/bookings/reserves/${reservaId}/comunicacions/`),
   create: (reservaId, data) => api.post(`/bookings/reserves/${reservaId}/comunicacions/`, data),
   remove: (reservaId, comId) => api.del(`/bookings/reserves/${reservaId}/comunicacions/${comId}/`),
-  create: (data) => api.post("/bookings/inquilins/", data),
 };
 
 export const serveisApi = {

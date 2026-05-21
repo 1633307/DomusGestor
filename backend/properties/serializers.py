@@ -88,6 +88,14 @@ class ImmobleSerializer(serializers.ModelSerializer):
                 })
         return attrs
 
+    def create(self, validated_data):
+        temporades_data = validated_data.pop('temporades', [])
+        instance = super().create(validated_data)
+        for t_data in temporades_data:
+            t_data.pop('id', None)
+            Temporada.objects.create(immoble=instance, **t_data)
+        return instance
+
     def update(self, instance, validated_data):
         temporades_data = validated_data.pop('temporades', [])
         instance = super().update(instance, validated_data)
