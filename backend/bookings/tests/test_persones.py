@@ -1,6 +1,6 @@
 from django.test import TestCase
 from users.models import Usuari
-from bookings.models import Persona, PerfilInquili, PerfilPropietari
+from bookings.models import Persona, PerfilInquili, PerfilPropietari, InquiliBasic, ReservaBasica
 from properties.models import Immoble
 
 
@@ -64,3 +64,52 @@ class ImmoblePropietary(TestCase):
         )
         self.assertEqual(immoble.propietari, persona)
         self.assertIn(immoble, persona.immobles.all())
+
+
+class DataMigrationTest(TestCase):
+    """Testa la lògica de migració de dades de forma independent."""
+
+    def test_inquilibasic_es_migra_a_persona(self):
+        InquiliBasic.objects.create(
+            nom_complet='Test User',
+            email='test@test.com',
+            telefon='600000000',
+        )
+        from bookings.migration_helpers import migrar_inquilins_a_persones
+        migrar_inquilins_a_persones()
+        self.assertEqual(Persona.objects.filter(email='test@test.com').count(), 1)
+        p = Persona.objects.get(email='test@test.com')
+        self.assertTrue(hasattr(p, 'perfil_inquili'))
+
+    def test_inquili_amb_dades_fiscals_crea_perfil_propietari(self):
+        InquiliBasic.objects.create(
+            nom_complet='Fiscal User',
+            email='fiscal@test.com',
+            nom_fiscal='Fiscal SL',
+            nif_cif='B99999999',
+        )
+        from bookings.migration_helpers import migrar_inquilins_a_persones
+        migrar_inquilins_a_persones()
+        p = Persona.objects.get(email='fiscal@test.com')
+        self.assertTrue(hasattr(p, 'perfil_propietari'))
+        self.assertEqual(p.perfil_propietari.nif_cif, 'B99999999')
+
+    def test_reservabasica_inquili_nou_s_assigna(self):
+        inquili = InquiliBasic.objects.create(
+            nom_complet='Reserva User',
+            email='reserva@test.com',
+        )
+        immoble = Immoble.objects.create(
+            nom_comercial='Pis Migr', adreca='C/ Test 1', preu_base_nit=50
+        )
+        reserva = ReservaBasica.objects.create(
+            immoble=immoble,
+            inquili=inquili,
+            data_entrada='2026-06-01',
+            data_sortida='2026-06-05',
+        )
+        from bookings.migration_helpers import migrar_inquilins_a_persones
+        migrar_inquilins_a_persones()
+        reserva.refresh_from_db()
+        self.assertIsNotNone(reserva.inquili_nou)
+        self.assertEqual(reserva.inquili_nou.email, 'reserva@test.com')
