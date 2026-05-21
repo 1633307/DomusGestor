@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Sidebar from "../layout/Sidebar";
-import style from "./InfoReservaPage.module.css";
+import style from "./infoReservaPage.module.css";
 import PageFooterActions from "../layout/FooterActions";
 import ReservaInfoCard from "../../Cards/reservaInfoCard";
 import ReservaHostesCard from "../../Cards/reservaHostesCard";

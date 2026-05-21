@@ -180,7 +180,7 @@ export default function CercadorPage() {
                 )}
 
                 <div className={styles.propertyImage}>
-                  <img src={property.imatge || '/placeHolderCasa.jpg'} alt={property.nom_comercial || 'Inmueble'} />
+                  <img src={property.fotos?.[0] || `${import.meta.env.BASE_URL}placeHolderCasa.jpg`} alt={property.nom_comercial || 'Inmueble'} />
                 </div>
               </div>
 

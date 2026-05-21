@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0006_set_descompte_individual_aplicat'),
+        ('bookings', '0001_initial'),
     ]
 
     operations = [
