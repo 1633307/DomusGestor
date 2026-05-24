@@ -21,12 +21,16 @@ import sys
 
 import django
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "domusgestor.settings")
 django.setup()
 
 from users.models import Usuari
 from properties.models import Immoble, Servei, Temporada
-from bookings.models import InquiliBasic, ReservaBasica, Hoste, PagamentReserva
+from bookings.models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, PagamentReserva
 
 
 def run():
@@ -45,11 +49,11 @@ def run():
     # ── Netejar dades existents ──────────────────────────────────────────────
     deleted_p = PagamentReserva.objects.all().delete()[0]
     deleted_r = ReservaBasica.objects.all().delete()[0]
-    deleted_i = InquiliBasic.objects.all().delete()[0]
+    deleted_per = Persona.objects.all().delete()[0]
     deleted_m = Immoble.objects.all().delete()[0]
     deleted_s = Servei.objects.all().delete()[0]
     deleted_t = Temporada.objects.all().delete()[0]
-    print(f"Eliminats: {deleted_p} pagaments, {deleted_r} reserves, {deleted_i} inquilins, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
+    print(f"Eliminats: {deleted_p} pagaments, {deleted_r} reserves, {deleted_per} persones, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
 
     # ── 20 Immobles ─────────────────────────────────────────────────────────
     # Columnes: nom, ref, adreca, ciutat, cp, tipus, capacitat, hab, banys,
@@ -155,14 +159,24 @@ def run():
         (nom, ref, adr, ciutat, cp, tipus, cap, hab, banys, m2, preu, actiu,
          prop_nom, prop_dni, prop_email, prop_tel, prop_adr, prop_iban) = row
         ci_inici, ci_fi, co_inici, co_fi = horaris
+        propietari = Persona.objects.create(
+            nom_complet=prop_nom,
+            dni_passaport=prop_dni,
+            email=prop_email,
+            telefon=prop_tel,
+            residencia=prop_adr,
+        )
+        PerfilPropietari.objects.create(
+            persona=propietari,
+            iban=prop_iban,
+            adreca_facturacio=prop_adr,
+        )
         imm = Immoble.objects.create(
             nom_comercial=nom, referencia=ref, adreca=adr, ciutat=ciutat,
             codi_postal=cp, tipus_immoble=tipus, capacitat_maxima=cap,
             num_habitacions=hab, num_banys=banys, metres_quadrats=m2,
             preu_base_nit=preu, actiu=actiu,
-            propietari_nom=prop_nom, propietari_dni=prop_dni,
-            propietari_email=prop_email, propietari_telefon=prop_tel,
-            propietari_adreca=prop_adr, propietari_iban=prop_iban,
+            propietari=propietari,
             fotos=fotos,
             hora_checkin_inici=ci_inici,
             hora_checkin_fi=ci_fi,
@@ -468,7 +482,7 @@ def run():
     # DNIs ficticis (no coincideixen amb els propietaris per evitar colisions)
     inquilins_data = [
         ("Marc Rovira Puig",      "98765432A", "marc.rovira@gmail.com",    "Carrer Major, 5, Barcelona"),
-        ("Laia Font Soler",       "87654321B", "laia.font@hotmail.com",    "Avinguda Diagonal, 10, Barcelona"),
+        ("Laia Font Soler",       "87654321X", "laia.font@hotmail.com",    "Avinguda Diagonal, 10, Barcelona"),
         ("Jordi Mestre Valls",    "76543210C", "jmestre@outlook.com",      "Carrer Nou, 3, Girona"),
         ("Silvia Soler Puig",     "65432109D", "silvia.soler@gmail.com",   "Placa Catalunya, 8, Tarragona"),
         ("Pere Mas Bosch",        "54321098E", "pere.mas@correu.cat",      "Carrer del Pi, 12, Lleida"),
@@ -490,46 +504,47 @@ def run():
     ]
 
     inquilins = []
-    for nom, dni, email, facturacio in inquilins_data:
-        inq = InquiliBasic.objects.create(
+    for nom, dni, email, residencia in inquilins_data:
+        inq = Persona.objects.create(
             nom_complet=nom,
             dni_passaport=dni,
             email=email,
-            dades_facturacio=facturacio,
+            residencia=residencia,
         )
+        PerfilInquili.objects.create(persona=inq)
         inquilins.append(inq)
 
-    print(f"{len(inquilins)} inquilins creats")
+    print(f"{len(inquilins)} inquilins (Persona+PerfilInquili) creats")
 
     # ── 20 Reserves ──────────────────────────────────────────────────────────
     # (immoble_idx, inquili_idx, data_entrada, data_sortida, pagat,
-    #  tipus_reserva, comentaris)
+    #  tipus_reserva, limpieza_extra, comentaris)
     reserves_data = [
-        (0,  0,  "2026-01-10", "2026-01-15", True,  "Airbnb",  "Entrada abans de les 15:00 si es possible."),
-        (1,  1,  "2026-01-20", "2026-01-23", True,  "Booking", "Hostes habituals, llits separats."),
-        (2,  2,  "2026-02-03", "2026-02-10", True,  "Direct",  "Reserva familiar, necessiten bressol."),
-        (3,  3,  "2026-02-14", "2026-02-16", False, "Airbnb",  "Sant Valenti - decoracio especial."),
-        (4,  4,  "2026-03-01", "2026-03-08", True,  "Direct",  "Estada llarga, descompte aplicat."),
-        (5,  5,  "2026-03-15", "2026-03-18", False, "Booking", ""),
-        (6,  6,  "2026-04-05", "2026-04-07", True,  "Airbnb",  "Cap d'any avancat - Setmana Santa."),
-        (7,  7,  "2026-04-20", "2026-04-25", False, "Direct",  "Pendent confirmacio pagament."),
-        (8,  8,  "2026-05-01", "2026-05-05", True,  "Booking", "Festa local, possible soroll."),
-        (9,  9,  "2026-05-10", "2026-05-17", False, "Airbnb",  ""),
-        (10, 10, "2026-05-20", "2026-05-22", True,  "Direct",  "Treball, necessita wifi rapid."),
-        (11, 11, "2026-06-01", "2026-06-08", False, "Booking", ""),
-        (12, 12, "2026-06-15", "2026-06-20", True,  "Airbnb",  "Aniversari de noces."),
-        (13, 13, "2026-07-01", "2026-07-07", False, "Altres",  "Reserva via partner extern."),
-        (14, 14, "2026-07-10", "2026-07-14", True,  "Direct",  ""),
-        (15, 15, "2026-07-20", "2026-07-25", False, "Booking", "Mascota petita autoritzada."),
-        (16, 16, "2026-08-01", "2026-08-10", True,  "Airbnb",  "Vacances familiars d'estiu."),
-        (17, 17, "2026-08-15", "2026-08-18", True,  "Direct",  "Pagat per transferencia."),
-        (18, 18, "2026-09-01", "2026-09-05", False, "Booking", ""),
-        (19, 19, "2026-09-10", "2026-09-15", True,  "Airbnb",  "Check-in autonom amb codi."),
+        (0,  0,  "2026-01-10", "2026-01-15", True,  "Airbnb",  1, "Entrada abans de les 15:00 si es possible."),
+        (1,  1,  "2026-01-20", "2026-01-23", True,  "Booking", 0, "Hostes habituals, llits separats."),
+        (2,  2,  "2026-02-03", "2026-02-10", True,  "Direct",  2, "Reserva familiar, necessiten bressol."),
+        (3,  3,  "2026-02-14", "2026-02-16", False, "Airbnb",  0, "Sant Valenti - decoracio especial."),
+        (4,  4,  "2026-03-01", "2026-03-08", True,  "Direct",  3, "Estada llarga, descompte aplicat."),
+        (5,  5,  "2026-03-15", "2026-03-18", False, "Booking", 0, ""),
+        (6,  6,  "2026-04-05", "2026-04-07", True,  "Airbnb",  1, "Cap d'any avancat - Setmana Santa."),
+        (7,  7,  "2026-04-20", "2026-04-25", False, "Direct",  0, "Pendent confirmacio pagament."),
+        (8,  8,  "2026-05-01", "2026-05-05", True,  "Booking", 2, "Festa local, possible soroll."),
+        (9,  9,  "2026-05-10", "2026-05-17", False, "Airbnb",  0, ""),
+        (10, 10, "2026-05-20", "2026-05-22", True,  "Direct",  1, "Treball, necessita wifi rapid."),
+        (11, 11, "2026-06-01", "2026-06-08", False, "Booking", 0, ""),
+        (12, 12, "2026-06-15", "2026-06-20", True,  "Airbnb",  2, "Aniversari de noces."),
+        (13, 13, "2026-07-01", "2026-07-07", False, "Altres",  0, "Reserva via partner extern."),
+        (14, 14, "2026-07-10", "2026-07-14", True,  "Direct",  1, ""),
+        (15, 15, "2026-07-20", "2026-07-25", False, "Booking", 2, "Mascota petita autoritzada."),
+        (16, 16, "2026-08-01", "2026-08-10", True,  "Airbnb",  3, "Vacances familiars d'estiu."),
+        (17, 17, "2026-08-15", "2026-08-18", True,  "Direct",  0, "Pagat per transferencia."),
+        (18, 18, "2026-09-01", "2026-09-05", False, "Booking", 1, ""),
+        (19, 19, "2026-09-10", "2026-09-15", True,  "Airbnb",  2, "Check-in autonom amb codi."),
     ]
 
     reserves = []
     for row in reserves_data:
-        imm_i, inq_i, entrada, sortida, pagat, tipus, comentaris = row
+        imm_i, inq_i, entrada, sortida, pagat, tipus, limpieza_extra, comentaris = row
         r = ReservaBasica.objects.create(
             immoble=immobles[imm_i],
             inquili=inquilins[inq_i],
@@ -537,6 +552,7 @@ def run():
             data_sortida=sortida,
             pagat=pagat,
             tipus_reserva=tipus,
+            limpieza_extra=limpieza_extra,
             comentaris_interns=comentaris,
         )
         reserves.append(r)
@@ -599,7 +615,7 @@ def run():
             numero_document=inq.dni_passaport,
             nacionalitat="Espanyola",
             data_naixement=f"19{70 + (idx % 30):02d}-0{1 + (idx % 9)}-15",
-            residencia=inq.dades_facturacio or "",
+            residencia=inq.residencia,
             email=inq.email,
             telefon=f"+34 6{idx:02d} 000 000",
         )

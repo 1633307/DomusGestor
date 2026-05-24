@@ -33,18 +33,20 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
       .finally(() => setLoading(false));
   }, [immobleId]);
 
-  // Mantine Calendar passes dates as "YYYY-MM-DD" strings to getDayProps
   function getReservaForDate(date) {
-    return reserves.find((r) => date >= r.data_entrada && date <= r.data_sortida) ?? null;
+    const dateStr = dayjs(date).format("YYYY-MM-DD");
+    return reserves.find((r) => dateStr >= r.data_entrada && dateStr <= r.data_sortida) ?? null;
   }
 
   function isInSelectedRange(date) {
+    const dateStr = dayjs(date).format("YYYY-MM-DD");
     if (!selectedStart) return false;
-    if (!selectedEnd) return date === selectedStart;
-    return date >= selectedStart && date <= selectedEnd;
+    if (!selectedEnd) return dateStr === selectedStart;
+    return dateStr >= selectedStart && dateStr <= selectedEnd;
   }
 
   function handleDayClick(date) {
+    const dateStr = dayjs(date).format("YYYY-MM-DD");
     const reserva = getReservaForDate(date);
     if (reserva) {
       navigate(`/infoReserva/${reserva.id}`);
@@ -52,23 +54,24 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
     }
 
     if (!selectedStart || (selectedStart && selectedEnd)) {
-      setSelectedStart(date);
+      setSelectedStart(dateStr);
       setSelectedEnd(null);
       return;
     }
 
-    if (date === selectedStart) {
+    if (dateStr === selectedStart) {
       setSelectedStart(null);
       setSelectedEnd(null);
-    } else if (date < selectedStart) {
+    } else if (dateStr < selectedStart) {
       setSelectedEnd(selectedStart);
-      setSelectedStart(date);
+      setSelectedStart(dateStr);
     } else {
-      setSelectedEnd(date);
+      setSelectedEnd(dateStr);
     }
   }
 
   function getDayProps(date) {
+    const dateStr = dayjs(date).format("YYYY-MM-DD");
     const reserva = getReservaForDate(date);
 
     if (reserva) {
@@ -82,7 +85,7 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
 
     const inRange = isInSelectedRange(date);
     if (inRange) {
-      const isEndpoint = date === selectedStart || date === selectedEnd;
+      const isEndpoint = dateStr === selectedStart || dateStr === selectedEnd;
       return {
         style: {
           backgroundColor: isEndpoint ? "#818cf8" : "#e0e7ff",
@@ -153,6 +156,7 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
                   <button
                     className={styles.ferReservaBtn}
                     onClick={() => onFerReserva(selectedStart, selectedEnd)}
+                    disabled={!canCreate}
                   >
                     Fer reserva
                   </button>

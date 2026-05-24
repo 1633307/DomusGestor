@@ -3,14 +3,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from properties.models import Immoble
-from .models import InquiliBasic, ReservaBasica
-from .serializers import InquiliSerializer, ReservaSerializer, DashboardSerializer
+
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio
+from .serializers import (
+    PersonaSerializer, PerfilPropietariSerializer,
+    ReservaSerializer, ComunicacioSerializer, DashboardSerializer,
+)
 from .services import calcular_preview_reserva
 
 
-class InquiliListCreateView(generics.ListCreateAPIView):
-    queryset = InquiliBasic.objects.all()
-    serializer_class = InquiliSerializer
+class PersonaListCreateView(generics.ListCreateAPIView):
+    queryset = Persona.objects.all().order_by('nom_complet')
+    serializer_class = PersonaSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -21,13 +25,27 @@ class InquiliListCreateView(generics.ListCreateAPIView):
         return queryset
 
 
-class InquiliDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = InquiliBasic.objects.all()
-    serializer_class = InquiliSerializer
+class PersonaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = (
+        Persona.objects
+        .select_related('perfil_inquili', 'perfil_propietari')
+        .prefetch_related('reserves__immoble')
+        .all()
+    )
+    serializer_class = PersonaSerializer
+
+
+class PerfilPropietariListCreateView(generics.ListCreateAPIView):
+    queryset = PerfilPropietari.objects.select_related('persona').all()
+    serializer_class = PerfilPropietariSerializer
+
+
+class PerfilPropietariDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = PerfilPropietari.objects.select_related('persona').all()
+    serializer_class = PerfilPropietariSerializer
 
 
 class ReservaListCreateView(generics.ListCreateAPIView):
-    """RF-23: Llista i crea reserves."""
     queryset = (
         ReservaBasica.objects
         .select_related('immoble', 'inquili')
@@ -38,16 +56,19 @@ class ReservaListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        
         filtro_reserva = self.request.query_params.get('reserva')
         if filtro_reserva:
             queryset = queryset.filter(id=filtro_reserva)
-            
+        filtro_immoble = self.request.query_params.get('immoble')
+        if filtro_immoble:
+            queryset = queryset.filter(immoble_id=filtro_immoble)
+        filtro_inquili = self.request.query_params.get('inquili')
+        if filtro_inquili:
+            queryset = queryset.filter(inquili_id=filtro_inquili)
         return queryset
 
 
 class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """RF-23: Detall, actualització i eliminació de reserva (incl. hostes)."""
     queryset = (
         ReservaBasica.objects
         .select_related('immoble', 'inquili')
@@ -57,9 +78,24 @@ class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ReservaSerializer
 
 
-class ReservaPreviewView(APIView):
-    """Calcula el resum economic d'una reserva sense desar cap dada."""
+class ComunicacioListCreateView(generics.ListCreateAPIView):
+    serializer_class = ComunicacioSerializer
 
+    def get_queryset(self):
+        return Comunicacio.objects.filter(reserva_id=self.kwargs['reserva_pk'])
+
+    def perform_create(self, serializer):
+        serializer.save(reserva_id=self.kwargs['reserva_pk'])
+
+
+class ComunicacioDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ComunicacioSerializer
+
+    def get_queryset(self):
+        return Comunicacio.objects.filter(reserva_id=self.kwargs['reserva_pk'])
+
+
+class ReservaPreviewView(APIView):
     def post(self, request):
         return Response(calcular_preview_reserva(request.data))
 
@@ -69,7 +105,7 @@ class DashboardView(APIView):
         data = {
             'total_reserves': ReservaBasica.objects.count(),
             'total_immobles': Immoble.objects.count(),
-            'total_inquilins': InquiliBasic.objects.count(),
+            'total_inquilins': PerfilInquili.objects.count(),
             'immobles_actius': Immoble.objects.filter(actiu=True).count(),
             'reserves_pagades': ReservaBasica.objects.filter(pagat=True).count(),
         }

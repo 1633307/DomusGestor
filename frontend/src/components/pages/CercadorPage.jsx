@@ -3,7 +3,7 @@ import { TextInput, Button, Autocomplete, NumberInput } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { IoFilter, IoCalendarOutline, IoPersonAdd, IoBed } from 'react-icons/io5';
 import { api } from '../../services/api'; // <-- Ruta corregida del paso anterior
-import styles from './CercadorPage.module.css';
+import styles from './cercadorPage.module.css';
 
 export default function CercadorPage() {
   // 1. Estados de datos y carga
@@ -172,15 +172,15 @@ export default function CercadorPage() {
                 </div>
 
                 {/* Si tienes la capacidad en el modelo del backend, puedes mostrarla aquí también */}
-                {property.capacitat && (
+                {property.capacitat_maxima > 0 && (
                   <div>
                     <span className={styles.propertyLabel}>Capacidad</span>
-                    <strong>{property.capacitat} pers.</strong>
+                    <strong>{property.capacitat_maxima} pers.</strong>
                   </div>
                 )}
 
                 <div className={styles.propertyImage}>
-                  <img src={property.imatge || '/placeHolderCasa.jpg'} alt={property.nom_comercial || 'Inmueble'} />
+                  <img src={property.fotos?.[0] || `${import.meta.env.BASE_URL}placeHolderCasa.jpg`} alt={property.nom_comercial || 'Inmueble'} />
                 </div>
               </div>
 

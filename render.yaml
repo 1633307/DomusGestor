@@ -1,0 +1,29 @@
+databases:
+  - name: domusgestor-db
+    plan: free
+    databaseName: domusgestor
+    user: domusgestor
+
+services:
+  - type: web
+    name: domusgestor
+    plan: free
+    runtime: python
+    rootDir: backend
+    buildCommand: bash build.sh
+    startCommand: gunicorn domusgestor.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: domusgestor-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: FERNET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.12.0"
