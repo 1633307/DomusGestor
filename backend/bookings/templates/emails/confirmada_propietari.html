@@ -1,0 +1,15 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Reserva confirmada al teu immoble</h2>
+<p>S'ha confirmat una reserva al teu immoble.</p>
+<div class="info-box">
+  <div class="info-row"><span class="info-label">Codi</span><span class="info-value">{{ reserva.codi_reserva }}</span></div>
+  <div class="info-row"><span class="info-label">Immoble</span><span class="info-value">{{ reserva.immoble.nom_comercial }}</span></div>
+  <div class="info-row"><span class="info-label">Inquilí</span><span class="info-value">{{ reserva.inquili.nom_complet }}</span></div>
+  <div class="info-row"><span class="info-label">Email inquilí</span><span class="info-value">{{ reserva.inquili.email }}</span></div>
+  <div class="info-row"><span class="info-label">Telèfon</span><span class="info-value">{{ reserva.inquili.telefon }}</span></div>
+  <div class="info-row"><span class="info-label">Entrada</span><span class="info-value">{{ reserva.data_entrada }}</span></div>
+  <div class="info-row"><span class="info-label">Sortida</span><span class="info-value">{{ reserva.data_sortida }}</span></div>
+  {% if reserva.import_total %}<div class="info-row"><span class="info-label">Import</span><span class="info-value">{{ reserva.import_total }} €</span></div>{% endif %}
+</div>
+{% endblock %}

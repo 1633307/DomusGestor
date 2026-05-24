@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body{margin:0;padding:20px;background:#f4f6f9;font-family:Arial,sans-serif;}
+    .container{max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+    .header{background:#1a3a5c;padding:28px 32px;text-align:center;}
+    .header h1{margin:0;color:#fff;font-size:22px;}
+    .body{padding:32px;color:#333;line-height:1.6;}
+    .body h2{color:#1a3a5c;margin-top:0;}
+    .info-box{background:#f0f4f8;border-left:4px solid #1a3a5c;border-radius:4px;padding:16px 20px;margin:20px 0;}
+    .info-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e0e8f0;}
+    .info-row:last-child{border-bottom:none;}
+    .info-label{color:#666;font-size:14px;}
+    .info-value{font-weight:bold;color:#1a3a5c;font-size:14px;}
+    .footer{background:#f4f6f9;padding:20px 32px;text-align:center;font-size:12px;color:#888;border-top:1px solid #e0e0e0;}
+    p{margin:12px 0;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>{% if immobiliaria %}{{ immobiliaria.nom_comercial }}{% else %}DomusGestor{% endif %}</h1>
+    </div>
+    <div class="body">{% block content %}{% endblock %}</div>
+    <div class="footer">
+      {% if immobiliaria %}{{ immobiliaria.nom_comercial }} &middot; {{ immobiliaria.email_contacte }} &middot; {{ immobiliaria.telefon }}{% endif %}
+    </div>
+  </div>
+</body>
+</html>

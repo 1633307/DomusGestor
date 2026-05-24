@@ -1,0 +1,16 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>La teva reserva està confirmada!</h2>
+<p>Hola {{ reserva.inquili.nom_complet }},</p>
+<p>Ens complau confirmar la teva reserva. Et esperem!</p>
+<div class="info-box">
+  <div class="info-row"><span class="info-label">Codi de reserva</span><span class="info-value">{{ reserva.codi_reserva }}</span></div>
+  <div class="info-row"><span class="info-label">Allotjament</span><span class="info-value">{{ reserva.immoble.nom_comercial }}</span></div>
+  <div class="info-row"><span class="info-label">Adreça</span><span class="info-value">{{ reserva.immoble.adreca }}</span></div>
+  <div class="info-row"><span class="info-label">Entrada</span><span class="info-value">{{ reserva.data_entrada }}{% if reserva.immoble.hora_checkin_inici %} · des de les {{ reserva.immoble.hora_checkin_inici|time:"H:i" }}h{% endif %}</span></div>
+  <div class="info-row"><span class="info-label">Sortida</span><span class="info-value">{{ reserva.data_sortida }}{% if reserva.immoble.hora_checkout_fi %} · fins a les {{ reserva.immoble.hora_checkout_fi|time:"H:i" }}h{% endif %}</span></div>
+  <div class="info-row"><span class="info-label">Persones</span><span class="info-value">{{ reserva.num_hostes }}</span></div>
+  {% if reserva.import_total %}<div class="info-row"><span class="info-label">Import total</span><span class="info-value">{{ reserva.import_total }} €</span></div>{% endif %}
+</div>
+{% if immobiliaria %}<p>Contacte: <strong>{{ immobiliaria.email_contacte }}</strong> · <strong>{{ immobiliaria.telefon }}</strong></p>{% endif %}
+{% endblock %}
