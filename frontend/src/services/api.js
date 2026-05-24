@@ -35,7 +35,7 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
 
   if (!res.ok) {
     const genericMessage =
-      (data && (data.detail || data.non_field_errors?.[0])) ||
+      (data && (data.detail || data.non_field_errors?.[0] || formatFieldErrors(data))) ||
       `Error ${res.status}`;
     const err = new Error(genericMessage);
     if (data && typeof data === 'object' && !data.detail && !data.non_field_errors) {
@@ -44,6 +44,16 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
     throw err;
   }
   return data;
+}
+
+function formatFieldErrors(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return "";
+  return Object.entries(data)
+    .map(([field, messages]) => {
+      const text = Array.isArray(messages) ? messages.join(" ") : String(messages);
+      return `${field}: ${text}`;
+    })
+    .join(" ");
 }
 
 export const api = {
@@ -95,6 +105,8 @@ export const bookingsApi = {
 
 export const personesApi = {
   list: () => api.get('/bookings/persones/'),
+  findByDocument: (document) =>
+    api.get(`/bookings/persones/?document=${encodeURIComponent(document)}`),
   get: (id) => api.get(`/bookings/persones/${id}/`),
   create: (data) => api.post('/bookings/persones/', data),
   update: (id, data) => api.patch(`/bookings/persones/${id}/`, data),

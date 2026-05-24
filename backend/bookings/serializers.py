@@ -152,6 +152,7 @@ class ReservaSerializer(serializers.ModelSerializer):
             'id', 'immoble', 'immoble_nom', 'inquili', 'inquili_nom',
             'data_entrada', 'data_sortida', 'pagat',
             'codi_reserva', 'tipus_reserva', 'estat_reserva', 'net',
+            'limpieza_extra',
             'comentaris_interns', 'num_hostes',
             'descompte_immoble_aplicat', 'descompte_immoble_percentatge',
             'descompte_individual_aplicat', 'descompte_individual_percentatge',

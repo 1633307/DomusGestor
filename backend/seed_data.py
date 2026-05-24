@@ -21,6 +21,10 @@ import sys
 
 import django
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "domusgestor.settings")
 django.setup()
 
@@ -514,33 +518,33 @@ def run():
 
     # ── 20 Reserves ──────────────────────────────────────────────────────────
     # (immoble_idx, inquili_idx, data_entrada, data_sortida, pagat,
-    #  tipus_reserva, comentaris)
+    #  tipus_reserva, limpieza_extra, comentaris)
     reserves_data = [
-        (0,  0,  "2026-01-10", "2026-01-15", True,  "Airbnb",  "Entrada abans de les 15:00 si es possible."),
-        (1,  1,  "2026-01-20", "2026-01-23", True,  "Booking", "Hostes habituals, llits separats."),
-        (2,  2,  "2026-02-03", "2026-02-10", True,  "Direct",  "Reserva familiar, necessiten bressol."),
-        (3,  3,  "2026-02-14", "2026-02-16", False, "Airbnb",  "Sant Valenti - decoracio especial."),
-        (4,  4,  "2026-03-01", "2026-03-08", True,  "Direct",  "Estada llarga, descompte aplicat."),
-        (5,  5,  "2026-03-15", "2026-03-18", False, "Booking", ""),
-        (6,  6,  "2026-04-05", "2026-04-07", True,  "Airbnb",  "Cap d'any avancat - Setmana Santa."),
-        (7,  7,  "2026-04-20", "2026-04-25", False, "Direct",  "Pendent confirmacio pagament."),
-        (8,  8,  "2026-05-01", "2026-05-05", True,  "Booking", "Festa local, possible soroll."),
-        (9,  9,  "2026-05-10", "2026-05-17", False, "Airbnb",  ""),
-        (10, 10, "2026-05-20", "2026-05-22", True,  "Direct",  "Treball, necessita wifi rapid."),
-        (11, 11, "2026-06-01", "2026-06-08", False, "Booking", ""),
-        (12, 12, "2026-06-15", "2026-06-20", True,  "Airbnb",  "Aniversari de noces."),
-        (13, 13, "2026-07-01", "2026-07-07", False, "Altres",  "Reserva via partner extern."),
-        (14, 14, "2026-07-10", "2026-07-14", True,  "Direct",  ""),
-        (15, 15, "2026-07-20", "2026-07-25", False, "Booking", "Mascota petita autoritzada."),
-        (16, 16, "2026-08-01", "2026-08-10", True,  "Airbnb",  "Vacances familiars d'estiu."),
-        (17, 17, "2026-08-15", "2026-08-18", True,  "Direct",  "Pagat per transferencia."),
-        (18, 18, "2026-09-01", "2026-09-05", False, "Booking", ""),
-        (19, 19, "2026-09-10", "2026-09-15", True,  "Airbnb",  "Check-in autonom amb codi."),
+        (0,  0,  "2026-01-10", "2026-01-15", True,  "Airbnb",  1, "Entrada abans de les 15:00 si es possible."),
+        (1,  1,  "2026-01-20", "2026-01-23", True,  "Booking", 0, "Hostes habituals, llits separats."),
+        (2,  2,  "2026-02-03", "2026-02-10", True,  "Direct",  2, "Reserva familiar, necessiten bressol."),
+        (3,  3,  "2026-02-14", "2026-02-16", False, "Airbnb",  0, "Sant Valenti - decoracio especial."),
+        (4,  4,  "2026-03-01", "2026-03-08", True,  "Direct",  3, "Estada llarga, descompte aplicat."),
+        (5,  5,  "2026-03-15", "2026-03-18", False, "Booking", 0, ""),
+        (6,  6,  "2026-04-05", "2026-04-07", True,  "Airbnb",  1, "Cap d'any avancat - Setmana Santa."),
+        (7,  7,  "2026-04-20", "2026-04-25", False, "Direct",  0, "Pendent confirmacio pagament."),
+        (8,  8,  "2026-05-01", "2026-05-05", True,  "Booking", 2, "Festa local, possible soroll."),
+        (9,  9,  "2026-05-10", "2026-05-17", False, "Airbnb",  0, ""),
+        (10, 10, "2026-05-20", "2026-05-22", True,  "Direct",  1, "Treball, necessita wifi rapid."),
+        (11, 11, "2026-06-01", "2026-06-08", False, "Booking", 0, ""),
+        (12, 12, "2026-06-15", "2026-06-20", True,  "Airbnb",  2, "Aniversari de noces."),
+        (13, 13, "2026-07-01", "2026-07-07", False, "Altres",  0, "Reserva via partner extern."),
+        (14, 14, "2026-07-10", "2026-07-14", True,  "Direct",  1, ""),
+        (15, 15, "2026-07-20", "2026-07-25", False, "Booking", 2, "Mascota petita autoritzada."),
+        (16, 16, "2026-08-01", "2026-08-10", True,  "Airbnb",  3, "Vacances familiars d'estiu."),
+        (17, 17, "2026-08-15", "2026-08-18", True,  "Direct",  0, "Pagat per transferencia."),
+        (18, 18, "2026-09-01", "2026-09-05", False, "Booking", 1, ""),
+        (19, 19, "2026-09-10", "2026-09-15", True,  "Airbnb",  2, "Check-in autonom amb codi."),
     ]
 
     reserves = []
     for row in reserves_data:
-        imm_i, inq_i, entrada, sortida, pagat, tipus, comentaris = row
+        imm_i, inq_i, entrada, sortida, pagat, tipus, limpieza_extra, comentaris = row
         r = ReservaBasica.objects.create(
             immoble=immobles[imm_i],
             inquili=inquilins[inq_i],
@@ -548,6 +552,7 @@ def run():
             data_sortida=sortida,
             pagat=pagat,
             tipus_reserva=tipus,
+            limpieza_extra=limpieza_extra,
             comentaris_interns=comentaris,
         )
         reserves.append(r)

@@ -20,6 +20,7 @@ function reservaBackendToInfo(r) {
     reservationType: r.tipus_reserva ?? "",
     estadoReserva: r.estat_reserva ?? r.estadoReserva ?? r.estado_reserva ?? "",
     limpio: r.net ?? r.limpio ?? false,
+    limpiezaExtra: String(r.limpieza_extra ?? 0),
     internalComments: r.comentaris_interns ?? "",
   };
 }
@@ -90,6 +91,7 @@ const emptyReserva = {
   reservationType: "",
   estadoReserva: "",
   limpio: false,
+  limpiezaExtra: "0",
   internalComments: "",
 };
 
@@ -299,6 +301,7 @@ export default function InfoReserva() {
         comentaris_interns: draftData.internalComments,
         estat_reserva: draftData.estadoReserva || null,
         net: toBoolean(draftData.limpio),
+        limpieza_extra: Number(draftData.limpiezaExtra) || 0,
         num_hostes: draftHostesData.guests.length,
         hostes: draftHostesData.guests.map(hosteFrontToBackend),
       };
