@@ -241,3 +241,37 @@ class Comunicacio(models.Model):
 
     def __str__(self):
         return f"{self.canal}: {self.titol}"
+
+
+class ComunicacioEmail(models.Model):
+    TIPUS_CHOICES = [
+        ('prereservada_inquili',    'Pre-reserva → Inquilí'),
+        ('prereservada_propietari', 'Pre-reserva → Propietari'),
+        ('confirmada_inquili',      'Confirmada → Inquilí'),
+        ('confirmada_propietari',   'Confirmada → Propietari'),
+        ('cancelada_inquili',       'Cancel·lada → Inquilí'),
+        ('cancelada_propietari',    'Cancel·lada → Propietari'),
+        ('pagament_inquili',        'Pagament → Inquilí'),
+        ('pagament_propietari',     'Pagament → Propietari'),
+        ('manual',                  'Manual'),
+    ]
+    reserva     = models.ForeignKey(
+        ReservaBasica, on_delete=models.CASCADE, related_name='emails_enviats'
+    )
+    tipus       = models.CharField(max_length=30, choices=TIPUS_CHOICES)
+    destinatari = models.EmailField(blank=True, default='')
+    assumpte    = models.CharField(max_length=200)
+    enviat_a    = models.DateTimeField(auto_now_add=True)
+    enviat_per  = models.ForeignKey(
+        'users.Usuari', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    exit        = models.BooleanField()
+    error_msg   = models.TextField(blank=True, default='')
+
+    class Meta:
+        verbose_name = 'Email enviat'
+        verbose_name_plural = 'Emails enviats'
+        ordering = ['-enviat_a']
+
+    def __str__(self):
+        return f"{self.tipus} → {self.destinatari} ({'OK' if self.exit else 'ERROR'})"

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio, ComunicacioEmail
 
 
 @admin.register(Persona)
@@ -35,6 +35,16 @@ class ComunicacioInline(admin.TabularInline):
     fields = ['canal', 'titol', 'destinatari', 'data', 'estat']
 
 
+class ComunicacioEmailInline(admin.TabularInline):
+    model = ComunicacioEmail
+    extra = 0
+    readonly_fields = ['tipus', 'destinatari', 'assumpte', 'enviat_a', 'enviat_per', 'exit', 'error_msg']
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(ReservaBasica)
 class ReservaAdmin(admin.ModelAdmin):
     list_display = [
@@ -43,7 +53,7 @@ class ReservaAdmin(admin.ModelAdmin):
     ]
     list_filter = ['pagat', 'tipus_reserva', 'estat_pagament']
     search_fields = ['codi_reserva']
-    inlines = [HosteInline, ComunicacioInline]
+    inlines = [HosteInline, ComunicacioInline, ComunicacioEmailInline]
 
 
 @admin.register(Hoste)
@@ -58,3 +68,11 @@ class ComunicacioAdmin(admin.ModelAdmin):
     list_display = ['titol', 'reserva', 'canal', 'estat', 'data', 'creat_el']
     list_filter = ['canal', 'estat']
     search_fields = ['titol', 'destinatari']
+
+
+@admin.register(ComunicacioEmail)
+class ComunicacioEmailAdmin(admin.ModelAdmin):
+    list_display = ['tipus', 'destinatari', 'assumpte', 'reserva', 'exit', 'enviat_a']
+    list_filter = ['tipus', 'exit']
+    search_fields = ['destinatari', 'assumpte', 'reserva__codi_reserva']
+    readonly_fields = ['reserva', 'tipus', 'destinatari', 'assumpte', 'enviat_a', 'enviat_per', 'exit', 'error_msg']
