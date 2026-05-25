@@ -5,6 +5,7 @@ from core.fields import hmac_value
 from properties.models import Immoble
 
 from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio, PagamentReserva, ComunicacioEmail
+from .services import calcular_preview_reserva
 
 
 def _has_value(value):
@@ -162,6 +163,41 @@ class ReservaSerializer(serializers.ModelSerializer):
             'hostes',
         ]
         read_only_fields = ['id', 'codi_reserva']
+
+    def validate(self, data):
+        immoble = data.get('immoble', getattr(self.instance, 'immoble', None))
+        data_entrada = data.get('data_entrada', getattr(self.instance, 'data_entrada', None))
+        data_sortida = data.get('data_sortida', getattr(self.instance, 'data_sortida', None))
+
+        if immoble and data_entrada and data_sortida:
+            conflicte_qs = ReservaBasica.objects.filter(
+                immoble=immoble,
+                data_entrada__lt=data_sortida,
+                data_sortida__gt=data_entrada,
+            ).exclude(estat_reserva='cancelada')
+
+            if self.instance:
+                conflicte_qs = conflicte_qs.exclude(pk=self.instance.pk)
+
+            if conflicte_qs.exists():
+                conflicte = conflicte_qs.first()
+                raise serializers.ValidationError(
+                    f"Les dates se solapen amb la reserva {conflicte.codi_reserva} "
+                    f"({conflicte.data_entrada} – {conflicte.data_sortida})."
+                )
+
+            calcular_preview_reserva({
+                "immoble": immoble.pk,
+                "data_entrada": str(data_entrada),
+                "data_sortida": str(data_sortida),
+                "num_hostes": data.get("num_hostes", 1),
+                "descompte_immoble_aplicat": False,
+                "descompte_immoble_percentatge": 0,
+                "descompte_individual_aplicat": False,
+                "descompte_individual_percentatge": 0,
+            })
+
+        return data
 
     def validate_descompte_immoble_percentatge(self, value):
         if value < 0 or value > 100:

@@ -96,9 +96,10 @@ class AvisSenseTemporadaTest(TestCase):
     def test_sense_temporada_retorna_llista_dates(self):
         result = calcular_preview_reserva(_data(self.immoble.pk))
         self.assertIn("avis_sense_temporada", result)
-        self.assertEqual(len(result["avis_sense_temporada"]), 4)
-        self.assertIn("2025-07-01", result["avis_sense_temporada"])
-        self.assertIn("2025-07-04", result["avis_sense_temporada"])
+        self.assertEqual(
+            result["avis_sense_temporada"],
+            ["2025-07-01", "2025-07-02", "2025-07-03", "2025-07-04"],
+        )
 
     def test_amb_temporada_completa_llista_buida(self):
         Temporada.objects.create(
@@ -129,7 +130,61 @@ class AvisSenseTemporadaTest(TestCase):
             data_entrada="2025-07-30",
             data_sortida="2025-08-03",
         ))
+        self.assertEqual(len(result["avis_sense_temporada"]), 2)
         self.assertIn("2025-08-01", result["avis_sense_temporada"])
         self.assertIn("2025-08-02", result["avis_sense_temporada"])
         self.assertNotIn("2025-07-30", result["avis_sense_temporada"])
         self.assertNotIn("2025-07-31", result["avis_sense_temporada"])
+
+
+from bookings.models import Persona
+from bookings.serializers import ReservaSerializer
+
+
+class ReservaSerializerTemporadaTest(TestCase):
+    def setUp(self):
+        self.immoble = Immoble.objects.create(
+            nom_comercial="Pis Serializer Test",
+            adreca="Carrer Test 3",
+            preu_base_nit=50,
+        )
+        Temporada.objects.create(
+            immoble=self.immoble,
+            nom="Estiu",
+            data_inici=date(2000, 6, 1),
+            data_fi=date(2000, 8, 31),
+            preu_nit=100,
+            min_nits=7,
+        )
+        self.persona = Persona.objects.create(nom_complet="Test Inquili")
+
+    def _payload(self, **kwargs):
+        base = {
+            "immoble": self.immoble.pk,
+            "inquili": self.persona.pk,
+            "data_entrada": "2025-07-01",
+            "data_sortida": "2025-07-05",  # 4 nits, min és 7
+            "num_hostes": 2,
+            "descompte_immoble_aplicat": False,
+            "descompte_immoble_percentatge": "0.00",
+            "descompte_individual_aplicat": False,
+            "descompte_individual_percentatge": "0.00",
+        }
+        base.update(kwargs)
+        return base
+
+    def test_serializer_rebutja_reserva_per_min_nits(self):
+        serializer = ReservaSerializer(data=self._payload())
+        valid = serializer.is_valid()
+        self.assertFalse(valid)
+        errors_str = str(serializer.errors)
+        self.assertIn("7", errors_str)
+
+    def test_serializer_accepta_reserva_amb_min_nits_complert(self):
+        serializer = ReservaSerializer(data=self._payload(
+            data_sortida="2025-07-09",  # 8 nits, min és 7 → OK
+        ))
+        serializer.is_valid()
+        errors_str = str(serializer.errors)
+        self.assertNotIn("mínim", errors_str.lower())
+        self.assertNotIn("min_nits", errors_str.lower())
