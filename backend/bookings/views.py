@@ -4,16 +4,21 @@ from rest_framework.views import APIView
 
 from properties.models import Immoble
 
-from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio
+from .emails import enviar_comunicacio_manual
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio, ComunicacioEmail
 from .serializers import (
     PersonaSerializer, PerfilPropietariSerializer,
-    ReservaSerializer, ComunicacioSerializer, DashboardSerializer,
+    ReservaSerializer, ComunicacioSerializer, ComunicacioEmailSerializer, DashboardSerializer,
 )
 from .services import calcular_preview_reserva
 
 
 class PersonaListCreateView(generics.ListCreateAPIView):
-    queryset = Persona.objects.all().order_by('nom_complet')
+    queryset = (
+        Persona.objects
+        .select_related('perfil_inquili', 'perfil_propietari')
+        .order_by('nom_complet')
+    )
     serializer_class = PersonaSerializer
 
 
@@ -77,7 +82,13 @@ class ComunicacioListCreateView(generics.ListCreateAPIView):
         return Comunicacio.objects.filter(reserva_id=self.kwargs['reserva_pk'])
 
     def perform_create(self, serializer):
-        serializer.save(reserva_id=self.kwargs['reserva_pk'])
+        comunicacio = serializer.save(reserva_id=self.kwargs['reserva_pk'])
+        if comunicacio.canal == 'Email':
+            enviar_comunicacio_manual(
+                reserva=comunicacio.reserva,
+                comunicacio=comunicacio,
+                usuari=self.request.user,
+            )
 
 
 class ComunicacioDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -85,6 +96,13 @@ class ComunicacioDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Comunicacio.objects.filter(reserva_id=self.kwargs['reserva_pk'])
+
+
+class ComunicacioEmailListView(generics.ListAPIView):
+    serializer_class = ComunicacioEmailSerializer
+
+    def get_queryset(self):
+        return ComunicacioEmail.objects.filter(reserva_id=self.kwargs['reserva_pk'])
 
 
 class ReservaPreviewView(APIView):

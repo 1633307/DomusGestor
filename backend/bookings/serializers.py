@@ -4,7 +4,7 @@ from rest_framework import serializers
 from core.fields import hmac_value
 from properties.models import Immoble
 
-from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio, PagamentReserva
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio, PagamentReserva, ComunicacioEmail
 
 
 def _has_value(value):
@@ -246,6 +246,15 @@ class PagamentReservaSerializer(serializers.ModelSerializer):
             'data_pagament', 'import_pagament', 'metode_pagament', 'estat',
         ]
         read_only_fields = ['id']
+
+
+class ComunicacioEmailSerializer(serializers.ModelSerializer):
+    enviat_per_nom = serializers.CharField(source='enviat_per.username', read_only=True, default=None)
+
+    class Meta:
+        model = ComunicacioEmail
+        fields = ['id', 'tipus', 'destinatari', 'assumpte', 'enviat_a', 'enviat_per', 'enviat_per_nom', 'exit', 'error_msg']
+        read_only_fields = fields
 
 
 class DashboardSerializer(serializers.Serializer):
