@@ -20,19 +20,21 @@ export default function RendimentPropietariCard({ personaId }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     personesApi
       .rendiment(personaId)
-      .then(setData)
-      .catch(() => setError("No s'han pogut carregar les dades de rendiment."))
-      .finally(() => setLoading(false));
+      .then((d) => { if (!cancelled) setData(d); })
+      .catch(() => { if (!cancelled) setError("No s'han pogut carregar les dades de rendiment."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [personaId]);
 
   if (loading) return <p>Carregant informe...</p>;
   if (error) return <p style={{ color: 'var(--danger, red)' }}>{error}</p>;
   if (!data) return null;
 
-  const chartData = data.reserves_per_immoble.map((i) => ({
+  const immobles = data.reserves_per_immoble ?? [];
+  const chartData = immobles.map((i) => ({
     nom: i.nom,
     ingressos: parseFloat(i.ingressos),
   }));
@@ -87,10 +89,10 @@ export default function RendimentPropietariCard({ personaId }) {
 
       <div className={styles.immobleList}>
         <h3>Detall per immoble</h3>
-        {data.reserves_per_immoble.length === 0 && (
+        {immobles.length === 0 && (
           <p style={{ color: 'var(--muted)' }}>Aquest propietari no té immobles assignats.</p>
         )}
-        {data.reserves_per_immoble.map((immoble) => (
+        {immobles.map((immoble) => (
           <div key={immoble.id} className={styles.immobleRow}>
             <Link to={`/inmobles/${immoble.id}`} className={styles.immobleNom}>
               {immoble.nom}

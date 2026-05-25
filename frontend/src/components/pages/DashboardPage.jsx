@@ -46,7 +46,7 @@ export default function DashboardPage() {
       .catch((err) => setError(err.message));
   }, []);
 
-  const estatData = stats
+  const estatData = stats?.reserves_per_estat
     ? Object.entries(stats.reserves_per_estat).map(([estat, count]) => ({
         estat: ESTAT_LABELS[estat] ?? estat,
         count,
@@ -123,7 +123,7 @@ export default function DashboardPage() {
         </article>
       </div>
 
-      {stats && (
+      {(estatData.length > 0 || mesData.length > 0) && (
         <div className={styles.chartsRow}>
           <div className={styles.chartCard}>
             <h3 className={styles.chartTitle}>Reserves per estat</h3>
