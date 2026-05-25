@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('properties', '0003_immoble_propietari'),
+        ('bookings', '0012_data_migrar_inquilibasic'),
     ]
 
     operations = [

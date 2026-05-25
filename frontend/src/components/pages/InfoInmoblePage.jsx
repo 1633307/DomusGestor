@@ -252,6 +252,7 @@ export default function InfoInmoble() {
       }
     } catch (err) {
       setError(err.message);
+      throw err;
     } finally {
       setCreatingReserva(false);
     }

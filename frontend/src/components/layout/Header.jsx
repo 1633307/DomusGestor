@@ -70,11 +70,7 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-<<<<<<< HEAD
-      <div>
-=======
       <div className={styles.col1}>
->>>>>>> feb3e81026a9a1688c593a325442ea98f3ce55dc
         <h1 className={styles.title}>Domus Gestor</h1>
       </div>
 

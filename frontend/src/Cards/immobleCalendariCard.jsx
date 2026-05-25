@@ -19,6 +19,7 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
   const [error, setError] = useState("");
   const [selectedStart, setSelectedStart] = useState(null);
   const [selectedEnd, setSelectedEnd] = useState(null);
+  const [rangeError, setRangeError] = useState("");
 
   useEffect(() => {
     if (!immobleId) return;
@@ -32,6 +33,15 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [immobleId]);
+
+  function hasOverlap(start, end) {
+    return reserves.some(
+      (r) =>
+        r.estat_reserva !== "cancelada" &&
+        r.data_entrada < end &&
+        r.data_sortida > start
+    );
+  }
 
   function getReservaForDate(date) {
     const dateStr = dayjs(date).format("YYYY-MM-DD");
@@ -56,13 +66,29 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
     if (!selectedStart || (selectedStart && selectedEnd)) {
       setSelectedStart(dateStr);
       setSelectedEnd(null);
+      setRangeError("");
       return;
     }
 
     if (dateStr === selectedStart) {
       setSelectedStart(null);
       setSelectedEnd(null);
-    } else if (dateStr < selectedStart) {
+      setRangeError("");
+      return;
+    }
+
+    const finalStart = dateStr < selectedStart ? dateStr : selectedStart;
+    const finalEnd   = dateStr < selectedStart ? selectedStart : dateStr;
+
+    if (hasOverlap(finalStart, finalEnd)) {
+      setSelectedStart(null);
+      setSelectedEnd(null);
+      setRangeError("El rang seleccionat inclou dates ja reservades. Selecciona un altre rang.");
+      return;
+    }
+
+    setRangeError("");
+    if (dateStr < selectedStart) {
       setSelectedEnd(selectedStart);
       setSelectedStart(dateStr);
     } else {
@@ -137,6 +163,10 @@ export default function ImmobleCalendariCard({ immobleId, onFerReserva }) {
               <p className={styles.hint}>
                 Data d&apos;entrada: <strong>{formatDate(selectedStart)}</strong> — Ara selecciona la data de sortida
               </p>
+            )}
+
+            {rangeError && (
+              <p className={styles.rangeError}>{rangeError}</p>
             )}
 
             {canCreate && (

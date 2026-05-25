@@ -99,6 +99,7 @@ export const personesApi = {
   create: (data) => api.post('/bookings/persones/', data),
   update: (id, data) => api.patch(`/bookings/persones/${id}/`, data),
   remove: (id) => api.del(`/bookings/persones/${id}/`),
+  rendiment: (id) => api.get(`/bookings/persones/${id}/rendiment/`),
 };
 
 // àlies per compatibilitat — eliminar quan tots els usos estiguin migrats

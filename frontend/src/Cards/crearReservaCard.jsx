@@ -299,6 +299,7 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
 
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
+    setConfirmError("");
   };
 
   return (

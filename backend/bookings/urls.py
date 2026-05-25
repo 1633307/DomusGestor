@@ -25,4 +25,5 @@ urlpatterns = [
         name='comunicacio-email-list',
     ),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('persones/<int:pk>/rendiment/', views.RendimentPropietariView.as_view(), name='rendiment-propietari'),
 ]

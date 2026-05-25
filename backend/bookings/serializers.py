@@ -190,7 +190,7 @@ class ReservaSerializer(serializers.ModelSerializer):
                 "immoble": immoble.pk,
                 "data_entrada": str(data_entrada),
                 "data_sortida": str(data_sortida),
-                "num_hostes": data.get("num_hostes", 1),
+                "num_hostes": data.get("num_hostes", getattr(self.instance, "num_hostes", 1)),
                 "descompte_immoble_aplicat": False,
                 "descompte_immoble_percentatge": 0,
                 "descompte_individual_aplicat": False,
@@ -299,3 +299,7 @@ class DashboardSerializer(serializers.Serializer):
     total_inquilins = serializers.IntegerField()
     immobles_actius = serializers.IntegerField()
     reserves_pagades = serializers.IntegerField()
+    ingressos_totals = serializers.DecimalField(max_digits=12, decimal_places=2)
+    reserves_proximes_7_dies = serializers.IntegerField()
+    reserves_per_estat = serializers.DictField(child=serializers.IntegerField())
+    ingressos_per_mes = serializers.ListField(child=serializers.DictField())

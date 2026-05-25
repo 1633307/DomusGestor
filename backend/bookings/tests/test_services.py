@@ -2,6 +2,8 @@
 from datetime import date
 from django.test import TestCase
 from rest_framework.exceptions import ValidationError
+from bookings.models import Persona
+from bookings.serializers import ReservaSerializer
 from bookings.services import calcular_preview_reserva
 from properties.models import Immoble, Temporada
 
@@ -137,10 +139,6 @@ class AvisSenseTemporadaTest(TestCase):
         self.assertNotIn("2025-07-31", result["avis_sense_temporada"])
 
 
-from bookings.models import Persona
-from bookings.serializers import ReservaSerializer
-
-
 class ReservaSerializerTemporadaTest(TestCase):
     def setUp(self):
         self.immoble = Immoble.objects.create(
@@ -175,16 +173,13 @@ class ReservaSerializerTemporadaTest(TestCase):
 
     def test_serializer_rebutja_reserva_per_min_nits(self):
         serializer = ReservaSerializer(data=self._payload())
-        valid = serializer.is_valid()
-        self.assertFalse(valid)
-        errors_str = str(serializer.errors)
-        self.assertIn("7", errors_str)
+        self.assertFalse(serializer.is_valid())
+        errors = serializer.errors
+        self.assertIn("non_field_errors", errors)
+        self.assertIn("7", errors["non_field_errors"][0])
 
     def test_serializer_accepta_reserva_amb_min_nits_complert(self):
         serializer = ReservaSerializer(data=self._payload(
             data_sortida="2025-07-09",  # 8 nits, min és 7 → OK
         ))
-        serializer.is_valid()
-        errors_str = str(serializer.errors)
-        self.assertNotIn("mínim", errors_str.lower())
-        self.assertNotIn("min_nits", errors_str.lower())
+        self.assertTrue(serializer.is_valid(), serializer.errors)
