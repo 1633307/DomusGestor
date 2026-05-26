@@ -110,6 +110,14 @@ export const bookingsApi = {
   update: (id, data) => api.patch(`/bookings/reserves/${id}/`, data),
   remove: (id) => api.del(`/bookings/reserves/${id}/`),
   dashboard: () => api.get("/bookings/dashboard/"),
+  downloadFitxaViatger: async (id) => {
+    const headers = {};
+    const token = getToken();
+    if (token) headers["Authorization"] = `Token ${token}`;
+    const res = await fetch(`${API_BASE}/bookings/reserves/${id}/fitxa-viatger/`, { headers });
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    return res.blob();
+  },
 };
 
 export const personesApi = {

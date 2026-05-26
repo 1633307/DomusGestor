@@ -1,13 +1,10 @@
-<<<<<<< HEAD
 from datetime import date, timedelta
 
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
-from rest_framework import generics
-=======
+from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
->>>>>>> 728d399ca371f0b700cf3ff6bfa8cf3f1ad1ba16
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -20,6 +17,7 @@ from .serializers import (
     PersonaSerializer, PerfilPropietariSerializer,
     ReservaSerializer, ComunicacioSerializer, ComunicacioEmailSerializer, DashboardSerializer,
 )
+from .pdf_generator import generate_fitxa_viatger
 from .services import calcular_preview_reserva
 
 
@@ -300,3 +298,18 @@ class RendimentPropietariView(APIView):
                 for i in immobles
             ],
         })
+
+
+class FitxaViatgerPDFView(APIView):
+    def get(self, request, pk):
+        reserva = (
+            ReservaBasica.objects
+            .select_related('immoble')
+            .prefetch_related('hostes')
+            .get(pk=pk)
+        )
+        pdf_buffer = generate_fitxa_viatger(reserva)
+        filename = f"fitxa-viatger-{reserva.codi_reserva or reserva.pk}.pdf"
+        response = HttpResponse(pdf_buffer.read(), content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response

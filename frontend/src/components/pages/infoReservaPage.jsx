@@ -9,6 +9,17 @@ import ReservaPagamentsCard from "../../Cards/reservaPagamentsCard";
 import ReservaComunicacionsCard from "../../Cards/reservaComunicacionsCard";
 import { bookingsApi, comunicacionsApi } from "../../services/api";
 
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 // ── Mappers backend <-> frontend ────────────────────────────────────────────
 function reservaBackendToInfo(r) {
   return {
@@ -132,6 +143,7 @@ export default function InfoReserva() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const [formData, setFormData] = useState(emptyReserva);
   const [draftData, setDraftData] = useState(emptyReserva);
@@ -453,6 +465,20 @@ export default function InfoReserva() {
     });
   };
 
+  const handleDownloadFitxa = async () => {
+    setDownloadingPdf(true);
+    setError("");
+    try {
+      const blob = await bookingsApi.downloadFitxaViatger(id);
+      const filename = `fitxa-viatger-${formData.reservationCode || id}.pdf`;
+      downloadBlob(blob, filename);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   if (loading) return <p>Carregant reserva...</p>;
 
   return (
@@ -473,9 +499,20 @@ export default function InfoReserva() {
 
           {seccioActiva === "info" && (
             <>
-              <h2>
-                {formData.reservationCode} - {formData.reservedProperty}
-              </h2>
+              <div className={style.infoHeader}>
+                <h2>
+                  {formData.reservationCode} - {formData.reservedProperty}
+                </h2>
+                {!isEditing && (
+                  <button
+                    className={style.pdfButton}
+                    onClick={handleDownloadFitxa}
+                    disabled={downloadingPdf}
+                  >
+                    {downloadingPdf ? "Generant..." : "Fitxa viatger"}
+                  </button>
+                )}
+              </div>
               <ReservaInfoCard
                 data={isEditing ? draftData : formData}
                 isEditing={isEditing}

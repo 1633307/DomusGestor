@@ -10,6 +10,43 @@
   min-width: 0;
 }
 
+/* Info header */
+
+.infoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.infoHeader h2 {
+  margin: 0;
+}
+
+.pdfButton {
+  height: 44px;
+  padding: 0 20px;
+  background: #4f46e5;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.pdfButton:hover {
+  background: #4338ca;
+}
+
+.pdfButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Toast */
 
 .successToast {

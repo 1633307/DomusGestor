@@ -25,6 +25,7 @@ urlpatterns = [
         views.ComunicacioEmailListView.as_view(),
         name='comunicacio-email-list',
     ),
+    path('reserves/<int:pk>/fitxa-viatger/', views.FitxaViatgerPDFView.as_view(), name='fitxa-viatger'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     path('persones/<int:pk>/rendiment/', views.RendimentPropietariView.as_view(), name='rendiment-propietari'),
 ]
