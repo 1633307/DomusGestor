@@ -1,0 +1,16 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Pagament confirmat</h2>
+<p>Hola {{ reserva.inquili.nom_complet }},</p>
+<p>Hem registrat el teu pagament correctament.</p>
+<div class="info-box">
+  <div class="info-row"><span class="info-label">Codi de reserva</span><span class="info-value">{{ reserva.codi_reserva }}</span></div>
+  <div class="info-row"><span class="info-label">Allotjament</span><span class="info-value">{{ reserva.immoble.nom_comercial }}</span></div>
+  {% if pagament %}
+  <div class="info-row"><span class="info-label">Import pagat</span><span class="info-value">{{ pagament.import_pagament }} €</span></div>
+  <div class="info-row"><span class="info-label">Data</span><span class="info-value">{{ pagament.data_pagament }}</span></div>
+  <div class="info-row"><span class="info-label">Mètode</span><span class="info-value">{{ pagament.get_metode_pagament_display }}</span></div>
+  {% endif %}
+  <div class="info-row"><span class="info-label">Pendent</span><span class="info-value">{{ reserva.import_pendent }} €</span></div>
+</div>
+{% endblock %}

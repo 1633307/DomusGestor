@@ -1,0 +1,14 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Sol·licitud de reserva rebuda</h2>
+<p>Hola {{ reserva.inquili.nom_complet }},</p>
+<p>Hem rebut la teva sol·licitud de reserva. En breu et confirmarem la disponibilitat.</p>
+<div class="info-box">
+  <div class="info-row"><span class="info-label">Codi de reserva</span><span class="info-value">{{ reserva.codi_reserva }}</span></div>
+  <div class="info-row"><span class="info-label">Allotjament</span><span class="info-value">{{ reserva.immoble.nom_comercial }}</span></div>
+  <div class="info-row"><span class="info-label">Entrada</span><span class="info-value">{{ reserva.data_entrada }}</span></div>
+  <div class="info-row"><span class="info-label">Sortida</span><span class="info-value">{{ reserva.data_sortida }}</span></div>
+  <div class="info-row"><span class="info-label">Persones</span><span class="info-value">{{ reserva.num_hostes }}</span></div>
+</div>
+<p>Gràcies per confiar en nosaltres!</p>
+{% endblock %}

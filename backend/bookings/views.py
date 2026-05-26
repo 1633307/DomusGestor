@@ -1,19 +1,28 @@
+from datetime import date, timedelta
+
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from properties.models import Immoble
 
-from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio
+from .emails import enviar_comunicacio_manual
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio, ComunicacioEmail
 from .serializers import (
     PersonaSerializer, PerfilPropietariSerializer,
-    ReservaSerializer, ComunicacioSerializer, DashboardSerializer,
+    ReservaSerializer, ComunicacioSerializer, ComunicacioEmailSerializer, DashboardSerializer,
 )
 from .services import calcular_preview_reserva
 
 
 class PersonaListCreateView(generics.ListCreateAPIView):
-    queryset = Persona.objects.all().order_by('nom_complet')
+    queryset = (
+        Persona.objects
+        .select_related('perfil_inquili', 'perfil_propietari')
+        .order_by('nom_complet')
+    )
     serializer_class = PersonaSerializer
 
     def get_queryset(self):
@@ -85,7 +94,13 @@ class ComunicacioListCreateView(generics.ListCreateAPIView):
         return Comunicacio.objects.filter(reserva_id=self.kwargs['reserva_pk'])
 
     def perform_create(self, serializer):
-        serializer.save(reserva_id=self.kwargs['reserva_pk'])
+        comunicacio = serializer.save(reserva_id=self.kwargs['reserva_pk'])
+        if comunicacio.canal == 'Email':
+            enviar_comunicacio_manual(
+                reserva=comunicacio.reserva,
+                comunicacio=comunicacio,
+                usuari=self.request.user,
+            )
 
 
 class ComunicacioDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -95,6 +110,13 @@ class ComunicacioDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Comunicacio.objects.filter(reserva_id=self.kwargs['reserva_pk'])
 
 
+class ComunicacioEmailListView(generics.ListAPIView):
+    serializer_class = ComunicacioEmailSerializer
+
+    def get_queryset(self):
+        return ComunicacioEmail.objects.filter(reserva_id=self.kwargs['reserva_pk'])
+
+
 class ReservaPreviewView(APIView):
     def post(self, request):
         return Response(calcular_preview_reserva(request.data))
@@ -102,11 +124,96 @@ class ReservaPreviewView(APIView):
 
 class DashboardView(APIView):
     def get(self, request):
+        avui = date.today()
+
+        m = avui.month - 5
+        y = avui.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        inici_6_mesos = date(y, m, 1)
+
+        mensuals_qs = (
+            ReservaBasica.objects
+            .filter(data_entrada__gte=inici_6_mesos)
+            .annotate(mes_trunc=TruncMonth('data_entrada'))
+            .values('mes_trunc')
+            .annotate(ingressos=Sum('import_pagat'))
+            .order_by('mes_trunc')
+        )
+        ingressos_dict = {
+            row['mes_trunc'].strftime('%Y-%m'): float(row['ingressos'] or 0)
+            for row in mensuals_qs
+        }
+        ingressos_per_mes = []
+        for i in range(5, -1, -1):
+            mi = avui.month - i
+            yi = avui.year
+            while mi <= 0:
+                mi += 12
+                yi -= 1
+            key = f"{yi:04d}-{mi:02d}"
+            ingressos_per_mes.append({'mes': key, 'ingressos': ingressos_dict.get(key, 0)})
+
+        estats = ['prereservada', 'reservada', 'lista', 'cancelada']
+        reserves_per_estat = {
+            estat: ReservaBasica.objects.filter(estat_reserva=estat).count()
+            for estat in estats
+        }
+
         data = {
             'total_reserves': ReservaBasica.objects.count(),
             'total_immobles': Immoble.objects.count(),
             'total_inquilins': PerfilInquili.objects.count(),
             'immobles_actius': Immoble.objects.filter(actiu=True).count(),
             'reserves_pagades': ReservaBasica.objects.filter(pagat=True).count(),
+            'ingressos_totals': ReservaBasica.objects.aggregate(
+                total=Sum('import_pagat')
+            )['total'] or 0,
+            'reserves_proximes_7_dies': ReservaBasica.objects.filter(
+                data_entrada__range=[avui, avui + timedelta(days=7)]
+            ).count(),
+            'reserves_per_estat': reserves_per_estat,
+            'ingressos_per_mes': ingressos_per_mes,
         }
         return Response(DashboardSerializer(data).data)
+
+
+class RendimentPropietariView(APIView):
+    def get(self, request, pk):
+        from django.shortcuts import get_object_or_404
+        from django.db.models import Count
+        persona = get_object_or_404(Persona, pk=pk)
+        if not hasattr(persona, 'perfil_propietari'):
+            return Response(
+                {'detail': 'Aquesta persona no és propietari.'},
+                status=400,
+            )
+
+        immobles = list(
+            Immoble.objects
+            .filter(propietari=persona)
+            .annotate(
+                num_reserves=Count('reserves'),
+                ingressos_sum=Sum('reserves__import_pagat'),
+            )
+        )
+
+        ingressos_totals = sum(float(i.ingressos_sum or 0) for i in immobles)
+
+        return Response({
+            'num_immobles': len(immobles),
+            'immobles_actius': sum(1 for i in immobles if i.actiu),
+            'total_reserves': sum(i.num_reserves for i in immobles),
+            'ingressos_totals': f"{ingressos_totals:.2f}",
+            'reserves_per_immoble': [
+                {
+                    'id': i.id,
+                    'nom': i.nom_comercial,
+                    'num_reserves': i.num_reserves,
+                    'ingressos': f"{float(i.ingressos_sum or 0):.2f}",
+                    'actiu': i.actiu,
+                }
+                for i in immobles
+            ],
+        })

@@ -161,6 +161,7 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
   const [previewReserva, setPreviewReserva] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [pendingForm, setPendingForm] = useState(null);
+  const [confirmError, setConfirmError] = useState("");
 
   const descompteImmobleActiu = toBoolean(immoble?.descompteActiu);
   const descompteImmoblePercentatge = immoble?.descomptePercentatge || "";
@@ -284,8 +285,8 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
       setPendingForm(submissionData);
       setPreviewReserva(preview);
       setIsPreviewOpen(true);
-    } catch {
-      setPreviewError("No s'ha pogut calcular el resum econòmic de la reserva.");
+    } catch (err) {
+      setPreviewError(err.message || "No s'ha pogut calcular el resum econòmic de la reserva.");
     } finally {
       setIsPreviewing(false);
     }
@@ -293,12 +294,17 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
 
   const handleConfirmReserva = async () => {
     if (!pendingForm) return;
-    setIsPreviewOpen(false);
-    await onCreate(pendingForm);
+    setConfirmError("");
+    try {
+      await onCreate(pendingForm);
+    } catch (err) {
+      setConfirmError(err.message || "Error desconegut en crear la reserva.");
+    }
   };
 
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
+    setConfirmError("");
   };
 
   return (
@@ -601,6 +607,16 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
               </div>
             </div>
 
+            {previewReserva.avis_sense_temporada?.length > 0 && (
+              <div className={styles.warnBox}>
+                <p>
+                  <strong>Avís:</strong> Les dates següents no tenen temporada configurada per a aquest immoble.
+                  S&apos;aplicarà el preu base de l&apos;immoble ({previewReserva.avis_sense_temporada.length} nit
+                  {previewReserva.avis_sense_temporada.length !== 1 ? "s" : ""}):
+                </p>
+                <p>{previewReserva.avis_sense_temporada.join(", ")}</p>
+              </div>
+            )}
             {previewReserva.linies_nits?.length > 0 && (
               <div className={styles.previewNights}>
                 <h3>Detall per nit</h3>
@@ -615,6 +631,12 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {confirmError && (
+              <div className={styles.errorBox}>
+                <p>{confirmError}</p>
               </div>
             )}
 

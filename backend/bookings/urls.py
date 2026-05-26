@@ -19,5 +19,11 @@ urlpatterns = [
         views.ComunicacioDetailView.as_view(),
         name='comunicacio-detail',
     ),
+    path(
+        'reserves/<int:reserva_pk>/emails/',
+        views.ComunicacioEmailListView.as_view(),
+        name='comunicacio-email-list',
+    ),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('persones/<int:pk>/rendiment/', views.RendimentPropietariView.as_view(), name='rendiment-propietari'),
 ]

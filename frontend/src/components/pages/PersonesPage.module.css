@@ -12,32 +12,101 @@
 .pageTitle h2 {
   margin: 0;
   font-size: 1.8rem;
+  font-weight: 700;
   color: var(--text);
 }
 
-.primaryButton {
-  border: none;
-  border-radius: 10px;
-  padding: 0.8em 1.1em;
+.pageTitle p {
+  margin: 6px 0 0;
+  color: var(--muted);
   font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  background: #2563eb;
-  color: #ffffff;
 }
 
-.primaryButton:hover {
+.addButton {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65em 1.3em;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.addButton:hover {
   background: #1d4ed8;
 }
 
-.error {
-  margin: 0 0 16px 0;
-  padding: 12px 14px;
-  border: 1px solid #fecaca;
-  border-radius: 10px;
-  background: #fef2f2;
-  color: #b91c1c;
+.stateMsg {
+  color: var(--muted);
 }
+
+.errorMsg {
+  color: var(--danger);
+}
+
+/* Toolbar */
+
+.personesToolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchInput {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.8em 1em;
+  font: inherit;
+  flex: 1;
+  min-width: 240px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+/* Role filter pills */
+
+.roleFilters {
+  display: flex;
+  gap: 6px;
+}
+
+.roleFilter {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 20px;
+  padding: 0.4em 1em;
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.roleFilter:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.roleFilterActive {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+/* Grid */
 
 .personesGrid {
   display: flex;
@@ -45,53 +114,85 @@
   gap: 12px;
 }
 
-.personaCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.personaCard a {
-  color: inherit;
+.personaCardLink {
   text-decoration: none;
+  color: inherit;
 }
 
-.cardHeader {
-  margin-bottom: 12px;
+.personaCard {
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
-.cardHeader h3 {
+.personaCard:hover {
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px);
+}
+
+.personaCard h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.personaInfo {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.personaInfo div {
+.cardInfo {
+  flex: 1;
   min-width: 0;
 }
 
-.personaInfo span {
-  display: block;
-  margin-bottom: 4px;
+.cardSub {
+  margin: 2px 0 0;
+  font-size: 0.88rem;
   color: var(--muted);
-  font-size: 0.84rem;
-  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.personaInfo strong {
-  display: block;
-  overflow-wrap: anywhere;
-  color: var(--text);
-  font-size: 0.95rem;
+.cardFooter {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+  flex-wrap: wrap;
 }
+
+/* Role badges */
+
+.badgeInquili {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.badgePropietari {
+  display: inline-block;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* Responsive */
 
 @media (max-width: 900px) {
   .pageTitleRow {
@@ -99,17 +200,7 @@
     align-items: flex-start;
   }
 
-  .personaInfo {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 560px) {
-  .personaInfo {
-    grid-template-columns: 1fr;
-  }
-
-  .primaryButton {
-    width: 100%;
+  .personaCard {
+    flex-wrap: wrap;
   }
 }

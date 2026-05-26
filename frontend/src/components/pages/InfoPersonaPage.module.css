@@ -61,3 +61,21 @@
     font-size: 1.5rem;
   }
 }
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  align-items: start;
+  min-height: 100vh;
+}
+
+.perfilCard {
+  padding: 24px;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .templateGrid {
+    grid-template-columns: 1fr;
+  }
+}

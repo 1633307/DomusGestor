@@ -1,0 +1,12 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Reserva cancel·lada</h2>
+<p>Hola {{ reserva.inquili.nom_complet }},</p>
+<p>Et comuniquem que la teva reserva ha estat cancel·lada.</p>
+<div class="info-box">
+  <div class="info-row"><span class="info-label">Codi de reserva</span><span class="info-value">{{ reserva.codi_reserva }}</span></div>
+  <div class="info-row"><span class="info-label">Allotjament</span><span class="info-value">{{ reserva.immoble.nom_comercial }}</span></div>
+  <div class="info-row"><span class="info-label">Dates</span><span class="info-value">{{ reserva.data_entrada }} – {{ reserva.data_sortida }}</span></div>
+</div>
+{% if immobiliaria %}<p>Contacte: <strong>{{ immobiliaria.email_contacte }}</strong></p>{% endif %}
+{% endblock %}

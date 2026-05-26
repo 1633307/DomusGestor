@@ -4,7 +4,8 @@ from rest_framework import serializers
 from core.fields import hmac_value
 from properties.models import Immoble
 
-from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio, PagamentReserva
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Hoste, Comunicacio, PagamentReserva, ComunicacioEmail
+from .services import calcular_preview_reserva
 
 
 def _has_value(value):
@@ -164,6 +165,41 @@ class ReservaSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'codi_reserva']
 
+    def validate(self, data):
+        immoble = data.get('immoble', getattr(self.instance, 'immoble', None))
+        data_entrada = data.get('data_entrada', getattr(self.instance, 'data_entrada', None))
+        data_sortida = data.get('data_sortida', getattr(self.instance, 'data_sortida', None))
+
+        if immoble and data_entrada and data_sortida:
+            conflicte_qs = ReservaBasica.objects.filter(
+                immoble=immoble,
+                data_entrada__lt=data_sortida,
+                data_sortida__gt=data_entrada,
+            ).exclude(estat_reserva='cancelada')
+
+            if self.instance:
+                conflicte_qs = conflicte_qs.exclude(pk=self.instance.pk)
+
+            if conflicte_qs.exists():
+                conflicte = conflicte_qs.first()
+                raise serializers.ValidationError(
+                    f"Les dates se solapen amb la reserva {conflicte.codi_reserva} "
+                    f"({conflicte.data_entrada} – {conflicte.data_sortida})."
+                )
+
+            calcular_preview_reserva({
+                "immoble": immoble.pk,
+                "data_entrada": str(data_entrada),
+                "data_sortida": str(data_sortida),
+                "num_hostes": data.get("num_hostes", getattr(self.instance, "num_hostes", 1)),
+                "descompte_immoble_aplicat": False,
+                "descompte_immoble_percentatge": 0,
+                "descompte_individual_aplicat": False,
+                "descompte_individual_percentatge": 0,
+            })
+
+        return data
+
     def validate_descompte_immoble_percentatge(self, value):
         if value < 0 or value > 100:
             raise serializers.ValidationError("El descompte de l'immoble ha d'estar entre 0 i 100.")
@@ -249,9 +285,22 @@ class PagamentReservaSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class ComunicacioEmailSerializer(serializers.ModelSerializer):
+    enviat_per_nom = serializers.CharField(source='enviat_per.username', read_only=True, default=None)
+
+    class Meta:
+        model = ComunicacioEmail
+        fields = ['id', 'tipus', 'destinatari', 'assumpte', 'enviat_a', 'enviat_per', 'enviat_per_nom', 'exit', 'error_msg']
+        read_only_fields = fields
+
+
 class DashboardSerializer(serializers.Serializer):
     total_reserves = serializers.IntegerField()
     total_immobles = serializers.IntegerField()
     total_inquilins = serializers.IntegerField()
     immobles_actius = serializers.IntegerField()
     reserves_pagades = serializers.IntegerField()
+    ingressos_totals = serializers.DecimalField(max_digits=12, decimal_places=2)
+    reserves_proximes_7_dies = serializers.IntegerField()
+    reserves_per_estat = serializers.DictField(child=serializers.IntegerField())
+    ingressos_per_mes = serializers.ListField(child=serializers.DictField())

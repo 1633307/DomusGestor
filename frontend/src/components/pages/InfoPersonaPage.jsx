@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Sidebar from "../layout/Sidebar";
 import FooterActions from "../layout/FooterActions";
 import { personesApi, perfilsPropietariApi } from "../../services/api";
 import PersonaFormSection from "./persones/PersonaFormSection";
+import RendimentPropietariCard from "../../Cards/RendimentPropietariCard";
 import styles from "./InfoPersonaPage.module.css";
 
 const emptyPersona = {
@@ -110,6 +112,8 @@ export default function InfoPersonaPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = !id;
+
+  const [seccioActiva, setSeccioActiva] = useState("perfil");
   const [isEditing, setIsEditing] = useState(isNew);
   const [persona, setPersona] = useState(emptyPersona);
   const [draftPersona, setDraftPersona] = useState(emptyPersona);
@@ -125,7 +129,6 @@ export default function InfoPersonaPage() {
       setLoading(false);
       return;
     }
-
     setLoading(true);
     setError("");
     personesApi
@@ -138,6 +141,14 @@ export default function InfoPersonaPage() {
       .catch(() => setError("No s'han pogut carregar les dades de la persona."))
       .finally(() => setLoading(false));
   }, [id, isNew]);
+
+  const seccions = useMemo(() => {
+    const base = [{ id: "perfil", label: "Perfil" }];
+    if (!isNew && persona.perfilPropietariId) {
+      base.push({ id: "rendiment", label: "Informes de rendiment" });
+    }
+    return base;
+  }, [isNew, persona.perfilPropietariId]);
 
   const currentPersona = isEditing ? draftPersona : persona;
   const title = useMemo(() => {
@@ -167,13 +178,11 @@ export default function InfoPersonaPage() {
       setError(validationErrors[0]);
       return;
     }
-
     setSaving(true);
     setError("");
     try {
       const personaPayload = personaToBackend(draftPersona);
       const billingPresent = hasBillingData(draftPersona);
-
       let savedId;
       if (isNew) {
         const saved = await personesApi.create(personaPayload);
@@ -182,7 +191,6 @@ export default function InfoPersonaPage() {
         await personesApi.update(id, personaPayload);
         savedId = Number(id);
       }
-
       if (billingPresent) {
         const perfilPayload = perfilToBackend(draftPersona, savedId);
         if (draftPersona.perfilPropietariId) {
@@ -191,13 +199,11 @@ export default function InfoPersonaPage() {
           await perfilsPropietariApi.create(perfilPayload);
         }
       }
-
       const full = await personesApi.get(savedId);
       const mapped = backendToForm(full);
       setPersona(mapped);
       setDraftPersona(mapped);
       setIsEditing(false);
-
       if (isNew) navigate(`/persones/${savedId}`);
     } catch (err) {
       setError(err.message);
@@ -215,38 +221,53 @@ export default function InfoPersonaPage() {
 
   return (
     <section>
-      <div className={styles.page}>
-        <div className={styles.pageHeader}>
-          <div>
-            <h2>{title}</h2>
-            <p>Gestió de dades personals, contacte i facturació</p>
+      <div className={styles.templateGrid}>
+        <Sidebar
+          setSeccioActiva={setSeccioActiva}
+          seccioActiva={seccioActiva}
+          seccions={seccions}
+        />
+
+        <div className={styles.perfilCard}>
+          <div className={styles.pageHeader}>
+            <div>
+              <h2>{title}</h2>
+              <p>Gestió de dades personals, contacte i facturació</p>
+            </div>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => navigate("/persones")}
+            >
+              Tornar
+            </button>
           </div>
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={() => navigate("/persones")}
-          >
-            Tornar
-          </button>
+
+          {error && <p className={styles.error}>{error}</p>}
+
+          {seccioActiva === "perfil" && (
+            <>
+              <PersonaFormSection
+                data={currentPersona}
+                isEditing={isEditing}
+                onChange={handleChange}
+              />
+              <FooterActions
+                isEditing={isEditing}
+                onEdit={handleEdit}
+                onCancel={handleCancel}
+                onSave={handleSave}
+                isSaveDisabled={saving}
+                cancelLabel="Cancel·lar"
+                saveLabel={saving ? "Guardant..." : "Guardar"}
+              />
+            </>
+          )}
+
+          {seccioActiva === "rendiment" && !isNew && persona.perfilPropietariId && (
+            <RendimentPropietariCard personaId={id} />
+          )}
         </div>
-
-        {error && <p className={styles.error}>{error}</p>}
-
-        <PersonaFormSection
-          data={currentPersona}
-          isEditing={isEditing}
-          onChange={handleChange}
-        />
-
-        <FooterActions
-          isEditing={isEditing}
-          onEdit={handleEdit}
-          onCancel={handleCancel}
-          onSave={handleSave}
-          isSaveDisabled={saving}
-          cancelLabel="Cancel·lar"
-          saveLabel={saving ? "Guardant..." : "Guardar"}
-        />
       </div>
     </section>
   );

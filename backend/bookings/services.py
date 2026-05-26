@@ -161,9 +161,15 @@ def calcular_preview_reserva(data):
     linies_nits = []
     subtotal = Decimal("0")
     current_day = data_entrada
+    temporades_trobades = set()
+    dies_sense_temporada = []
 
     while current_day < data_sortida:
         temporada = _temporada_for_day(temporades, current_day)
+        if temporada:
+            temporades_trobades.add(temporada)
+        else:
+            dies_sense_temporada.append(current_day.isoformat())
         preu_nit = Decimal(temporada.preu_nit if temporada else immoble.preu_base_nit)
         comissio_percent = Decimal(temporada.comissio if temporada else DEFAULT_COMISSIO_PERCENT)
         subtotal += preu_nit
@@ -178,6 +184,13 @@ def calcular_preview_reserva(data):
             }
         )
         current_day += timedelta(days=1)
+
+    for temporada_trobada in temporades_trobades:
+        if nits < temporada_trobada.min_nits:
+            raise ValidationError(
+                f"La temporada '{temporada_trobada.nom}' requereix un mínim de "
+                f"{temporada_trobada.min_nits} nits. La reserva té {nits} nits."
+            )
 
     descompte_immoble_import = subtotal * descompte_immoble_percent / Decimal("100")
     base_despres_immoble = subtotal - descompte_immoble_import
@@ -226,4 +239,5 @@ def calcular_preview_reserva(data):
         "taxa_turistica_import": str(_money(taxa_turistica_import)),
         "total_a_abonar_turista": str(_money(total_a_abonar_turista)),
         "linies_nits": linies_nits,
+        "avis_sense_temporada": dies_sense_temporada,
     }

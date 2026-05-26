@@ -1,6 +1,6 @@
 from django.test import TestCase
 from users.models import Usuari
-from bookings.models import Persona, PerfilInquili, PerfilPropietari
+from bookings.models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica
 from properties.models import Immoble
 
 
@@ -125,3 +125,52 @@ class PersonaAPITest(APITestCase):
         resp = self.client.delete(url)
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Persona.objects.filter(pk=p.pk).exists())
+
+
+class RendimentPropietariViewTest(APITestCase):
+    def setUp(self):
+        self.user = Usuari.objects.create_user(
+            nip='0002', username='propuser',
+            email='prop@test.com', password='pass1234'
+        )
+        self.client.force_authenticate(user=self.user)
+        self.persona = Persona.objects.create(nom_complet='Prop Test', email='propietari@test.com')
+        PerfilPropietari.objects.create(persona=self.persona)
+        self.immoble = Immoble.objects.create(
+            nom_comercial='Pis Gràcia',
+            adreca='C/ Test 1',
+            preu_base_nit=100,
+            propietari=self.persona,
+            actiu=True,
+        )
+        inquili = Persona.objects.create(nom_complet='Inquilí Test', email='inq@test.com')
+        ReservaBasica.objects.create(
+            immoble=self.immoble,
+            inquili=inquili,
+            data_entrada='2025-01-10',
+            data_sortida='2025-01-15',
+            import_pagat=500,
+        )
+
+    def test_retorna_rendiment_propietari(self):
+        url = reverse('rendiment-propietari', args=[self.persona.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+        self.assertEqual(data['num_immobles'], 1)
+        self.assertEqual(data['immobles_actius'], 1)
+        self.assertEqual(data['total_reserves'], 1)
+        self.assertEqual(float(data['ingressos_totals']), 500.0)
+        self.assertEqual(len(data['reserves_per_immoble']), 1)
+        self.assertEqual(data['reserves_per_immoble'][0]['nom'], 'Pis Gràcia')
+
+    def test_retorna_400_si_no_es_propietari(self):
+        persona_sense_perfil = Persona.objects.create(nom_complet='No propietari', email='noprop@test.com')
+        url = reverse('rendiment-propietari', args=[persona_sense_perfil.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retorna_404_si_persona_no_existeix(self):
+        url = reverse('rendiment-propietari', args=[99999])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)

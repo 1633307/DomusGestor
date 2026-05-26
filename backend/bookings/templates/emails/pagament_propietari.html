@@ -1,0 +1,14 @@
+{% extends "emails/base.html" %}
+{% block content %}
+<h2>Pagament rebut</h2>
+<p>S'ha registrat un pagament en una reserva del teu immoble.</p>
+<div class="info-box">
+  <div class="info-row"><span class="info-label">Codi</span><span class="info-value">{{ reserva.codi_reserva }}</span></div>
+  <div class="info-row"><span class="info-label">Immoble</span><span class="info-value">{{ reserva.immoble.nom_comercial }}</span></div>
+  <div class="info-row"><span class="info-label">Inquilí</span><span class="info-value">{{ reserva.inquili.nom_complet }}</span></div>
+  {% if pagament %}
+  <div class="info-row"><span class="info-label">Import</span><span class="info-value">{{ pagament.import_pagament }} €</span></div>
+  <div class="info-row"><span class="info-label">Data</span><span class="info-value">{{ pagament.data_pagament }}</span></div>
+  {% endif %}
+</div>
+{% endblock %}
