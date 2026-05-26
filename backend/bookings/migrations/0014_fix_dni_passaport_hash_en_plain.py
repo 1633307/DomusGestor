@@ -24,7 +24,7 @@ def fix_dni_passaport_hash_en_plain(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bookings', '0013_cleanup_inquilibasic'),
+        ('bookings', '0003_reservabasica_limpieza_extra'),
         ('bookings', '0006_set_descompte_individual_aplicat'),
     ]
 
