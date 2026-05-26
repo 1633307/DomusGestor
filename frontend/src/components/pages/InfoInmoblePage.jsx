@@ -199,6 +199,27 @@ export default function InfoInmoble() {
     return bookingsApi.preview(payload);
   };
 
+  const getOrCreateInquili = async (mainGuest) => {
+    const document = mainGuest.numero_document || `PENDENT-${Date.now()}`;
+    const existing = await personesApi.findByDocument(document);
+    if (existing?.length) return existing[0];
+
+    try {
+      return await personesApi.create({
+        nom_complet: mainGuest.nom_complet || "Client sense nom",
+        dni_passaport: document,
+        email: mainGuest.email || "pendent@example.com",
+        telefon: mainGuest.telefon || "",
+      });
+    } catch (err) {
+      if (err.fieldErrors?.dni_passaport) {
+        const retry = await personesApi.findByDocument(document);
+        if (retry?.length) return retry[0];
+      }
+      throw err;
+    }
+  };
+
   const handlePropietariChange = (id, data) => {
     setHasDraftChanges(true);
     setDraftData((prev) => ({
@@ -218,11 +239,7 @@ export default function InfoInmoble() {
     setError("");
     try {
       const mainGuest = form.hostes[0];
-      const inquili = await personesApi.create({
-        nom_complet: mainGuest.nom_complet || "Client sense nom",
-        dni_passaport: mainGuest.numero_document || `PENDENT-${Date.now()}`,
-        email: mainGuest.email || "pendent@example.com",
-      });
+      const inquili = await getOrCreateInquili(mainGuest);
 
       const payload = {
         immoble: Number(id),
@@ -233,6 +250,7 @@ export default function InfoInmoble() {
         tipus_reserva: form.tipusReserva,
         estat_reserva: form.estatReserva,
         net: toBoolean(form.net),
+        limpieza_extra: Number(form.limpiezaExtra) || 0,
         comentaris_interns: form.comentarisInterns,
         descompte_immoble_aplicat: toBoolean(form.descompteImmobleAplicat),
         descompte_immoble_percentatge:

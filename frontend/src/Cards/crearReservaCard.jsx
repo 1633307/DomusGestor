@@ -25,6 +25,7 @@ const emptyForm = {
   tipusReserva: "Airbnb",
   estatReserva: "prereservada",
   net: "false",
+  limpiezaExtra: "0",
   comentarisInterns: "",
   descompteIndividualAplicat: "false",
   descompteIndividualPercentatge: "",
@@ -213,6 +214,7 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
     const hostes = form.hostes;
     const individualPercentatge = Number(form.descompteIndividualPercentatge) || 0;
     const immoblePercentatge = Number(descompteImmoblePercentatge) || 0;
+    const limpiezaExtra = Number(form.limpiezaExtra) || 0;
 
     if (!form.dataEntrada) nextErrors.push("La data d'entrada és obligatòria.");
     if (!form.dataSortida) nextErrors.push("La data de sortida és obligatòria.");
@@ -248,6 +250,9 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
     }
     if (individualPercentatge < 0 || individualPercentatge > 100) {
       nextErrors.push("El percentatge de descompte individual ha d'estar entre 0 i 100.");
+    }
+    if (limpiezaExtra < 0) {
+      nextErrors.push("Les hores extra de neteja no poden ser negatives.");
     }
 
     setErrors(nextErrors);
@@ -384,6 +389,14 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
                 { value: "true", label: "Sí" },
                 { value: "false", label: "No" },
               ]}
+            />
+            <Field
+              label="Hores extra de neteja"
+              name="limpiezaExtra"
+              value={form.limpiezaExtra}
+              onChange={handleChange}
+              type="number"
+              min="0"
             />
             <Field
               label="Comentaris interns"

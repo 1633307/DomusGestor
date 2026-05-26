@@ -153,6 +153,16 @@ export default function ReservaInfoCard({ data, isEditing, onChange }) {
           />
 
           {/* Editable */}
+          <Field
+            label="Hores extra de neteja"
+            name="limpiezaExtra"
+            value={data.limpiezaExtra}
+            isEditing={isEditing}
+            onChange={onChange}
+            type="number"
+          />
+
+          {/* Editable */}
           <div className={`${styles.field} ${styles.fullWidth}`}>
             <label>Comentaris interns</label>
 

@@ -25,6 +25,14 @@ class PersonaListCreateView(generics.ListCreateAPIView):
     )
     serializer_class = PersonaSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        document = self.request.query_params.get('document')
+        if document:
+            from core.fields import hmac_value
+            queryset = queryset.filter(dni_passaport_hash=hmac_value(document))
+        return queryset
+
 
 class PersonaDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = (
