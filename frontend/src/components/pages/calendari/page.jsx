@@ -12,7 +12,7 @@ function Event({ type, event }) {
     >
       <span className={styles["title"]}>
         <i
-          class={
+          className={
             "fa-solid" +
             " " +
             (type === "entrada"
@@ -45,18 +45,66 @@ export default function Page() {
         <h1>Calendari</h1>
         <div className={styles["buttons"]}>
           <button
+            onClick={() => {
+              const newDate = new Date(date);
+              newDate.setFullYear(newDate.getFullYear() - 1);
+              setDate(newDate);
+            }}
+            title="Recular un any"
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+            <span>Any</span>
+          </button>
+          <button
+            onClick={() => {
+              const newDate = new Date(date);
+              newDate.setMonth(newDate.getMonth() - 1);
+              setDate(newDate);
+            }}
+            title="Recular un mes"
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+            <span>Mes</span>
+          </button>
+          <button
             onClick={() =>
               setDate((date) => new Date(date.getTime() - 24 * 60 * 60 * 1000))
             }
+            title="Recular un dia"
           >
             <i className="fa-solid fa-chevron-left"></i>
+            <span>Dia</span>
           </button>
           <button
             onClick={() =>
               setDate((date) => new Date(date.getTime() + 24 * 60 * 60 * 1000))
             }
+            title="Avançar un dia"
           >
             <i className="fa-solid fa-chevron-right"></i>
+            <span>Dia</span>
+          </button>
+          <button
+            onClick={() => {
+              const newDate = new Date(date);
+              newDate.setMonth(newDate.getMonth() + 1);
+              setDate(newDate);
+            }}
+            title="Avançar un mes"
+          >
+            <i className="fa-solid fa-chevron-right"></i>
+            <span>Mes</span>
+          </button>
+          <button
+            onClick={() => {
+              const newDate = new Date(date);
+              newDate.setFullYear(newDate.getFullYear() + 1);
+              setDate(newDate);
+            }}
+            title="Avançar un any"
+          >
+            <i className="fa-solid fa-chevron-right"></i>
+            <span>Any</span>
           </button>
         </div>
       </div>
@@ -100,6 +148,7 @@ export default function Page() {
                   weekday: "long",
                   day: "numeric",
                   month: "long",
+                  year: "numeric",
                 }).format(newDate)}
               </div>
 

@@ -20,12 +20,18 @@
     gap: 8px;
 
     button {
+      display: flex;
+      flex-direction: column;
       background-color: #dbeafe;
       border: none;
       border-radius: 99px;
-      width: 40px;
-      height: 40px;
       cursor: pointer;
+      padding: 10px;
+      font-size: 14px;
+      height: 57px;
+      width: 57px;
+      align-items: center;
+      flex: 1 1;
     }
   }
 }
@@ -90,6 +96,11 @@
 }
 
 @media screen and (max-width: 800px) {
+  .page-header {
+    flex-direction: column;
+    align-items: unset;
+  }
+
   .days-container {
     .day:nth-child(3),
     .day:nth-child(4) {
