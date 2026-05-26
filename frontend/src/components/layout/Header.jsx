@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '../../app/authContext';
-import { Link, NavLink } from 'react-router-dom';
-import { immobiliariaApi } from '../../services/api';
-import styles from './Header.module.css';
+import { useEffect, useState } from "react";
+import { useAuth } from "../../app/authContext";
+import { Link, NavLink } from "react-router-dom";
+import { immobiliariaApi } from "../../services/api";
+import styles from "./Header.module.css";
 
-const STORAGE_KEY = 'domus_immobiliaria_profile';
-const PROFILE_UPDATED_EVENT = 'domus_immobiliaria_profile_updated';
+const STORAGE_KEY = "domus_immobiliaria_profile";
+const PROFILE_UPDATED_EVENT = "domus_immobiliaria_profile_updated";
 
 const emptyProfile = {
-  nomComercial: '',
-  logoBase64: '',
+  nomComercial: "",
+  logoBase64: "",
 };
 
 function loadLocalProfile() {
@@ -32,8 +32,8 @@ function backendToHeaderProfile(data, localProfile) {
 export default function Header() {
   const { user, logout, isAdmin } = useAuth();
   const [profile, setProfile] = useState(() => loadLocalProfile());
-  const displayName = profile.nomComercial || 'Immobiliària';
-  const initial = displayName.charAt(0).toUpperCase() || 'I';
+  const displayName = profile.nomComercial || "Immobiliària";
+  const initial = displayName.charAt(0).toUpperCase() || "I";
 
   useEffect(() => {
     const localProfile = loadLocalProfile();
@@ -60,11 +60,11 @@ export default function Header() {
     };
 
     window.addEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdated);
-    window.addEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
 
     return () => {
       window.removeEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdated);
-      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 
@@ -89,7 +89,7 @@ export default function Header() {
           </span>
           <span>{displayName}</span>
         </Link>
-        <span>{user?.username || 'Usuari'}</span>
+        <span>{user?.username || "Usuari"}</span>
         <button className={styles.secondaryButton} onClick={logout}>
           Tancar sessió
         </button>
@@ -140,6 +140,15 @@ export default function Header() {
             }
           >
             Persones
+          </NavLink>
+
+          <NavLink
+            to="/calendari"
+            className={({ isActive }) =>
+              isActive ? `${styles.link} ${styles.activeLink}` : styles.link
+            }
+          >
+            Calendari
           </NavLink>
 
           {isAdmin && (
