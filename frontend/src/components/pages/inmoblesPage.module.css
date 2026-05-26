@@ -22,11 +22,14 @@
   font-size: 0.95rem;
 }
 
+/* Toolbar */
+
 .propertiesToolbar {
   display: flex;
   gap: 12px;
-  margin-bottom: 22px;
+  margin-bottom: 0;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .searchInput {
@@ -46,10 +49,125 @@
   box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
 }
 
+.filterToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.75em 1.1em;
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.filterToggleBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.loadingIndicator {
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+/* Filter panel */
+
+.filterPanel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.filterPanelOpen {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: 12px;
+  margin-bottom: 22px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.filterGrid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.filterSelect {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7em 0.9em;
+  font: inherit;
+  font-size: 0.92rem;
+  min-width: 160px;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+.filterNumber {
+  min-width: 80px;
+  max-width: 100px;
+}
+
+.datePickerInput {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  font: inherit !important;
+}
+
+/* Results */
+
+.stateMsg {
+  color: var(--muted);
+  margin-top: 24px;
+}
+
+.errorMsg {
+  color: var(--danger);
+  margin-top: 8px;
+}
+
+/* Properties grid */
+
 .propertiesGrid {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 22px;
 }
 
 .propertyCardLink {
@@ -86,12 +204,32 @@
   text-overflow: ellipsis;
 }
 
+/* Thumbnail */
+
+.cardThumbnail {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid #dbeafe;
+}
+
+.cardThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Card content */
+
 .cardInfo {
   flex: 1;
   min-width: 0;
 }
 
-.cardAddress {
+.cardSub {
   margin: 2px 0 0;
   font-size: 0.88rem;
   color: var(--muted);
@@ -100,10 +238,18 @@
   text-overflow: ellipsis;
 }
 
+.cardCity {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
 .cardFooter {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -116,6 +262,28 @@
   padding: 4px 10px;
   border-radius: 20px;
 }
+
+.cardMeta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.metaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid #dbeafe;
+}
+
+/* Disabled property */
 
 .propertyCardDisabled {
   background: #fff1f2;
@@ -141,13 +309,7 @@
   border-radius: 20px;
 }
 
-.stateMsg {
-  color: var(--muted);
-}
-
-.errorMsg {
-  color: var(--danger);
-}
+/* Add button */
 
 .addButton {
   background: var(--primary);
@@ -254,6 +416,8 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Responsive */
+
 @media (max-width: 900px) {
   .pageTitleRow {
     flex-direction: column;
@@ -262,5 +426,14 @@
 
   .propertyCard {
     flex-wrap: wrap;
+  }
+
+  .cardFooter {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .filterPanelOpen {
+    max-height: 400px;
   }
 }
