@@ -78,7 +78,7 @@ export default function CercadorPage() {
           <TextInput 
             area="Top"
             label="Inmueble" 
-            placeholder="Busca por nombre o dirección..."
+            placeholder="Busca per nom o direcció"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.currentTarget.value)}
           />

@@ -13,6 +13,7 @@ import ServeisCard from "../../Cards/serveisCard";
 import HorarisCard from "../../Cards/horarisCard";
 import HistoricPagamentsCard from "../../Cards/historicPagamentsCard";
 import ImmobleCalendariCard from "../../Cards/immobleCalendariCard";
+import NetegesCard from "../../Cards/netegesCard";
 
 const emptyForm = {
   propertyName: "",
@@ -325,7 +326,7 @@ export default function InfoInmoble() {
             { id: "temporades", label: "Temporades" },
             { id: "serveis", label: "Serveis" },
             { id: "pagaments", label: "Pagaments" },
-            { id: "incidencies", label: "Incidències" },
+            { id: "neteges", label: "Neteges" },
           ]}
           actiu={actiu}
           onDeshabilitar={handleDeshabilitar}
@@ -351,10 +352,8 @@ export default function InfoInmoble() {
           {seccioActiva === "fotos" && (
             <FotosCard fotos={original?.fotos ?? []} />
           )}
-          {seccioActiva === "incidencies" && (
-            <div>
-              <h2>Gestió d'Incidències</h2>
-            </div>
+          {seccioActiva === "neteges" && (
+            <NetegesCard immobleId={id} />
           )}
           {seccioActiva === "descompte" && (
             <ImmobleDescompteCard
