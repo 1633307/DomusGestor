@@ -48,26 +48,26 @@ export default function LoginForm() {
           name="nip"
           value={form.nip}
           onChange={handleChange}
-          placeholder="Introduce tu NIP"
+          placeholder="Introdueix el teu NIP"
         />
       </label>
 
       <label className={styles.field}>
-        Contraseña
+        Contrasenya
         <input
           className={styles.input}
           type="password"
           name="password"
           value={form.password}
           onChange={handleChange}
-          placeholder="Introduce tu contraseña"
+          placeholder="Introdueix la teva contrasenya"
         />
       </label>
 
       {error && <p className={styles.errorText}>{error}</p>}
 
       <button type="submit" className={styles.loginButton} disabled={submitting}>
-        {submitting ? 'Entrando...' : 'Entrar'}
+        {submitting ? 'Entrant...' : 'Entrar'}
       </button>
     </form>
   );

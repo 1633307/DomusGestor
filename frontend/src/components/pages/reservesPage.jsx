@@ -17,6 +17,22 @@ const RESERVA_STATUS_CLASSES = {
   cancelada: styles.statusCancelada,
 };
 
+const PAYMENT_STATUS_LABELS = {
+  pendent: 'Pendent',
+  parcial: 'Parcial',
+  pagada: 'Pagada',
+  retornada: 'Retornada',
+  rebutjada: 'Rebutjada',
+};
+
+const PAYMENT_STATUS_CLASSES = {
+  pendent: styles.paymentPendent,
+  parcial: styles.paymentParcial,
+  pagada: styles.paymentPagada,
+  retornada: styles.paymentRetornada,
+  rebutjada: styles.paymentRebutjada,
+};
+
 function getReservaStatusValue(reserva) {
   return String(
     reserva.estat_reserva ?? reserva.estadoReserva ?? reserva.estado_reserva ?? ''
@@ -31,6 +47,20 @@ function getReservaStatusLabel(status) {
 
 function getReservaStatusClass(status) {
   return RESERVA_STATUS_CLASSES[status] ?? styles.statusUnknown;
+}
+
+function getPaymentStatusValue(reserva) {
+  return String(reserva.estat_pagament ?? reserva.estatPagament ?? 'pendent')
+    .trim()
+    .toLowerCase();
+}
+
+function getPaymentStatusLabel(status) {
+  return PAYMENT_STATUS_LABELS[status] ?? PAYMENT_STATUS_LABELS.pendent;
+}
+
+function getPaymentStatusClass(status) {
+  return PAYMENT_STATUS_CLASSES[status] ?? PAYMENT_STATUS_CLASSES.pendent;
 }
 
 export default function ReservesPage() {
@@ -81,6 +111,7 @@ export default function ReservesPage() {
       <div className={styles.reservesGrid}>
         {filteredReserves.map((reserva) => {
           const status = getReservaStatusValue(reserva);
+          const paymentStatus = getPaymentStatusValue(reserva);
           return (
             <Link
               to={`/infoReserva/${reserva.id}`}
@@ -106,9 +137,9 @@ export default function ReservesPage() {
                     {getReservaStatusLabel(status)}
                   </span>
                   <span
-                    className={`${styles.paymentBadge} ${reserva.pagat ? styles.paymentPagat : styles.paymentPendent}`}
+                    className={`${styles.paymentBadge} ${getPaymentStatusClass(paymentStatus)}`}
                   >
-                    {reserva.pagat ? 'Pagada' : 'Pendent'}
+                    {getPaymentStatusLabel(paymentStatus)}
                   </span>
                 </div>
               </article>

@@ -8,6 +8,7 @@ urlpatterns = [
     path('perfils-propietari/<int:pk>/', views.PerfilPropietariDetailView.as_view(), name='perfil-propietari-detail'),
     path('reserves/', views.ReservaListCreateView.as_view(), name='reserva-list'),
     path('reserves/preview/', views.ReservaPreviewView.as_view(), name='reserva-preview'),
+    path('client-portal/login/', views.ClientPortalLoginView.as_view(), name='client-portal-login'),
     path('reserves/<int:pk>/', views.ReservaDetailView.as_view(), name='reserva-detail'),
     path(
         'reserves/<int:reserva_pk>/comunicacions/',
