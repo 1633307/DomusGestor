@@ -1,7 +1,9 @@
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.fields import hmac_value
 from properties.models import Immoble
 
 from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio
@@ -98,6 +100,83 @@ class ComunicacioDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ReservaPreviewView(APIView):
     def post(self, request):
         return Response(calcular_preview_reserva(request.data))
+
+
+class ClientPortalLoginView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        codi_reserva = str(request.data.get('codi_reserva', '')).strip()
+        nip = str(request.data.get('nip', '')).strip()
+
+        if not codi_reserva or not nip:
+            return Response(
+                {'detail': 'Cal indicar el numero de reserva i el NIP.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        queryset = (
+            ReservaBasica.objects
+            .select_related('immoble', 'inquili')
+            .prefetch_related('hostes__persona')
+        )
+        reserva = queryset.filter(codi_reserva__iexact=codi_reserva).first()
+        if reserva is None and codi_reserva.isdigit():
+            reserva = queryset.filter(pk=int(codi_reserva)).first()
+
+        if reserva is None or not self._nip_matches_reserva(reserva, nip):
+            return Response(
+                {'detail': 'No hem pogut verificar la reserva amb aquestes dades.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(self._serialize_reserva(reserva))
+
+    def _nip_matches_reserva(self, reserva, nip):
+        nip_hash = hmac_value(nip)
+        if reserva.inquili.dni_passaport_hash == nip_hash:
+            return True
+
+        normalized_nip = nip.casefold()
+        for hoste in reserva.hostes.all():
+            if hoste.numero_document.strip().casefold() == normalized_nip:
+                return True
+            if hoste.persona and hoste.persona.dni_passaport_hash == nip_hash:
+                return True
+        return False
+
+    def _serialize_reserva(self, reserva):
+        hostes = [
+            {
+                'id': hoste.id,
+                'nom_complet': hoste.nom_complet,
+                'es_principal': hoste.es_principal,
+                'nacionalitat': hoste.nacionalitat,
+            }
+            for hoste in reserva.hostes.all()
+        ]
+        return {
+            'id': reserva.id,
+            'codi_reserva': reserva.codi_reserva,
+            'immoble_nom': reserva.immoble.nom_comercial,
+            'inquili_nom': reserva.inquili.nom_complet,
+            'data_entrada': reserva.data_entrada,
+            'data_sortida': reserva.data_sortida,
+            'num_hostes': reserva.num_hostes or len(hostes),
+            'hostes': hostes,
+            'tipus_reserva': reserva.tipus_reserva,
+            'estat_reserva': reserva.estat_reserva,
+            'pagat': reserva.pagat,
+            'estat_pagament': reserva.estat_pagament,
+            'import_total': reserva.import_total,
+            'import_pagat': reserva.import_pagat,
+            'import_pendent': reserva.import_pendent,
+            'fianca': reserva.fianca,
+            'metode_pagament': reserva.metode_pagament,
+            'data_ultim_pagament': reserva.data_ultim_pagament,
+            'observacions_pagament': reserva.observacions_pagament,
+        }
 
 
 class DashboardView(APIView):

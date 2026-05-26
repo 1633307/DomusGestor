@@ -36,3 +36,30 @@
   margin: 0;
   color: var(--muted);
 }
+
+.clientEntry {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.clientEntry a {
+  font-weight: 700;
+}
+
+@media (max-width: 520px) {
+  .loginBox {
+    padding: 24px;
+  }
+
+  .clientEntry {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

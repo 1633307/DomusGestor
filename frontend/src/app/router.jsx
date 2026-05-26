@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./appLayout";
 import ProtectedRoute from "../ProtectedRoute";
 import LoginPage from "../components/pages/LoginPage";
+import ClientLoginPage from "../components/pages/ClientLoginPage";
 import DashboardPage from "../components/pages/DashboardPage";
 import CercadorPage from "../components/pages/CercadorPage";
 import InmoblesPage from "../components/pages/InmoblesPage";
@@ -17,6 +18,7 @@ export default function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/login-clientes" element={<ClientLoginPage />} />
 
       <Route
         path="/"
