@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { TextInput, Button, Autocomplete, NumberInput } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { IoFilter, IoCalendarOutline, IoPersonAdd, IoBed } from 'react-icons/io5';
@@ -185,7 +186,9 @@ export default function CercadorPage() {
               </div>
 
               <div className={styles.propertyActions}>
-                <button className={styles.secondaryButton}>Ver detalle</button>
+                <Link to={`/infoInmoble/${property.id}`} className={styles.secondaryButton}>
+                  Ver detalle
+                </Link>
               </div>
             </article>
           ))}
