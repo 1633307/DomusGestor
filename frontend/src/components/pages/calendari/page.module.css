@@ -80,3 +80,21 @@
     }
   }
 }
+
+@media screen and (max-width: 1000px) {
+  .days-container {
+    .day:nth-child(1),
+    .day:nth-child(5) {
+      display: none;
+    }
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .days-container {
+    .day:nth-child(3),
+    .day:nth-child(4) {
+      display: none;
+    }
+  }
+}
