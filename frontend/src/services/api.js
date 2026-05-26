@@ -72,6 +72,15 @@ export const authApi = {
   me: () => api.get("/auth/me/"),
 };
 
+export const clientPortalApi = {
+  login: (codiReserva, nip) =>
+    api.post(
+      "/bookings/client-portal/login/",
+      { codi_reserva: codiReserva, nip },
+      { auth: false },
+    ),
+};
+
 export const propertiesApi = {
   list: (search = "") =>
     api.get(

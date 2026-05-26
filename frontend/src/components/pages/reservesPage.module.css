@@ -167,7 +167,8 @@
   border-radius: 20px;
 }
 
-.paymentPagat {
+.paymentPagat,
+.paymentPagada {
   background: #dcfce7;
   color: #15803d;
 }
@@ -175,6 +176,21 @@
 .paymentPendent {
   background: #fef9c3;
   color: #a16207;
+}
+
+.paymentParcial {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.paymentRetornada {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.paymentRebutjada {
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 /* State messages */
