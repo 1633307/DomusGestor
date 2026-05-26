@@ -9,9 +9,10 @@ import InfoInmoble from "../components/pages/InfoInmoblePage";
 import ReservesPage from "../components/pages/reservesPage";
 import InfoReserva from "../components/pages/infoReservaPage";
 import GestioPage from "../components/pages/GestioPage";
-import InfoPersonaPage from '../components/pages/InfoPersonaPage';
-import PerfilImmobiliariaPage from '../components/pages/PerfilImmobiliariaPage';
-import PersonesPage from '../components/pages/PersonesPage';
+import InfoPersonaPage from "../components/pages/InfoPersonaPage";
+import PerfilImmobiliariaPage from "../components/pages/PerfilImmobiliariaPage";
+import PersonesPage from "../components/pages/PersonesPage";
+import CalendariPage from "../components/pages/calendari/page";
 
 export default function AppRouter() {
   return (
@@ -36,8 +37,12 @@ export default function AppRouter() {
         <Route path="persones/:id" element={<InfoPersonaPage />} />
         <Route path="infoInmoble/:id" element={<InfoInmoble />} />
         <Route path="infoReserva/:id" element={<InfoReserva />} />
-        <Route path="perfil-immobiliaria" element={<PerfilImmobiliariaPage />} />
+        <Route
+          path="perfil-immobiliaria"
+          element={<PerfilImmobiliariaPage />}
+        />
         <Route path="gestio" element={<GestioPage />} />
+        <Route path="calendari" element={<CalendariPage />} />
       </Route>
     </Routes>
   );

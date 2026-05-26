@@ -1,0 +1,60 @@
+.title {
+  margin-top: 0;
+}
+
+.days-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+
+  .day {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0;
+    gap: 8px;
+
+    .header {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--surface);
+      border-radius: 12px;
+      font-weight: bold;
+      height: 60px;
+      justify-content: end;
+      border: 1px solid var(--border);
+
+      .today {
+        font-size: 12px;
+      }
+    }
+
+    .events {
+      .event {
+        padding: 8px 12px;
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+        border-radius: 8px;
+
+        .title {
+          font-weight: bold;
+          font-size: 12px;
+        }
+
+        .nom-immoble {
+          font-weight: bold;
+          font-size: 14px;
+        }
+      }
+
+      .event.entrada {
+        background-color: lightgreen;
+      }
+
+      .event.sortida {
+        background-color: salmon;
+      }
+    }
+  }
+}
