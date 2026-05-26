@@ -1,0 +1,285 @@
+.authPage,
+.portal {
+  min-height: 100vh;
+  background: #f5f4ef;
+  color: #252b2d;
+  font-family: Arial, sans-serif;
+}
+
+.authPage {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.authCard {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(34, 42, 41, 0.08);
+  max-width: 460px;
+  padding: 42px;
+  width: 100%;
+}
+
+.eyebrow {
+  color: #70786f;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.authCard h1,
+.header h1 {
+  color: #183f37;
+  font-size: 30px;
+  margin: 0 0 12px;
+}
+
+.intro,
+.header p {
+  color: #606965;
+  line-height: 1.45;
+}
+
+.bookingCode {
+  background: #edf1eb;
+  border-radius: 10px;
+  color: #24483f;
+  font-weight: 700;
+  margin: 24px 0;
+  padding: 14px 16px;
+}
+
+.authCard form {
+  display: grid;
+  gap: 10px;
+}
+
+.authCard label,
+.grid label {
+  color: #3b4744;
+  display: grid;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.authCard input,
+.grid input,
+.grid select {
+  border: 1px solid #d7dbd5;
+  border-radius: 9px;
+  box-sizing: border-box;
+  font-size: 15px;
+  padding: 12px;
+  width: 100%;
+}
+
+.authPage button,
+.portal button {
+  background: #1c6656;
+  border: 0;
+  border-radius: 9px;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 20px;
+}
+
+.authPage button:disabled,
+.portal button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.authCard button {
+  margin-top: 14px;
+}
+
+.error,
+.errorBanner {
+  background: #fff0ed;
+  border-radius: 8px;
+  color: #a23425;
+  padding: 10px 12px;
+}
+
+.portal {
+  margin: 0;
+  padding: 42px max(calc((100vw - 1050px) / 2), 26px) 60px;
+}
+
+.header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+
+.status {
+  background: #e9f0ec;
+  border-radius: 99px;
+  color: #235849;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 17px;
+}
+
+.status.prereservada {
+  background: #fff4db;
+  color: #805900;
+}
+
+.status.cancelada {
+  background: #fce9e6;
+  color: #972e20;
+}
+
+.status.lista {
+  background: #def2e7;
+  color: #12603f;
+}
+
+.success {
+  background: #e1f4e8;
+  border-radius: 10px;
+  color: #13603d;
+  margin: 0 0 22px;
+  padding: 15px 18px;
+}
+
+.errorBanner {
+  margin: 0 0 22px;
+}
+
+.summary {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 20px;
+}
+
+.summary article,
+.payment,
+.checkin,
+.completed {
+  background: white;
+  border-radius: 15px;
+  padding: 22px;
+}
+
+.summary span {
+  color: #70786f;
+  display: block;
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+
+.summary strong {
+  color: #273734;
+  font-size: 16px;
+}
+
+.payment {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.payment h2,
+.checkin h2,
+.completed h2 {
+  margin: 4px 0 8px;
+}
+
+.payment p:not(.eyebrow),
+.checkinHeader p:not(.eyebrow),
+.completed p {
+  color: #62706b;
+  margin: 0;
+}
+
+.notice {
+  background: #fff4db;
+  border-radius: 10px;
+  color: #735510;
+  margin: 18px 0 0;
+  padding: 15px 18px;
+}
+
+.checkin {
+  margin-top: 20px;
+}
+
+.checkinHeader {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.secondary,
+.remove {
+  background: transparent;
+  border: 1px solid #1c6656;
+  color: #1c6656;
+}
+
+.guest {
+  border: 1px solid #dce1dc;
+  border-radius: 12px;
+  margin: 0 0 18px;
+  padding: 20px;
+  position: relative;
+}
+
+.guest legend {
+  color: #25423c;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 8px;
+}
+
+.remove {
+  padding: 7px 12px;
+  position: absolute;
+  right: 15px;
+  top: -22px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.completed {
+  margin-top: 20px;
+}
+
+@media (max-width: 720px) {
+  .header,
+  .payment,
+  .checkinHeader {
+    display: block;
+  }
+
+  .status {
+    display: inline-block;
+    margin-top: 18px;
+  }
+
+  .summary,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payment button,
+  .checkinHeader button {
+    margin-top: 18px;
+  }
+}
