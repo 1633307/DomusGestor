@@ -28,22 +28,37 @@ function Event({ type, event }) {
 }
 
 export default function Page() {
-  // Hard-coded for testing
-  const [date, setDate] = useState(new Date("2026-07-11"));
+  const [date, setDate] = useState(new Date());
   const [data, setData] = useState();
 
   useEffect(() => {
     bookingsApi.list().then(setData).catch(console.error);
   }, []);
 
-  useEffect(() => console.log(data), [data]);
-
   return (
-    <div>
-      <h1 className={styles["title"]}>Calendari</h1>
+    <div className={styles["wrapper"]}>
+      <div className={styles["page-header"]}>
+        <h1>Calendari</h1>
+        <div className={styles["buttons"]}>
+          <button
+            onClick={() =>
+              setDate((date) => new Date(date.getTime() - 24 * 60 * 60 * 1000))
+            }
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+          </button>
+          <button
+            onClick={() =>
+              setDate((date) => new Date(date.getTime() + 24 * 60 * 60 * 1000))
+            }
+          >
+            <i className="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
 
       <div className={styles["days-container"]}>
-        {/* Ahir, avui, demà, demà-passat i el següent */}
+        {/* Ahir, avui, demà, demà-passat i el següent respecte del dia triat */}
         {[-1, 0, 1, 2, 3].map((diff) => {
           const newDate = new Date(date.getTime() + diff * 24 * 60 * 60 * 1000);
           const newDateString =
@@ -77,14 +92,11 @@ export default function Page() {
           return (
             <div className={styles["day"]} key={diff}>
               <div className={styles["header"]}>
-                {diff === 0 && <span className={styles["today"]}>Avui</span>}
-                <span className={styles["date"]}>
-                  {Intl.DateTimeFormat("ca", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                  }).format(newDate)}
-                </span>
+                {Intl.DateTimeFormat("ca", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                }).format(newDate)}
               </div>
 
               <div className={styles["events"]}>

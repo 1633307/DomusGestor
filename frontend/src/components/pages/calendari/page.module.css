@@ -1,5 +1,33 @@
-.title {
-  margin-top: 0;
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 {
+    margin: 0;
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+
+    button {
+      background-color: #dbeafe;
+      border: none;
+      border-radius: 99px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+    }
+  }
 }
 
 .days-container {
@@ -20,13 +48,7 @@
       background-color: var(--surface);
       border-radius: 12px;
       font-weight: bold;
-      height: 60px;
-      justify-content: end;
       border: 1px solid var(--border);
-
-      .today {
-        font-size: 12px;
-      }
     }
 
     .events {
