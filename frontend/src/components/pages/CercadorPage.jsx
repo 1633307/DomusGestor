@@ -1,196 +1,189 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { TextInput, Button, Autocomplete, NumberInput } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
-import { IoFilter, IoCalendarOutline, IoPersonAdd, IoBed } from 'react-icons/io5';
-import { api } from '../../services/api'; // <-- Ruta corregida del paso anterior
+import { IoFilter, IoPersonAdd, IoBed } from 'react-icons/io5';
+import { api } from '../../services/api';
 import styles from './cercadorPage.module.css';
 
 export default function CercadorPage() {
-  // 1. Estados de datos y carga
   const [properties, setProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 2. Estados de los filtros
   const [showfilters, setShowfilters] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(''); 
-  const [dates, setDates] = useState([null, null]); 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dates, setDates] = useState([null, null]);
   const [city, setCity] = useState('');
-  const [guests, setGuests] = useState(''); // Estado para la capacidad
-  const [rooms, setRooms] = useState(''); 
+  const [guests, setGuests] = useState('');
+  const [rooms, setRooms] = useState('');
 
-  // 3. Función para formatear la fecha a YYYY-MM-DD para Django
   const formatDate = (date) => {
     if (!date) return null;
     const d = new Date(date);
     const month = `${d.getMonth() + 1}`.padStart(2, '0');
     const day = `${d.getDate()}`.padStart(2, '0');
-    const year = d.getFullYear();
-    return `${year}-${month}-${day}`;
+    return `${d.getFullYear()}-${month}-${day}`;
   };
 
-  // 4. Llamada a la API a través de tu servicio
-  const fetchProperties = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const params = new URLSearchParams();
-      
-      if (searchTerm) params.append('search', searchTerm);
-      if (city) params.append('ciutat', city);
-      if (rooms) params.append('habitacions', rooms);
-      
-      // 👇 NUEVO CAMBIO: Añadimos el filtro de capacidad al backend 👇
-      if (guests) params.append('capacitat', guests);
-      
-      if (dates[0] && dates[1]) {
-        params.append('dataini', formatDate(dates[0]));
-        params.append('datafi', formatDate(dates[1]));
-      }
-
-      // api.get ya apunta a /api y añade el token automáticamente
-      const endpoint = `/properties/${params.toString() ? `?${params.toString()}` : ''}`;
-      const data = await api.get(endpoint);
-      
-      setProperties(data);
-      
-    } catch (err) {
-      setError(err.message || 'Error al cargar los inmuebles');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Carga inicial al montar el componente
   useEffect(() => {
-    fetchProperties();
-  }, []);
+    const timer = setTimeout(async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('search', searchTerm);
+        if (city) params.append('ciutat', city);
+        if (rooms) params.append('habitacions', rooms);
+        if (guests) params.append('capacitat', guests);
+        if (dates[0] && dates[1]) {
+          params.append('dataini', formatDate(dates[0]));
+          params.append('datafi', formatDate(dates[1]));
+        }
+        const endpoint = `/properties/${params.toString() ? `?${params.toString()}` : ''}`;
+        const data = await api.get(endpoint);
+        setProperties(data);
+      } catch (err) {
+        setError(err.message || 'Error al carregar els immobles');
+      } finally {
+        setIsLoading(false);
+      }
+    }, 400);
 
-  const handleSearch = () => {
-    fetchProperties();
-  };
+    return () => clearTimeout(timer);
+  }, [searchTerm, city, guests, rooms, dates]);
 
   return (
     <section>
-      <div className={styles.propertiesSerchbar}>
-        <div className={styles.propertiesFiltres}>
-          <TextInput 
-            area="Top"
-            label="Inmueble" 
-            placeholder="Busca per nom o direcció"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.currentTarget.value)}
-          />
-
-          <Button 
-            area="Top" 
-            leftSection={<IoFilter size={14}/>} 
-            variant="default" 
-            type='button'
-            onClick={() => setShowfilters(!showfilters)} 
-          >
-            {showfilters ? "Cerrar" : "Mostrar"} Filtros
-          </Button>
-
-          <Button 
-            area="Top" 
-            className={styles.right}
-            onClick={handleSearch}
-            loading={isLoading}
-          >
-            BUSCAR
-          </Button>
+      <div className={`${styles.pageTitle} ${styles.pageTitleRow}`}>
+        <div>
+          <h2>Cercador d'Immobles</h2>
+          <p>Cerca immobles per disponibilitat, localització i característiques</p>
         </div>
+      </div>
 
-        <div area="Bottom" className={`${styles.Expansion} ${showfilters ? styles.isExpanded : ''}`}>
-          <div className={styles.propertiesFiltres}>
-            <DatePickerInput 
-              label={<IoCalendarOutline size={25}/>}
-              placeholder='Escoge una fecha'
+      <div className={styles.cercadorToolbar}>
+        <input
+          type="text"
+          placeholder="Cerca per nom o adreça..."
+          className={styles.searchInput}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.currentTarget.value)}
+
+        />
+        <button
+          className={styles.filterToggleBtn}
+          type="button"
+          onClick={() => setShowfilters(!showfilters)}
+        >
+          <IoFilter size={14} />
+          {showfilters ? 'Tancar filtres' : 'Filtres'}
+        </button>
+        {isLoading && <span className={styles.loadingIndicator}>Cercant...</span>}
+      </div>
+
+      <div className={`${styles.filterPanel} ${showfilters ? styles.filterPanelOpen : ''}`}>
+        <div className={styles.filterGrid}>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Dates</label>
+            <DatePickerInput
               type="range"
+              placeholder="Escull un rang de dates"
               value={dates}
               onChange={setDates}
+              classNames={{ input: styles.datePickerInput }}
             />
-            <Autocomplete 
-              label="Localización"
-              placeholder="Ej: Barcelona"
-              data={['Barcelona', 'Girona', 'Tarragona', 'Llafranc', 'Calella', 'Tamariu']} 
+          </div>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Localització</label>
+            <select
+              className={styles.filterSelect}
               value={city}
-              onChange={setCity}
-            />
-            {/* Input de capacidad enlazado al estado guests */}
-            <NumberInput 
-              className={styles.searchNumberInputs}
-              label={<IoPersonAdd size={25} title="Personas" />}
+              onChange={(e) => setCity(e.target.value)}
+            >
+              <option value="">Totes les localitzacions</option>
+              <option value="Barcelona">Barcelona</option>
+              <option value="Girona">Girona</option>
+              <option value="Tarragona">Tarragona</option>
+              <option value="Llafranc">Llafranc</option>
+              <option value="Calella">Calella</option>
+              <option value="Tamariu">Tamariu</option>
+            </select>
+          </div>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>
+              <IoPersonAdd size={14} /> Persones
+            </label>
+            <input
+              type="number"
+              className={`${styles.filterSelect} ${styles.filterNumber}`}
               value={guests}
-              onChange={setGuests}
+              onChange={(e) => setGuests(e.target.value ? Number(e.target.value) : '')}
               min={1}
+              placeholder="—"
             />
-            <NumberInput 
-              className={styles.searchNumberInputs}
-              label={<IoBed size={25} title="Habitaciones" />}
+          </div>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>
+              <IoBed size={14} /> Habitacions
+            </label>
+            <input
+              type="number"
+              className={`${styles.filterSelect} ${styles.filterNumber}`}
               value={rooms}
-              onChange={setRooms}
+              onChange={(e) => setRooms(e.target.value ? Number(e.target.value) : '')}
               min={1}
+              placeholder="—"
             />
           </div>
         </div>
       </div>
 
-      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-      
+      {error && <p className={styles.errorMsg}>{error}</p>}
+
       {isLoading ? (
-        <p style={{ textAlign: 'center' }}>Cargando inmuebles...</p>
+        <p className={styles.stateMsg}>Carregant immobles...</p>
       ) : (
         <div className={styles.propertiesGrid}>
-          {properties.length === 0 && <p>No se han encontrado resultados.</p>}
-          
+          {properties.length === 0 && (
+            <p className={styles.stateMsg}>No s'han trobat resultats.</p>
+          )}
           {properties.map((property) => (
-            <article className={styles.propertyCard} key={property.id}>
-              <div className={styles.propertyCardTop}>
-                <div>
-                  <h3>{property.nom_comercial || 'Sin nombre'}</h3>
-                  <p>{property.ciutat}</p>
+            <Link
+              to={`/infoInmoble/${property.id}`}
+              key={property.id}
+              className={styles.propertyCardLink}
+            >
+              <article className={styles.propertyCard}>
+                <div className={styles.cardThumbnail}>
+                  <img
+                    src={property.fotos?.[0] || `${import.meta.env.BASE_URL}placeHolderCasa.jpg`}
+                    alt={property.nom_comercial || 'Immoble'}
+                  />
                 </div>
-              </div>
-
-              <div className={styles.propertyInfo}>
-                <div>
-                  <span className={styles.propertyLabel}>Dirección</span>
-                  <strong>{property.adreca}</strong>
+                <div className={styles.cardInfo}>
+                  <h3>{property.nom_comercial || 'Sense nom'}</h3>
+                  <p className={styles.cardSub}>{property.adreca}</p>
+                  {property.ciutat && (
+                    <p className={styles.cardCity}>{property.ciutat}</p>
+                  )}
                 </div>
-
-                <div>
-                  <span className={styles.propertyLabel}>Precio</span>
-                  <strong>{property.preu_base_nit} €/noche</strong>
-                </div>
-                
-                <div>
-                  <span className={styles.propertyLabel}>Habitaciones</span>
-                  <strong>{property.num_habitacions}</strong>
-                </div>
-
-                {/* Si tienes la capacidad en el modelo del backend, puedes mostrarla aquí también */}
-                {property.capacitat_maxima > 0 && (
-                  <div>
-                    <span className={styles.propertyLabel}>Capacidad</span>
-                    <strong>{property.capacitat_maxima} pers.</strong>
+                <div className={styles.cardFooter}>
+                  <span className={styles.priceBadge}>{property.preu_base_nit} €/nit</span>
+                  <div className={styles.cardMeta}>
+                    {property.num_habitacions > 0 && (
+                      <span className={styles.metaBadge}>
+                        <IoBed size={11} /> {property.num_habitacions} hab.
+                      </span>
+                    )}
+                    {property.capacitat_maxima > 0 && (
+                      <span className={styles.metaBadge}>
+                        <IoPersonAdd size={11} /> {property.capacitat_maxima} pers.
+                      </span>
+                    )}
                   </div>
-                )}
-
-                <div className={styles.propertyImage}>
-                  <img src={property.fotos?.[0] || `${import.meta.env.BASE_URL}placeHolderCasa.jpg`} alt={property.nom_comercial || 'Inmueble'} />
                 </div>
-              </div>
-
-              <div className={styles.propertyActions}>
-                <Link to={`/infoInmoble/${property.id}`} className={styles.secondaryButton}>
-                  Ver detalle
-                </Link>
-              </div>
-            </article>
+              </article>
+            </Link>
           ))}
         </div>
       )}

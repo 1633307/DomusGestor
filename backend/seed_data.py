@@ -109,6 +109,52 @@ def run():
         ["https://placehold.co/800x600?text=DG-020-1", "https://placehold.co/800x600?text=DG-020-2", "https://placehold.co/800x600?text=DG-020-3", "https://placehold.co/800x600?text=DG-020-4"],
     ]
 
+    # Hores de neteja per immoble (tancament, canvi, obertura).
+    # tancament = neteja en sortida de l'inquili, canvi = neteja entre reserves curtes,
+    # obertura = preparació abans de l'entrada.
+    neteja_per_immoble = [
+        # 0 · Apartament Gracia Centre — 85m², 4p
+        (3, 2, 2),
+        # 1 · Atic Vista Mar — 65m², 2p
+        (2, 1, 2),
+        # 2 · Casa amb jardi Sitges — 200m², 8p
+        (5, 3, 4),
+        # 3 · Estudi Barceloneta — 28m², 2p
+        (1, 1, 1),
+        # 4 · Xalet Costa Brava — 320m², 10p
+        (7, 4, 5),
+        # 5 · Pis Modern Eixample — 90m², 4p
+        (3, 2, 2),
+        # 6 · Apartament Girona Vella — 75m², 3p
+        (2, 2, 2),
+        # 7 · Duplex Tarragona Mar — 120m², 5p
+        (4, 3, 3),
+        # 8 · Casa Rural Osona — 350m², 12p
+        (8, 5, 6),
+        # 9 · Apartament Lleida Centre — 80m², 4p
+        (3, 2, 2),
+        # 10 · Atic Terrassa Vista — 95m², 3p
+        (3, 2, 2),
+        # 11 · Pis Badalona Platja — 100m², 5p
+        (3, 2, 3),
+        # 12 · Casa Adossada Sabadell — 150m², 6p
+        (4, 3, 3),
+        # 13 · Estudi Mataro Rambla — 40m², 2p
+        (1, 1, 1),
+        # 14 · Apartament Manresa Nou — 70m², 3p
+        (2, 2, 2),
+        # 15 · Xalet Roses Costa — 240m², 8p
+        (6, 4, 5),
+        # 16 · Pis Figueres Rambla — 85m², 4p
+        (3, 2, 2),
+        # 17 · Casa Rural Priorat — 280m², 10p
+        (6, 4, 5),
+        # 18 · Apartament Tortosa Riu — 80m², 4p
+        (3, 2, 2),
+        # 19 · Duplex Vilanova Centre — 140m², 6p
+        (4, 3, 3),
+    ]
+
     # Horaris de check-in / check-out per immoble (mateixa ordre que immobles_data).
     # Format: (hora_checkin_inici, hora_checkin_fi, hora_checkout_inici, hora_checkout_fi)
     horaris_per_immoble = [
@@ -155,10 +201,11 @@ def run():
     ]
 
     immobles = []
-    for row, fotos, horaris in zip(immobles_data, fotos_per_immoble, horaris_per_immoble):
+    for row, fotos, horaris, neteja in zip(immobles_data, fotos_per_immoble, horaris_per_immoble, neteja_per_immoble):
         (nom, ref, adr, ciutat, cp, tipus, cap, hab, banys, m2, preu, actiu,
          prop_nom, prop_dni, prop_email, prop_tel, prop_adr, prop_iban) = row
         ci_inici, ci_fi, co_inici, co_fi = horaris
+        n_tanc, n_canvi, n_ober = neteja
         propietari = Persona.objects.create(
             nom_complet=prop_nom,
             dni_passaport=prop_dni,
@@ -182,6 +229,9 @@ def run():
             hora_checkin_fi=ci_fi,
             hora_checkout_inici=co_inici,
             hora_checkout_fi=co_fi,
+            neteja_tancament=n_tanc,
+            neteja_canvi=n_canvi,
+            neteja_obertura=n_ober,
         )
         immobles.append(imm)
 
