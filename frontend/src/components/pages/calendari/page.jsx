@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import styles from "./page.module.css";
 import { bookingsApi } from "../../../services/api";
 
 function Event({ type, event }) {
   return (
-    <div className={styles["event"] + " " + styles[type]}>
+    <Link
+      className={styles["event"] + " " + styles[type]}
+      to={"/infoReserva/" + event.immoble}
+    >
       <span className={styles["title"]}>
         <i
           class={
@@ -23,7 +27,7 @@ function Event({ type, event }) {
         <i className="fa-solid fa-user"></i>&nbsp;{event.inquili_nom}{" "}
         {event.hostes.length > 1 ? `+${event.hostes.length - 1} més` : ""}
       </span>
-    </div>
+    </Link>
   );
 }
 

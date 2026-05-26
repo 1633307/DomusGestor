@@ -51,32 +51,31 @@
       border: 1px solid var(--border);
     }
 
-    .events {
-      .event {
-        padding: 8px 12px;
-        display: flex;
-        flex-direction: column;
+    .event {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+      border-radius: 8px;
+      color: black;
+
+      .title {
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      .nom-immoble {
+        font-weight: bold;
         font-size: 14px;
-        border-radius: 8px;
-
-        .title {
-          font-weight: bold;
-          font-size: 12px;
-        }
-
-        .nom-immoble {
-          font-weight: bold;
-          font-size: 14px;
-        }
       }
+    }
 
-      .event.entrada {
-        background-color: lightgreen;
-      }
+    .event.entrada {
+      background-color: lightgreen;
+    }
 
-      .event.sortida {
-        background-color: salmon;
-      }
+    .event.sortida {
+      background-color: salmon;
     }
   }
 }
