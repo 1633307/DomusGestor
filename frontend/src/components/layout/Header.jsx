@@ -107,15 +107,6 @@ export default function Header() {
           </NavLink>
 
           <NavLink
-            to="/properties"
-            className={({ isActive }) =>
-              isActive ? `${styles.link} ${styles.activeLink}` : styles.link
-            }
-          >
-            Cercador
-          </NavLink>
-
-          <NavLink
             to="/inmobles"
             className={({ isActive }) =>
               isActive ? `${styles.link} ${styles.activeLink}` : styles.link
