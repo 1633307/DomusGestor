@@ -240,6 +240,7 @@ class ReservaSerializer(serializers.ModelSerializer):
             reserva.num_hostes = len(hostes_data)
             reserva.save(update_fields=['num_hostes'])
         self._sync_persona_from_principal_hoste(reserva)
+        PerfilInquili.objects.get_or_create(persona=reserva.inquili)
         return reserva
 
     @transaction.atomic

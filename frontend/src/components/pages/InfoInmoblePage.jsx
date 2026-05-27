@@ -209,7 +209,7 @@ export default function InfoInmoble() {
       return await personesApi.create({
         nom_complet: mainGuest.nom_complet || "Client sense nom",
         dni_passaport: document,
-        email: mainGuest.email || "pendent@example.com",
+        email: mainGuest.email || "",
         telefon: mainGuest.telefon || "",
       });
     } catch (err) {

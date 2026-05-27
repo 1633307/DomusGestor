@@ -30,7 +30,7 @@ def reserva_post_save(sender, instance, created, **kwargs):
         try:
             reserva = ReservaBasica.objects.select_related(
                 'immoble', 'immoble__propietari', 'inquili'
-            ).get(pk=reserva_pk)
+            ).prefetch_related('hostes').get(pk=reserva_pk)
         except ReservaBasica.DoesNotExist:
             return
 

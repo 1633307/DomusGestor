@@ -5,7 +5,10 @@
 <div class="info-box">
   <div class="info-row"><span class="info-label">Codi</span><span class="info-value">{{ reserva.codi_reserva }}</span></div>
   <div class="info-row"><span class="info-label">Immoble</span><span class="info-value">{{ reserva.immoble.nom_comercial }}</span></div>
-  <div class="info-row"><span class="info-label">Inquilí</span><span class="info-value">{{ reserva.inquili.nom_complet }}</span></div>
+  <div class="info-row"><span class="info-label">Hoste principal</span><span class="info-value">{{ hoste_principal.nom_complet|default:reserva.inquili.nom_complet }}</span></div>
+  <div class="info-row"><span class="info-label">Email</span><span class="info-value">{{ hoste_principal.email|default:reserva.inquili.email }}</span></div>
+  <div class="info-row"><span class="info-label">Telèfon</span><span class="info-value">{{ hoste_principal.telefon|default:reserva.inquili.telefon }}</span></div>
+  {% if hoste_principal.numero_document %}<div class="info-row"><span class="info-label">Document</span><span class="info-value">{{ hoste_principal.tipus_document }} {{ hoste_principal.numero_document }}</span></div>{% endif %}
   <div class="info-row"><span class="info-label">Entrada</span><span class="info-value">{{ reserva.data_entrada }}</span></div>
   <div class="info-row"><span class="info-label">Sortida</span><span class="info-value">{{ reserva.data_sortida }}</span></div>
   <div class="info-row"><span class="info-label">Persones</span><span class="info-value">{{ reserva.num_hostes }}</span></div>
