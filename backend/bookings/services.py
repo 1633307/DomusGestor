@@ -191,9 +191,14 @@ def calcular_preview_reserva(data):
 
     for temporada_trobada in temporades_trobades:
         if nits < temporada_trobada.min_nits:
+            nits_faltants = temporada_trobada.min_nits - nits
+            data_inici = f"{temporada_trobada.data_inici.day}/{temporada_trobada.data_inici.month:02d}"
+            data_fi = f"{temporada_trobada.data_fi.day}/{temporada_trobada.data_fi.month:02d}"
             raise ValidationError(
-                f"La temporada '{temporada_trobada.nom}' requereix un mínim de "
-                f"{temporada_trobada.min_nits} nits. La reserva té {nits} nits."
+                f"La temporada '{temporada_trobada.nom}' (del {data_inici} al {data_fi}) "
+                f"requereix un mínim de {temporada_trobada.min_nits} nit{'s' if temporada_trobada.min_nits != 1 else ''}. "
+                f"Has seleccionat {nits} nit{'s' if nits != 1 else ''}, "
+                f"{'falta' if nits_faltants == 1 else 'falten'} {nits_faltants} nit{'s' if nits_faltants != 1 else ''} per complir el mínim."
             )
 
     descompte_immoble_import = subtotal * descompte_immoble_percent / Decimal("100")

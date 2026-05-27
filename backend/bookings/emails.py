@@ -46,55 +46,80 @@ def _es_plataforma_externa(reserva):
     return reserva.tipus_reserva in ('Airbnb', 'Booking')
 
 
+def _get_hoste_principal(reserva):
+    return reserva.hostes.filter(es_principal=True).first()
+
+
+def _inquili_email(reserva, hoste_principal=None):
+    if hoste_principal and hoste_principal.email:
+        return hoste_principal.email
+    return reserva.inquili.email
+
+
 def _propietari_email(reserva):
     return reserva.immoble.propietari.email if reserva.immoble.propietari else ''
 
 
+def _envia_costat_propietari(reserva, tipus, assumpte, template, ctx):
+    """Envia la notificació al propietari i, si és diferent, també a l'immobiliària."""
+    immobiliaria = ctx.get('immobiliaria')
+    prop_email = _propietari_email(reserva)
+    immo_email = immobiliaria.email_contacte if immobiliaria else ''
+
+    _envia_i_registra(reserva, tipus, prop_email, assumpte, template, ctx)
+    if immo_email and immo_email != prop_email:
+        _envia_i_registra(reserva, tipus, immo_email, assumpte, template, ctx)
+
+
 def enviar_prereservada(reserva):
     immobiliaria = _get_remitent()
-    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria}
+    hoste_principal = _get_hoste_principal(reserva)
+    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria, 'hoste_principal': hoste_principal}
     if not _es_plataforma_externa(reserva):
-        _envia_i_registra(reserva, 'prereservada_inquili', reserva.inquili.email,
+        _envia_i_registra(reserva, 'prereservada_inquili', _inquili_email(reserva, hoste_principal),
                           f'Sol·licitud de reserva rebuda – {reserva.codi_reserva}',
                           'emails/prereservada_inquili.html', ctx)
-    _envia_i_registra(reserva, 'prereservada_propietari', _propietari_email(reserva),
-                      f'Nova sol·licitud de reserva – {reserva.immoble.nom_comercial}',
-                      'emails/prereservada_propietari.html', ctx)
+    _envia_costat_propietari(reserva, 'prereservada_propietari',
+                             f'Nova sol·licitud de reserva – {reserva.immoble.nom_comercial}',
+                             'emails/prereservada_propietari.html', ctx)
 
 
 def enviar_confirmada(reserva):
     immobiliaria = _get_remitent()
-    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria}
+    hoste_principal = _get_hoste_principal(reserva)
+    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria, 'hoste_principal': hoste_principal}
     if not _es_plataforma_externa(reserva):
-        _envia_i_registra(reserva, 'confirmada_inquili', reserva.inquili.email,
+        _envia_i_registra(reserva, 'confirmada_inquili', _inquili_email(reserva, hoste_principal),
                           f'La teva reserva est\xe0 confirmada! – {reserva.codi_reserva}',
                           'emails/confirmada_inquili.html', ctx)
-    _envia_i_registra(reserva, 'confirmada_propietari', _propietari_email(reserva),
-                      f'Reserva confirmada – {reserva.immoble.nom_comercial}',
-                      'emails/confirmada_propietari.html', ctx)
+    _envia_costat_propietari(reserva, 'confirmada_propietari',
+                             f'Reserva confirmada – {reserva.immoble.nom_comercial}',
+                             'emails/confirmada_propietari.html', ctx)
 
 
 def enviar_cancelada(reserva):
     immobiliaria = _get_remitent()
-    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria}
+    hoste_principal = _get_hoste_principal(reserva)
+    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria, 'hoste_principal': hoste_principal}
     if not _es_plataforma_externa(reserva):
-        _envia_i_registra(reserva, 'cancelada_inquili', reserva.inquili.email,
+        _envia_i_registra(reserva, 'cancelada_inquili', _inquili_email(reserva, hoste_principal),
                           f'Reserva cancel\xb7lada – {reserva.codi_reserva}',
                           'emails/cancelada_inquili.html', ctx)
-    _envia_i_registra(reserva, 'cancelada_propietari', _propietari_email(reserva),
-                      f'Reserva cancel\xb7lada – {reserva.immoble.nom_comercial}',
-                      'emails/cancelada_propietari.html', ctx)
+    _envia_costat_propietari(reserva, 'cancelada_propietari',
+                             f'Reserva cancel\xb7lada – {reserva.immoble.nom_comercial}',
+                             'emails/cancelada_propietari.html', ctx)
 
 
 def enviar_pagament(reserva, pagament):
     immobiliaria = _get_remitent()
-    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria, 'pagament': pagament}
-    _envia_i_registra(reserva, 'pagament_inquili', reserva.inquili.email,
+    hoste_principal = _get_hoste_principal(reserva)
+    ctx = {'reserva': reserva, 'immobiliaria': immobiliaria, 'pagament': pagament, 'hoste_principal': hoste_principal}
+    _envia_i_registra(reserva, 'pagament_inquili', _inquili_email(reserva, hoste_principal),
                       f'Pagament confirmat – {reserva.codi_reserva}',
                       'emails/pagament_inquili.html', ctx)
-    _envia_i_registra(reserva, 'pagament_propietari', _propietari_email(reserva),
-                      f'Pagament rebut – {reserva.immoble.nom_comercial}',
-                      'emails/pagament_propietari.html', ctx)
+    _envia_costat_propietari(reserva, 'pagament_propietari',
+                             f'Pagament rebut – {reserva.immoble.nom_comercial}',
+                             'emails/pagament_propietari.html', ctx)
 
 
 def enviar_comunicacio_manual(reserva, comunicacio, usuari=None):

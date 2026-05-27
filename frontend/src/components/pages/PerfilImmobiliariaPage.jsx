@@ -114,22 +114,21 @@ export default function PerfilImmobiliariaPage() {
     setNotice("");
 
     try {
-      let savedProfile = draftProfile;
-
       // TODO: ampliar el model/API d'InfoImmobiliaria amb raó social, codi
       // postal, ciutat, província, país, web i observacions internes. Fins
       // aleshores aquests camps es conserven a localStorage.
+      const payload = formToBackend(draftProfile);
+      let backendSaved;
       try {
-        const payload = formToBackend(draftProfile);
-        const backendSaved = draftProfile.id
+        backendSaved = draftProfile.id
           ? await immobiliariaApi.update(draftProfile.id, payload)
           : await immobiliariaApi.create(payload);
-
-        savedProfile = backendToForm(backendSaved, draftProfile);
-      } catch {
-        setNotice("Dades guardades.");
+      } catch (apiErr) {
+        setError(apiErr?.message || "No s'ha pogut guardar al servidor.");
+        return;
       }
 
+      const savedProfile = backendToForm(backendSaved, draftProfile);
       saveLocalProfile(savedProfile);
       setProfile(savedProfile);
       setDraftProfile(savedProfile);

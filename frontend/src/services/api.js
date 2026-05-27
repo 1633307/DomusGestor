@@ -35,7 +35,10 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
 
   if (!res.ok) {
     const genericMessage =
-      (data && (data.detail || data.non_field_errors?.[0] || formatFieldErrors(data))) ||
+      (data && (
+        Array.isArray(data) ? data[0] :
+        data.detail || data.non_field_errors?.[0] || formatFieldErrors(data)
+      )) ||
       `Error ${res.status}`;
     const err = new Error(genericMessage);
     if (data && typeof data === 'object' && !data.detail && !data.non_field_errors) {
