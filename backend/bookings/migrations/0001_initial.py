@@ -78,6 +78,7 @@ class Migration(migrations.Migration):
                 ('tipus_reserva', models.CharField(blank=True, choices=[('Airbnb', 'Airbnb'), ('Booking', 'Booking'), ('Direct', 'Directa'), ('Altres', 'Altres')], default='', max_length=20)),
                 ('estat_reserva', models.CharField(blank=True, choices=[('prereservada', 'Prereservada'), ('reservada', 'Reservada'), ('lista', 'Lista'), ('cancelada', 'Cancelada')], default=None, max_length=20, null=True)),
                 ('net', models.BooleanField(default=False)),
+                ('limpieza_extra', models.PositiveSmallIntegerField(default=0)),
                 ('comentaris_interns', models.TextField(blank=True, default='')),
                 ('num_hostes', models.PositiveIntegerField(default=0)),
                 ('descompte_immoble_aplicat', models.BooleanField(default=False)),
