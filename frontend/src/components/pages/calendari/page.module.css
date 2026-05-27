@@ -1,110 +1,199 @@
-.wrapper {
+/* Page title — same pattern as the rest of the app */
+.pageTitle {
+  margin-bottom: 20px;
+}
+
+.pageTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitle h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pageTitle p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Navigation controls */
+.navControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.navGroup {
+  display: flex;
+  gap: 4px;
+}
+
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.55em 0.9em;
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.navBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #eff6ff;
+}
+
+.todayBtn {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.55em 1.1em;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.todayBtn:hover {
+  background: #1d4ed8;
+}
+
+/* Days grid */
+.daysContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.day {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.page-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-
-  h1 {
-    margin: 0;
-  }
-
-  .buttons {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-
-    button {
-      display: flex;
-      flex-direction: column;
-      background-color: #dbeafe;
-      border: none;
-      border-radius: 99px;
-      cursor: pointer;
-      padding: 10px;
-      font-size: 14px;
-      height: 57px;
-      width: 57px;
-      align-items: center;
-      flex: 1 1;
-    }
-  }
-}
-
-.days-container {
-  display: flex;
-  flex-direction: row;
+  flex: 1 0;
   gap: 8px;
-
-  .day {
-    display: flex;
-    flex-direction: column;
-    flex: 1 0;
-    gap: 8px;
-
-    .header {
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--surface);
-      border-radius: 12px;
-      font-weight: bold;
-      border: 1px solid var(--border);
-    }
-
-    .event {
-      padding: 8px 12px;
-      display: flex;
-      flex-direction: column;
-      font-size: 14px;
-      border-radius: 8px;
-      color: black;
-
-      .title {
-        font-weight: bold;
-        font-size: 12px;
-      }
-
-      .nom-immoble {
-        font-weight: bold;
-        font-size: 14px;
-      }
-    }
-
-    .event.entrada {
-      background-color: lightgreen;
-    }
-
-    .event.sortida {
-      background-color: salmon;
-    }
-  }
+  min-width: 0;
 }
 
+.dayHeader {
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.dayToday .dayHeader {
+  background: #eff6ff;
+  border-color: #dbeafe;
+  color: var(--primary);
+}
+
+/* Events list */
+.events {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.emptyDay {
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding: 6px 4px;
+}
+
+/* Event card — same card style as the rest of the app */
+.event {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+}
+
+.eventTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.nomImmoble {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.nomHoste {
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+
+/* Entrada — green tones (same as statusLista) */
+.entrada {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+/* Sortida — red tones (same as statusCancelada) */
+.sortida {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+/* Responsive */
 @media screen and (max-width: 1000px) {
-  .days-container {
-    .day:nth-child(1),
-    .day:nth-child(5) {
-      display: none;
-    }
+  .daysContainer .day:nth-child(1),
+  .daysContainer .day:nth-child(5) {
+    display: none;
   }
 }
 
 @media screen and (max-width: 800px) {
-  .page-header {
+  .pageTitleRow {
     flex-direction: column;
-    align-items: unset;
   }
 
-  .days-container {
-    .day:nth-child(3),
-    .day:nth-child(4) {
-      display: none;
-    }
+  .navControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .daysContainer .day:nth-child(3),
+  .daysContainer .day:nth-child(4) {
+    display: none;
   }
 }
