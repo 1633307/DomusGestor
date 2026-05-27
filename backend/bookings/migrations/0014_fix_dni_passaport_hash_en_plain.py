@@ -10,11 +10,6 @@ def is_hmac_hash(value):
 def fix_dni_passaport_hash_en_plain(apps, schema_editor):
     with schema_editor.connection.cursor() as cursor:
         cursor.execute(
-            "SELECT to_regclass('bookings_persona')"
-        )
-        if cursor.fetchone()[0] is None:
-            return
-        cursor.execute(
             "SELECT id, dni_passaport FROM bookings_persona WHERE dni_passaport != ''"
         )
         rows = cursor.fetchall()
