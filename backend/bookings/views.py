@@ -1,3 +1,4 @@
+import logging
 from datetime import date, timedelta
 
 from django.db.models import Sum
@@ -20,6 +21,8 @@ from .serializers import (
 from .pdf_generator import generate_fitxa_viatger
 from .services import calcular_preview_reserva
 
+logger = logging.getLogger(__name__)
+
 
 class PersonaListCreateView(generics.ListCreateAPIView):
     queryset = (
@@ -36,6 +39,10 @@ class PersonaListCreateView(generics.ListCreateAPIView):
             from core.fields import hmac_value
             queryset = queryset.filter(dni_passaport_hash=hmac_value(document))
         return queryset
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        logger.info('Persona creada: id=%s', serializer.instance.pk)
 
 
 class PersonaDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -80,6 +87,11 @@ class ReservaListCreateView(generics.ListCreateAPIView):
             queryset = queryset.filter(inquili_id=filtro_inquili)
         return queryset
 
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        r = serializer.instance
+        logger.info('Reserva creada: id=%s codi=%s immoble_id=%s estat=%s', r.pk, r.codi_reserva, r.immoble_id, r.estat_reserva)
+
 
 class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = (
@@ -90,6 +102,15 @@ class ReservaDetailView(generics.RetrieveUpdateDestroyAPIView):
     )
     serializer_class = ReservaSerializer
 
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        r = serializer.instance
+        logger.info('Reserva actualitzada: id=%s estat=%s', r.pk, r.estat_reserva)
+
+    def perform_destroy(self, instance):
+        logger.info('Reserva eliminada: id=%s codi=%s', instance.pk, instance.codi_reserva)
+        super().perform_destroy(instance)
+
 
 class ComunicacioListCreateView(generics.ListCreateAPIView):
     serializer_class = ComunicacioSerializer
@@ -99,6 +120,7 @@ class ComunicacioListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         comunicacio = serializer.save(reserva_id=self.kwargs['reserva_pk'])
+        logger.info('Comunicació creada: id=%s canal=%s reserva_id=%s', comunicacio.pk, comunicacio.canal, self.kwargs['reserva_pk'])
         if comunicacio.canal == 'Email':
             enviar_comunicacio_manual(
                 reserva=comunicacio.reserva,
@@ -135,6 +157,7 @@ class ClientPortalLoginView(APIView):
         nip = str(request.data.get('nip', '')).strip()
 
         if not codi_reserva or not nip:
+            logger.warning('Accés portal client sense codi o NIP')
             return Response(
                 {'detail': 'Cal indicar el numero de reserva i el NIP.'},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -150,11 +173,13 @@ class ClientPortalLoginView(APIView):
             reserva = queryset.filter(pk=int(codi_reserva)).first()
 
         if reserva is None or not self._nip_matches_reserva(reserva, nip):
+            logger.warning('Accés portal client fallat: codi_reserva=%s', codi_reserva)
             return Response(
                 {'detail': 'No hem pogut verificar la reserva amb aquestes dades.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        logger.info('Accés portal client: reserva_id=%s', reserva.pk)
         return Response(self._serialize_reserva(reserva))
 
     def _nip_matches_reserva(self, reserva, nip):
@@ -310,6 +335,7 @@ class FitxaViatgerPDFView(APIView):
         )
         pdf_buffer = generate_fitxa_viatger(reserva)
         filename = f"fitxa-viatger-{reserva.codi_reserva or reserva.pk}.pdf"
+        logger.info('PDF fitxa viatger generat: reserva_id=%s user_id=%s', pk, request.user.pk)
         response = HttpResponse(pdf_buffer.read(), content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response

@@ -1,9 +1,13 @@
+import logging
+
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 from users.models import InfoImmobiliaria
 from .models import ComunicacioEmail
+
+logger = logging.getLogger(__name__)
 
 
 def _get_remitent():
@@ -12,6 +16,7 @@ def _get_remitent():
 
 def _envia_i_registra(reserva, tipus, destinatari_email, assumpte, template, context, enviat_per=None):
     if not destinatari_email:
+        logger.warning('Email sense destinatari: tipus=%s reserva_id=%s', tipus, reserva.pk)
         ComunicacioEmail.objects.create(
             reserva=reserva, tipus=tipus, destinatari='', assumpte=assumpte,
             enviat_per=enviat_per, exit=False, error_msg='Sense email',
@@ -24,11 +29,13 @@ def _envia_i_registra(reserva, tipus, destinatari_email, assumpte, template, con
             subject=assumpte, message=strip_tags(html), from_email=from_email,
             recipient_list=[destinatari_email], html_message=html, fail_silently=False,
         )
+        logger.info('Email enviat: tipus=%s reserva_id=%s destinatari=%s', tipus, reserva.pk, destinatari_email)
         ComunicacioEmail.objects.create(
             reserva=reserva, tipus=tipus, destinatari=destinatari_email,
             assumpte=assumpte, enviat_per=enviat_per, exit=True,
         )
     except Exception as exc:
+        logger.error('Error enviant email: tipus=%s reserva_id=%s error=%s', tipus, reserva.pk, exc)
         ComunicacioEmail.objects.create(
             reserva=reserva, tipus=tipus, destinatari=destinatari_email,
             assumpte=assumpte, enviat_per=enviat_per, exit=False, error_msg=str(exc),
@@ -96,6 +103,7 @@ def enviar_comunicacio_manual(reserva, comunicacio, usuari=None):
     destinatari = comunicacio.destinatari
 
     if not destinatari:
+        logger.warning('Comunicació manual sense destinatari: comunicacio_id=%s reserva_id=%s', comunicacio.pk, reserva.pk)
         ComunicacioEmail.objects.create(
             reserva=reserva, tipus='manual', destinatari='',
             assumpte=comunicacio.titol, enviat_per=usuari, exit=False, error_msg='Sense email',
@@ -113,6 +121,7 @@ def enviar_comunicacio_manual(reserva, comunicacio, usuari=None):
             html_message=f'<p>{comunicacio.resum}</p>' if comunicacio.resum else None,
             fail_silently=False,
         )
+        logger.info('Comunicació manual enviada: comunicacio_id=%s reserva_id=%s destinatari=%s', comunicacio.pk, reserva.pk, destinatari)
         ComunicacioEmail.objects.create(
             reserva=reserva, tipus='manual', destinatari=destinatari,
             assumpte=comunicacio.titol, enviat_per=usuari, exit=True,
@@ -120,6 +129,7 @@ def enviar_comunicacio_manual(reserva, comunicacio, usuari=None):
         comunicacio.estat = 'enviada'
         comunicacio.save(update_fields=['estat'])
     except Exception as exc:
+        logger.error('Error comunicació manual: comunicacio_id=%s reserva_id=%s error=%s', comunicacio.pk, reserva.pk, exc)
         ComunicacioEmail.objects.create(
             reserva=reserva, tipus='manual', destinatari=destinatari,
             assumpte=comunicacio.titol, enviat_per=usuari, exit=False, error_msg=str(exc),

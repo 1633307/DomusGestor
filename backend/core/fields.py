@@ -1,9 +1,12 @@
 import hashlib
 import hmac as _hmac_mod
+import logging
 
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.db import models
+
+logger = logging.getLogger(__name__)
 
 
 def _fernet() -> Fernet:
@@ -18,6 +21,7 @@ def decrypt_value(ciphertext: str) -> str:
     try:
         return _fernet().decrypt(ciphertext.encode()).decode()
     except (InvalidToken, Exception):
+        logger.warning('No s\'ha pogut desxifrar un valor; es retorna el text original')
         return ciphertext
 
 

@@ -169,5 +169,10 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'core': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
     },
 }
