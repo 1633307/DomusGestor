@@ -1,9 +1,13 @@
+import logging
+
 from rest_framework import generics, filters
 
 from .models import Immoble, Servei
 from .serializers import ImmobleSerializer, ServeiSerializer
 from bookings.models import ReservaBasica, PagamentReserva
 from bookings.serializers import PagamentReservaSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class ImmobleListCreateView(generics.ListCreateAPIView):
@@ -43,11 +47,23 @@ class ImmobleListCreateView(generics.ListCreateAPIView):
 
         return queryset
 
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        logger.info('Immoble creat: id=%s nom=%s', serializer.instance.pk, serializer.instance.nom_comercial)
+
 
 class ImmobleDetailView(generics.RetrieveUpdateDestroyAPIView):
     """RF-01: Detall, actualització i eliminació d'immoble."""
     queryset = Immoble.objects.all()
     serializer_class = ImmobleSerializer
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        logger.info('Immoble actualitzat: id=%s', serializer.instance.pk)
+
+    def perform_destroy(self, instance):
+        logger.info('Immoble eliminat: id=%s nom=%s', instance.pk, instance.nom_comercial)
+        super().perform_destroy(instance)
 
 
 class ServeiListView(generics.ListAPIView):

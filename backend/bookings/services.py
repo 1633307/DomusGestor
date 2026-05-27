@@ -1,3 +1,4 @@
+import logging
 from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from unicodedata import combining, normalize
@@ -6,6 +7,8 @@ from django.utils.dateparse import parse_date
 from rest_framework.exceptions import ValidationError
 
 from properties.models import Immoble
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_COMISSIO_PERCENT = Decimal("15.00")
@@ -116,6 +119,7 @@ def _calcular_taxa_turistica(data_entrada, nits, num_hostes, immoble):
 
 
 def calcular_preview_reserva(data):
+    logger.debug('Preview reserva: immoble=%s data_entrada=%s data_sortida=%s', data.get("immoble"), data.get("data_entrada"), data.get("data_sortida"))
     try:
         immoble_id = int(data.get("immoble"))
     except (TypeError, ValueError) as exc:

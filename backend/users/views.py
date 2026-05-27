@@ -1,3 +1,5 @@
+import logging
+
 from django.http import Http404
 from rest_framework import generics, permissions, status
 from rest_framework.authtoken.models import Token
@@ -14,6 +16,8 @@ from .serializers import (
     UpdateUsuariSerializer,
     InfoImmobiliariaSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class IsAdmin(BasePermission):
@@ -33,11 +37,13 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user  = serializer.validated_data['user']
         token, _ = Token.objects.get_or_create(user=user)
+        logger.info('Inici de sessió: user_id=%s', user.pk)
         return Response({'token': token.key, 'user': UsuariSerializer(user).data})
 
 
 class LogoutView(APIView):
     def post(self, request):
+        logger.info('Tancament de sessió: user_id=%s', request.user.pk)
         request.user.auth_token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -51,6 +57,7 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user  = serializer.save()
         token, _ = Token.objects.get_or_create(user=user)
+        logger.info('Nou registre: user_id=%s', user.pk)
         return Response(
             {'token': token.key, 'user': UsuariSerializer(user).data},
             status=status.HTTP_201_CREATED,
@@ -73,6 +80,7 @@ class UserListCreateView(APIView):
         serializer = CreateUsuariSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        logger.info('Admin crea usuari: nou_user_id=%s admin_id=%s', user.pk, request.user.pk)
         return Response(UsuariSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
@@ -98,6 +106,7 @@ class UserDetailView(APIView):
         serializer = UpdateUsuariSerializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        logger.info('Usuari actualitzat: user_id=%s admin_id=%s', pk, request.user.pk)
         return Response(UsuariSerializer(serializer.instance).data)
 
     def patch(self, request, pk):
@@ -111,6 +120,7 @@ class UserDetailView(APIView):
                 )
             user.is_active = bool(is_active)
             user.save(update_fields=['is_active'])
+            logger.info('Canvi is_active: user_id=%s is_active=%s admin_id=%s', pk, is_active, request.user.pk)
         return Response(UsuariSerializer(user).data)
 
     def delete(self, request, pk):
@@ -125,6 +135,7 @@ class UserDetailView(APIView):
                 {'detail': "Has de deshabilitar l'usuari abans d'eliminar-lo."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        logger.info('Usuari eliminat: user_id=%s admin_id=%s', pk, request.user.pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
