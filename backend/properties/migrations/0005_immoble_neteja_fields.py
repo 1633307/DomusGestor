@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('properties', '0004_cleanup_propietari_fields'),
+        ('properties', '0001_initial'),
     ]
 
     operations = [
