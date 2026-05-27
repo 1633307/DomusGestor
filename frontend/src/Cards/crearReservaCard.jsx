@@ -24,7 +24,6 @@ const emptyForm = {
   numHostes: "1",
   tipusReserva: "Airbnb",
   estatReserva: "prereservada",
-  net: "false",
   limpiezaExtra: "0",
   comentarisInterns: "",
   descompteIndividualAplicat: "false",
@@ -378,16 +377,6 @@ export default function CrearReservaCard({ immoble, onPreview, onCreate, isCreat
                 { value: "reservada", label: "Reservada" },
                 { value: "lista", label: "Llesta" },
                 { value: "cancelada", label: "Cancel·lada" },
-              ]}
-            />
-            <Field
-              label="Net"
-              name="net"
-              value={form.net}
-              onChange={handleChange}
-              options={[
-                { value: "true", label: "Sí" },
-                { value: "false", label: "No" },
               ]}
             />
             <Field

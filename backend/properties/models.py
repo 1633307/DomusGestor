@@ -63,6 +63,10 @@ class Immoble(models.Model):
 
     serveis = models.ManyToManyField(Servei, blank=True, related_name='immobles')
 
+    neteja_tancament = models.PositiveIntegerField(default=0)
+    neteja_canvi     = models.PositiveIntegerField(default=0)
+    neteja_obertura  = models.PositiveIntegerField(default=0)
+
     actiu = models.BooleanField(default=True)
     data_registre = models.DateTimeField(auto_now_add=True)
 

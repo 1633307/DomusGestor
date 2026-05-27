@@ -4,7 +4,6 @@ import ProtectedRoute from "../ProtectedRoute";
 import LoginPage from "../components/pages/LoginPage";
 import ClientLoginPage from "../components/pages/ClientLoginPage";
 import DashboardPage from "../components/pages/DashboardPage";
-import CercadorPage from "../components/pages/CercadorPage";
 import InmoblesPage from "../components/pages/InmoblesPage";
 import InfoInmoble from "../components/pages/InfoInmoblePage";
 import ReservesPage from "../components/pages/reservesPage";
@@ -31,7 +30,7 @@ export default function AppRouter() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="properties" element={<CercadorPage />} />
+        <Route path="properties" element={<Navigate to="/inmobles" replace />} />
         <Route path="inmobles" element={<InmoblesPage />} />
         <Route path="reserves" element={<ReservesPage />} />
         <Route path="persones" element={<PersonesPage />} />

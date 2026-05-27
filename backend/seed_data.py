@@ -1,10 +1,10 @@
 """
-Seed script: crea un usuari admin, 20 immobles, 20 inquilins i 20 reserves.
+Seed script: crea un usuari admin, 20 immobles, 50 inquilins i ~210 reserves.
 Executa'l des de la carpeta backend/:
 
 python seed_data.py
 
-AVÍS: esborra tots els registres existents de reserves, inquilins i immobles
+AVIS: esborra tots els registres existents de reserves, inquilins i immobles
 abans de crear-ne de nous. L'usuari admin NO s'esborra si ja existeix.
 
 REQUISIT PREVI, EXECUTAR A LA CARPETA DE BACKEND: python manage.py migrate
@@ -14,10 +14,9 @@ Credencials de l'usuari creat:
     Password: DomusGestor2026!
 """
 
-
-
 import os
 import sys
+from datetime import date, timedelta
 
 import django
 
@@ -56,10 +55,6 @@ def run():
     print(f"Eliminats: {deleted_p} pagaments, {deleted_r} reserves, {deleted_per} persones, {deleted_m} immobles, {deleted_s} serveis, {deleted_t} temporades")
 
     # ── 20 Immobles ─────────────────────────────────────────────────────────
-    # Columnes: nom, ref, adreca, ciutat, cp, tipus, capacitat, hab, banys,
-    #           m2, preu_nit, actiu,
-    #           propietari_nom, propietari_dni, propietari_email,
-    #           propietari_telefon, propietari_adreca, propietari_iban
     immobles_data = [
         ("Apartament Gracia Centre",  "DG-001", "Carrer de Verdi, 32, 1r 2a",       "Barcelona",        "08012", "Pis",        4, 2, 1,  85,  110.00, True,  "Joan Serra Pujol",    "12345678A", "joan.serra@gmail.com",    "+34 600 111 222", "Carrer Major, 5, Barcelona",          "ES21 2100 0418 4502 0005 1332"),
         ("Atic Vista Mar",            "DG-002", "Passeig de Gracia, 80, Atic",       "Barcelona",        "08008", "Atic",       2, 1, 1,  65,  220.00, True,  "Marta Vidal Puig",    "87654321B", "marta.vidal@hotmail.com", "+34 611 222 333", "Via Laietana, 20, Barcelona",         "ES80 2038 0509 7032 0020 0020"),
@@ -83,9 +78,6 @@ def run():
         ("Duplex Vilanova Centre",    "DG-020", "Carrer de la Unio, 12, 1r 1a",      "Vilanova i la G.", "08800", "Duplex",     6, 3, 2, 140,  195.00, True,  "Teresa Oliveras Pou", "90101030T", "toliveras@vilanova.cat",  "+34 699 012 345", "Rambla de la Pau, 4, Vilanova",       "ES11 2100 0418 3102 0111 2233"),
     ]
 
-    # Fotos de placeholder per immoble (3-5 URLs per immoble).
-    # La primera URL de cada llista és la foto de portada.
-    # En producció aquestes URLs apuntaran al servidor d'emmagatzematge (veure README).
     fotos_per_immoble = [
         ["https://placehold.co/800x600?text=DG-001-1", "https://placehold.co/800x600?text=DG-001-2", "https://placehold.co/800x600?text=DG-001-3"],
         ["https://placehold.co/800x600?text=DG-002-1", "https://placehold.co/800x600?text=DG-002-2", "https://placehold.co/800x600?text=DG-002-3", "https://placehold.co/800x600?text=DG-002-4"],
@@ -109,119 +101,66 @@ def run():
         ["https://placehold.co/800x600?text=DG-020-1", "https://placehold.co/800x600?text=DG-020-2", "https://placehold.co/800x600?text=DG-020-3", "https://placehold.co/800x600?text=DG-020-4"],
     ]
 
-    # Horaris de check-in / check-out per immoble (mateixa ordre que immobles_data).
-    # Format: (hora_checkin_inici, hora_checkin_fi, hora_checkout_inici, hora_checkout_fi)
+    neteja_per_immoble = [
+        (3, 2, 2), (2, 1, 2), (5, 3, 4), (1, 1, 1), (7, 4, 5),
+        (3, 2, 2), (2, 2, 2), (4, 3, 3), (8, 5, 6), (3, 2, 2),
+        (3, 2, 2), (3, 2, 3), (4, 3, 3), (1, 1, 1), (2, 2, 2),
+        (6, 4, 5), (3, 2, 2), (6, 4, 5), (3, 2, 2), (4, 3, 3),
+    ]
+
     horaris_per_immoble = [
-        # 0 · Apartament Gracia Centre — pis urbà Barcelona
-        ("15:00", "21:00", "07:00", "11:00"),
-        # 1 · Atic Vista Mar — àtic Barcelona
-        ("16:00", "21:00", "08:00", "11:00"),
-        # 2 · Casa amb jardi Sitges — casa costa
-        ("16:00", "20:00", "09:00", "12:00"),
-        # 3 · Estudi Barceloneta — estudi urbà costa
-        ("15:00", "22:00", "07:00", "11:00"),
-        # 4 · Xalet Costa Brava — xalet gran costa
-        ("17:00", "21:00", "09:00", "12:00"),
-        # 5 · Pis Modern Eixample — pis urbà Barcelona
-        ("15:00", "21:00", "08:00", "11:00"),
-        # 6 · Apartament Girona Vella — pis urbà Girona
-        ("15:00", "20:00", "08:00", "11:00"),
-        # 7 · Duplex Tarragona Mar — dúplex costa
-        ("16:00", "21:00", "09:00", "12:00"),
-        # 8 · Casa Rural Osona — casa rural
-        ("17:00", "20:00", "09:00", "12:00"),
-        # 9 · Apartament Lleida Centre — pis urbà Lleida
-        ("14:00", "20:00", "08:00", "11:00"),
-        # 10 · Atic Terrassa Vista — àtic urbà
-        ("15:00", "21:00", "08:00", "11:00"),
-        # 11 · Pis Badalona Platja — pis costa urbana
-        ("16:00", "21:00", "08:00", "11:00"),
-        # 12 · Casa Adossada Sabadell — casa (inactiva)
-        ("15:00", "20:00", "08:00", "11:00"),
-        # 13 · Estudi Mataro Rambla — estudi costa
-        ("15:00", "21:00", "07:00", "11:00"),
-        # 14 · Apartament Manresa Nou — pis urbà
-        ("14:00", "20:00", "08:00", "11:00"),
-        # 15 · Xalet Roses Costa — xalet gran costa
-        ("17:00", "21:00", "09:00", "12:00"),
-        # 16 · Pis Figueres Rambla — pis urbà
-        ("15:00", "20:00", "08:00", "11:00"),
-        # 17 · Casa Rural Priorat — casa rural
-        ("17:00", "20:00", "09:00", "12:00"),
-        # 18 · Apartament Tortosa Riu — pis urbà (check-in autònom)
-        ("15:00", "23:00", "07:00", "11:00"),
-        # 19 · Duplex Vilanova Centre — dúplex costa
-        ("16:00", "21:00", "08:00", "12:00"),
+        ("15:00", "21:00", "07:00", "11:00"), ("16:00", "21:00", "08:00", "11:00"),
+        ("16:00", "20:00", "09:00", "12:00"), ("15:00", "22:00", "07:00", "11:00"),
+        ("17:00", "21:00", "09:00", "12:00"), ("15:00", "21:00", "08:00", "11:00"),
+        ("15:00", "20:00", "08:00", "11:00"), ("16:00", "21:00", "09:00", "12:00"),
+        ("17:00", "20:00", "09:00", "12:00"), ("14:00", "20:00", "08:00", "11:00"),
+        ("15:00", "21:00", "08:00", "11:00"), ("16:00", "21:00", "08:00", "11:00"),
+        ("15:00", "20:00", "08:00", "11:00"), ("15:00", "21:00", "07:00", "11:00"),
+        ("14:00", "20:00", "08:00", "11:00"), ("17:00", "21:00", "09:00", "12:00"),
+        ("15:00", "20:00", "08:00", "11:00"), ("17:00", "20:00", "09:00", "12:00"),
+        ("15:00", "23:00", "07:00", "11:00"), ("16:00", "21:00", "08:00", "12:00"),
     ]
 
     immobles = []
-    for row, fotos, horaris in zip(immobles_data, fotos_per_immoble, horaris_per_immoble):
+    for row, fotos, horaris, neteja in zip(immobles_data, fotos_per_immoble, horaris_per_immoble, neteja_per_immoble):
         (nom, ref, adr, ciutat, cp, tipus, cap, hab, banys, m2, preu, actiu,
          prop_nom, prop_dni, prop_email, prop_tel, prop_adr, prop_iban) = row
         ci_inici, ci_fi, co_inici, co_fi = horaris
+        n_tanc, n_canvi, n_ober = neteja
         propietari = Persona.objects.create(
-            nom_complet=prop_nom,
-            dni_passaport=prop_dni,
-            email=prop_email,
-            telefon=prop_tel,
-            residencia=prop_adr,
+            nom_complet=prop_nom, dni_passaport=prop_dni, email=prop_email,
+            telefon=prop_tel, residencia=prop_adr,
         )
-        PerfilPropietari.objects.create(
-            persona=propietari,
-            iban=prop_iban,
-            adreca_facturacio=prop_adr,
-        )
+        PerfilPropietari.objects.create(persona=propietari, iban=prop_iban, adreca_facturacio=prop_adr)
         imm = Immoble.objects.create(
             nom_comercial=nom, referencia=ref, adreca=adr, ciutat=ciutat,
             codi_postal=cp, tipus_immoble=tipus, capacitat_maxima=cap,
             num_habitacions=hab, num_banys=banys, metres_quadrats=m2,
-            preu_base_nit=preu, actiu=actiu,
-            propietari=propietari,
-            fotos=fotos,
-            hora_checkin_inici=ci_inici,
-            hora_checkin_fi=ci_fi,
-            hora_checkout_inici=co_inici,
-            hora_checkout_fi=co_fi,
+            preu_base_nit=preu, actiu=actiu, propietari=propietari, fotos=fotos,
+            hora_checkin_inici=ci_inici, hora_checkin_fi=ci_fi,
+            hora_checkout_inici=co_inici, hora_checkout_fi=co_fi,
+            neteja_tancament=n_tanc, neteja_canvi=n_canvi, neteja_obertura=n_ober,
         )
         immobles.append(imm)
 
     print(f"{len(immobles)} immobles creats")
 
     # ── Serveis ──────────────────────────────────────────────────────────────
-    # (nom, icona, categoria)
     serveis_data = [
-        # Climatització
-        ("Aire acondicionat",        "AirVent",       "climatitzacio"),
-        ("Calefacció",               "Flame",          "climatitzacio"),
-        ("Ventilador de sostre",     "Fan",            "climatitzacio"),
-        # Connectivitat
-        ("WiFi",                     "Wifi",           "conectivitat"),
-        ("TV pantalla plana",        "Tv",             "conectivitat"),
-        ("Netflix",                  "MonitorPlay",    "conectivitat"),
-        # Electrodomèstics
-        ("Rentadora",                "WashingMachine", "electrodomestics"),
-        ("Assecadora",               "Wind",           "electrodomestics"),
-        ("Rentavaixelles",           "Sparkles",       "electrodomestics"),
-        ("Cuina totalment equipada", "ChefHat",        "electrodomestics"),
-        ("Microones",                "Microwave",      "electrodomestics"),
-        ("Cafetera",                 "Coffee",         "electrodomestics"),
-        ("Planxa i taula de planxar","Shirt",          "electrodomestics"),
-        # Exterior
-        ("Piscina",                  "Waves",          "exterior"),
-        ("Jardí privat",             "TreePine",       "exterior"),
-        ("Terrassa",                 "Armchair",       "exterior"),
-        ("Barbacoa",                 "Drumstick",      "exterior"),
-        ("Aparcament gratuït",       "Car",            "exterior"),
-        ("Garatge privat",           "Warehouse",      "exterior"),
-        # Altres
-        ("Ascensor",                 "ArrowUpDown",    "altres"),
-        ("Caixa forta",              "Lock",           "altres"),
-        ("Admeten mascotes",         "Dog",            "altres"),
-        ("Accés adaptat",            "Accessibility",  "altres"),
-        ("Llençols inclosos",        "Bed",            "altres"),
-        ("Tovalloles incloses",      "Bath",           "altres"),
-        ("Bressol disponible",       "Baby",           "altres"),
-        ("Check-in autònom",         "Key",            "altres"),
+        ("Aire acondicionat", "AirVent", "climatitzacio"), ("Calefaccio", "Flame", "climatitzacio"),
+        ("Ventilador de sostre", "Fan", "climatitzacio"), ("WiFi", "Wifi", "conectivitat"),
+        ("TV pantalla plana", "Tv", "conectivitat"), ("Netflix", "MonitorPlay", "conectivitat"),
+        ("Rentadora", "WashingMachine", "electrodomestics"), ("Assecadora", "Wind", "electrodomestics"),
+        ("Rentavaixelles", "Sparkles", "electrodomestics"), ("Cuina totalment equipada", "ChefHat", "electrodomestics"),
+        ("Microones", "Microwave", "electrodomestics"), ("Cafetera", "Coffee", "electrodomestics"),
+        ("Planxa i taula de planxar", "Shirt", "electrodomestics"), ("Piscina", "Waves", "exterior"),
+        ("Jardi privat", "TreePine", "exterior"), ("Terrassa", "Armchair", "exterior"),
+        ("Barbacoa", "Drumstick", "exterior"), ("Aparcament gratuit", "Car", "exterior"),
+        ("Garatge privat", "Warehouse", "exterior"), ("Ascensor", "ArrowUpDown", "altres"),
+        ("Caixa forta", "Lock", "altres"), ("Admeten mascotes", "Dog", "altres"),
+        ("Acces adaptat", "Accessibility", "altres"), ("Llencols inclosos", "Bed", "altres"),
+        ("Tovalloles incloses", "Bath", "altres"), ("Bressol disponible", "Baby", "altres"),
+        ("Check-in autonom", "Key", "altres"),
     ]
 
     serveis_obj = {}
@@ -231,114 +170,27 @@ def run():
 
     print(f"{len(serveis_obj)} serveis creats")
 
-    # ── Assignació de serveis per immoble ────────────────────────────────────
-    # Cada llista conté els noms dels serveis que té l'immoble (per índex).
     assignacions = [
-        # 0 · Apartament Gracia Centre — Pis Barcelona, 85m², 4 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Rentadora",
-         "TV pantalla plana", "Cuina totalment equipada", "Ascensor",
-         "Llençols inclosos", "Tovalloles incloses"],
-
-        # 1 · Atic Vista Mar — Àtic Barcelona, 65m², 2 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
-         "TV pantalla plana", "Netflix", "Cuina totalment equipada",
-         "Rentadora", "Ascensor", "Llençols inclosos"],
-
-        # 2 · Casa amb jardi Sitges — Casa, 200m², 8 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Piscina", "Jardí privat",
-         "Barbacoa", "Rentadora", "Assecadora", "Rentavaixelles",
-         "TV pantalla plana", "Cuina totalment equipada", "Aparcament gratuït",
-         "Admeten mascotes", "Llençols inclosos", "Tovalloles incloses"],
-
-        # 3 · Estudi Barceloneta — Estudi, 28m², 2 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "TV pantalla plana",
-         "Cuina totalment equipada", "Microones", "Cafetera", "Ascensor"],
-
-        # 4 · Xalet Costa Brava — Xalet, 320m², 10 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Piscina", "Jardí privat",
-         "Barbacoa", "Terrassa", "Rentadora", "Assecadora", "Rentavaixelles",
-         "Cuina totalment equipada", "TV pantalla plana", "Netflix",
-         "Aparcament gratuït", "Garatge privat", "Admeten mascotes",
-         "Bressol disponible", "Caixa forta"],
-
-        # 5 · Pis Modern Eixample — Pis, 90m², 4 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Rentadora", "Rentavaixelles",
-         "TV pantalla plana", "Netflix", "Cuina totalment equipada",
-         "Planxa i taula de planxar", "Ascensor", "Llençols inclosos",
-         "Tovalloles incloses", "Cafetera"],
-
-        # 6 · Apartament Girona Vella — Pis, 75m², 3 persones
-        ["WiFi", "Calefacció", "TV pantalla plana", "Cuina totalment equipada",
-         "Rentadora", "Ascensor", "Llençols inclosos", "Microones"],
-
-        # 7 · Duplex Tarragona Mar — Dúplex, 120m², 5 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
-         "TV pantalla plana", "Rentadora", "Cuina totalment equipada",
-         "Aparcament gratuït", "Llençols inclosos", "Admeten mascotes",
-         "Barbacoa"],
-
-        # 8 · Casa Rural Osona — Casa Rural, 350m², 12 persones
-        ["WiFi", "Calefacció", "Piscina", "Jardí privat", "Barbacoa",
-         "Rentadora", "Assecadora", "Cuina totalment equipada", "TV pantalla plana",
-         "Aparcament gratuït", "Admeten mascotes", "Bressol disponible",
-         "Check-in autònom", "Ventilador de sostre"],
-
-        # 9 · Apartament Lleida Centre — Pis, 80m², 4 persones
-        ["WiFi", "Calefacció", "TV pantalla plana", "Cuina totalment equipada",
-         "Rentadora", "Ascensor", "Microones", "Cafetera"],
-
-        # 10 · Atic Terrassa Vista — Àtic, 95m², 3 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
-         "TV pantalla plana", "Netflix", "Rentadora", "Cuina totalment equipada",
-         "Ascensor", "Planxa i taula de planxar"],
-
-        # 11 · Pis Badalona Platja — Pis, 100m², 5 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
-         "TV pantalla plana", "Rentadora", "Rentavaixelles",
-         "Cuina totalment equipada", "Aparcament gratuït", "Llençols inclosos",
-         "Tovalloles incloses"],
-
-        # 12 · Casa Adossada Sabadell — Casa (inactiva), 150m², 6 persones
-        ["WiFi", "Calefacció", "Jardí privat", "TV pantalla plana",
-         "Rentadora", "Cuina totalment equipada", "Garatge privat",
-         "Admeten mascotes"],
-
-        # 13 · Estudi Mataro Rambla — Estudi, 40m², 2 persones
-        ["WiFi", "Aire acondicionat", "TV pantalla plana",
-         "Cuina totalment equipada", "Microones", "Cafetera", "Ascensor"],
-
-        # 14 · Apartament Manresa Nou — Pis, 70m², 3 persones
-        ["WiFi", "Calefacció", "TV pantalla plana", "Rentadora",
-         "Cuina totalment equipada", "Ascensor", "Llençols inclosos",
-         "Planxa i taula de planxar"],
-
-        # 15 · Xalet Roses Costa — Xalet, 240m², 8 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Piscina", "Jardí privat",
-         "Barbacoa", "Terrassa", "Rentadora", "Assecadora",
-         "Cuina totalment equipada", "TV pantalla plana", "Netflix",
-         "Aparcament gratuït", "Admeten mascotes", "Caixa forta",
-         "Llençols inclosos", "Tovalloles incloses"],
-
-        # 16 · Pis Figueres Rambla — Pis, 85m², 4 persones
-        ["WiFi", "Calefacció", "TV pantalla plana", "Rentadora",
-         "Cuina totalment equipada", "Ascensor", "Planxa i taula de planxar",
-         "Microones"],
-
-        # 17 · Casa Rural Priorat — Casa Rural, 280m², 10 persones
-        ["WiFi", "Calefacció", "Jardí privat", "Barbacoa", "Rentadora",
-         "Assecadora", "Cuina totalment equipada", "TV pantalla plana",
-         "Aparcament gratuït", "Admeten mascotes", "Bressol disponible",
-         "Ventilador de sostre"],
-
-        # 18 · Apartament Tortosa Riu — Pis, 80m², 4 persones
-        ["WiFi", "Calefacció", "TV pantalla plana", "Cuina totalment equipada",
-         "Rentadora", "Ascensor", "Check-in autònom", "Microones"],
-
-        # 19 · Duplex Vilanova Centre — Dúplex, 140m², 6 persones
-        ["WiFi", "Aire acondicionat", "Calefacció", "Terrassa",
-         "TV pantalla plana", "Netflix", "Rentadora", "Rentavaixelles",
-         "Cuina totalment equipada", "Aparcament gratuït", "Llençols inclosos",
-         "Tovalloles incloses"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Rentadora", "TV pantalla plana", "Cuina totalment equipada", "Ascensor", "Llencols inclosos", "Tovalloles incloses"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Terrassa", "TV pantalla plana", "Netflix", "Cuina totalment equipada", "Rentadora", "Ascensor", "Llencols inclosos"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Piscina", "Jardi privat", "Barbacoa", "Rentadora", "Assecadora", "Rentavaixelles", "TV pantalla plana", "Cuina totalment equipada", "Aparcament gratuit", "Admeten mascotes", "Llencols inclosos", "Tovalloles incloses"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "TV pantalla plana", "Cuina totalment equipada", "Microones", "Cafetera", "Ascensor"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Piscina", "Jardi privat", "Barbacoa", "Terrassa", "Rentadora", "Assecadora", "Rentavaixelles", "Cuina totalment equipada", "TV pantalla plana", "Netflix", "Aparcament gratuit", "Garatge privat", "Admeten mascotes", "Bressol disponible", "Caixa forta"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Rentadora", "Rentavaixelles", "TV pantalla plana", "Netflix", "Cuina totalment equipada", "Planxa i taula de planxar", "Ascensor", "Llencols inclosos", "Tovalloles incloses", "Cafetera"],
+        ["WiFi", "Calefaccio", "TV pantalla plana", "Cuina totalment equipada", "Rentadora", "Ascensor", "Llencols inclosos", "Microones"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Terrassa", "TV pantalla plana", "Rentadora", "Cuina totalment equipada", "Aparcament gratuit", "Llencols inclosos", "Admeten mascotes", "Barbacoa"],
+        ["WiFi", "Calefaccio", "Piscina", "Jardi privat", "Barbacoa", "Rentadora", "Assecadora", "Cuina totalment equipada", "TV pantalla plana", "Aparcament gratuit", "Admeten mascotes", "Bressol disponible", "Check-in autonom", "Ventilador de sostre"],
+        ["WiFi", "Calefaccio", "TV pantalla plana", "Cuina totalment equipada", "Rentadora", "Ascensor", "Microones", "Cafetera"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Terrassa", "TV pantalla plana", "Netflix", "Rentadora", "Cuina totalment equipada", "Ascensor", "Planxa i taula de planxar"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Terrassa", "TV pantalla plana", "Rentadora", "Rentavaixelles", "Cuina totalment equipada", "Aparcament gratuit", "Llencols inclosos", "Tovalloles incloses"],
+        ["WiFi", "Calefaccio", "Jardi privat", "TV pantalla plana", "Rentadora", "Cuina totalment equipada", "Garatge privat", "Admeten mascotes"],
+        ["WiFi", "Aire acondicionat", "TV pantalla plana", "Cuina totalment equipada", "Microones", "Cafetera", "Ascensor"],
+        ["WiFi", "Calefaccio", "TV pantalla plana", "Rentadora", "Cuina totalment equipada", "Ascensor", "Llencols inclosos", "Planxa i taula de planxar"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Piscina", "Jardi privat", "Barbacoa", "Terrassa", "Rentadora", "Assecadora", "Cuina totalment equipada", "TV pantalla plana", "Netflix", "Aparcament gratuit", "Admeten mascotes", "Caixa forta", "Llencols inclosos", "Tovalloles incloses"],
+        ["WiFi", "Calefaccio", "TV pantalla plana", "Rentadora", "Cuina totalment equipada", "Ascensor", "Planxa i taula de planxar", "Microones"],
+        ["WiFi", "Calefaccio", "Jardi privat", "Barbacoa", "Rentadora", "Assecadora", "Cuina totalment equipada", "TV pantalla plana", "Aparcament gratuit", "Admeten mascotes", "Bressol disponible", "Ventilador de sostre"],
+        ["WiFi", "Calefaccio", "TV pantalla plana", "Cuina totalment equipada", "Rentadora", "Ascensor", "Check-in autonom", "Microones"],
+        ["WiFi", "Aire acondicionat", "Calefaccio", "Terrassa", "TV pantalla plana", "Netflix", "Rentadora", "Rentavaixelles", "Cuina totalment equipada", "Aparcament gratuit", "Llencols inclosos", "Tovalloles incloses"],
     ]
 
     for imm, noms_serveis in zip(immobles, assignacions):
@@ -347,117 +199,71 @@ def run():
     print("Serveis assignats als immobles")
 
     # ── Temporades ───────────────────────────────────────────────────────────
-    # Format: (immoble_idx, nom, data_inici, data_fi, preu_nit, min_nits, dies_checkin)
-    # dies_checkin: [] = qualsevol dia, [5] = dissabte, [5,6] = dissabte+diumenge, etc.
-    # 0=Dl 1=Dt 2=Dc 3=Dj 4=Dv 5=Ds 6=Dg
-    # ── Temporades ───────────────────────────────────────────────────────────
-    # Format: (immoble_idx, nom, data_inici, data_fi, preu_nit, min_nits, dies_checkin, comissio)
-    # dies_checkin: [] = qualsevol dia, [5] = dissabte, [5,6] = dissabte+diumenge, etc.
-    # 0=Dl 1=Dt 2=Dc 3=Dj 4=Dv 5=Ds 6=Dg
     temporades_data = [
-        # 0 · Apartament Gracia Centre (base 110 €) — urbà Barcelona
         (0, "Temporada Baixa",      "2000-01-01", "2000-03-31",  90.00, 2, [], 10.00),
         (0, "Temporada Mitja",      "2000-04-01", "2000-06-30", 110.00, 3, [], 15.00),
         (0, "Temporada Alta",       "2000-07-01", "2000-08-31", 155.00, 3, [], 20.00),
         (0, "Temporada Mitja Tard", "2000-09-01", "2000-12-31", 105.00, 2, [], 15.00),
-
-        # 1 · Atic Vista Mar (base 220 €) — urbà Barcelona
         (1, "Temporada Baixa",      "2000-01-01", "2000-05-31", 180.00, 2, [], 15.00),
         (1, "Temporada Alta",       "2000-06-01", "2000-09-15", 280.00, 3, [], 20.00),
         (1, "Temporada Mitja",      "2000-09-16", "2000-12-31", 210.00, 2, [], 15.00),
-
-        # 2 · Casa amb jardi Sitges (base 350 €) — costa
         (2, "Hivern",               "2000-01-01", "2000-03-31", 270.00, 2, [], 10.00),
         (2, "Primavera",            "2000-04-01", "2000-06-30", 340.00, 3, [], 15.00),
         (2, "Estiu",                "2000-07-01", "2000-08-31", 480.00, 7, [5, 6], 20.00),
         (2, "Tardor",               "2000-09-01", "2000-12-31", 310.00, 3, [], 10.00),
-
-        # 3 · Estudi Barceloneta (base 75 €) — urbà costa
         (3, "Temporada Baixa",      "2000-01-01", "2000-06-14",  65.00, 2, [], 10.00),
         (3, "Temporada Alta",       "2000-06-15", "2000-09-15",  95.00, 3, [], 15.00),
         (3, "Temporada Baixa",      "2000-09-16", "2000-12-31",  65.00, 2, [], 10.00),
-
-        # 4 · Xalet Costa Brava (base 480 €) — costa gran
         (4, "Temporada Baixa",      "2000-01-01", "2000-03-31", 360.00, 2, [], 10.00),
         (4, "Setmana Santa",        "2000-04-01", "2000-04-12", 520.00, 5, [5, 6], 20.00),
         (4, "Primavera/Tardor",     "2000-04-13", "2000-06-30", 420.00, 3, [], 15.00),
         (4, "Temporada Alta",       "2000-07-01", "2000-08-31", 650.00, 7, [5, 6], 20.00),
         (4, "Tardor/Hivern",        "2000-09-01", "2000-12-31", 400.00, 3, [], 15.00),
-
-        # 5 · Pis Modern Eixample (base 150 €) — urbà Barcelona
         (5, "Temporada Baixa",      "2000-01-01", "2000-03-31", 120.00, 2, [], 10.00),
         (5, "Temporada Mitja",      "2000-04-01", "2000-06-30", 150.00, 3, [], 15.00),
         (5, "Temporada Alta",       "2000-07-01", "2000-08-31", 195.00, 3, [], 18.00),
         (5, "Temporada Mitja Tard", "2000-09-01", "2000-12-31", 140.00, 2, [], 15.00),
-
-        # 6 · Apartament Girona Vella (base 95 €) — urbà
         (6, "Hivern",               "2000-01-01", "2000-05-31",  80.00, 2, [], 10.00),
         (6, "Estiu",                "2000-06-01", "2000-09-30", 115.00, 3, [], 18.00),
         (6, "Tardor/Hivern",        "2000-10-01", "2000-12-31",  80.00, 2, [], 10.00),
-
-        # 7 · Duplex Tarragona Mar (base 180 €) — costa
         (7, "Temporada Baixa",      "2000-01-01", "2000-05-31", 145.00, 2, [], 12.00),
         (7, "Temporada Alta",       "2000-06-01", "2000-09-15", 230.00, 7, [5, 6], 18.00),
         (7, "Temporada Baixa",      "2000-09-16", "2000-12-31", 145.00, 2, [], 12.00),
-
-        # 8 · Casa Rural Osona (base 300 €) — rural
         (8, "Hivern",               "2000-01-01", "2000-03-31", 240.00, 2, [], 15.00),
         (8, "Primavera",            "2000-04-01", "2000-06-30", 290.00, 3, [5], 15.00),
         (8, "Estiu",                "2000-07-01", "2000-08-31", 380.00, 7, [5, 6], 20.00),
         (8, "Tardor",               "2000-09-01", "2000-12-31", 260.00, 3, [], 15.00),
-
-        # 9 · Apartament Lleida Centre (base 70 €) — urbà
         (9, "Temporada Baixa",      "2000-01-01", "2000-06-30",  60.00, 2, [], 10.00),
         (9, "Temporada Alta",       "2000-07-01", "2000-08-31",  85.00, 3, [], 15.00),
         (9, "Temporada Baixa",      "2000-09-01", "2000-12-31",  60.00, 2, [], 10.00),
-
-        # 10 · Atic Terrassa Vista (base 130 €) — urbà
         (10, "Temporada Baixa",     "2000-01-01", "2000-05-31", 105.00, 2, [], 12.00),
         (10, "Temporada Alta",      "2000-06-01", "2000-09-15", 165.00, 3, [], 18.00),
         (10, "Temporada Baixa",     "2000-09-16", "2000-12-31", 105.00, 2, [], 12.00),
-
-        # 11 · Pis Badalona Platja (base 120 €) — costa urbana
         (11, "Temporada Baixa",     "2000-01-01", "2000-05-31",  95.00, 2, [], 10.00),
         (11, "Temporada Alta",      "2000-06-01", "2000-09-15", 155.00, 7, [5, 6], 20.00),
         (11, "Temporada Mitja",     "2000-09-16", "2000-12-31", 110.00, 3, [], 15.00),
-
-        # 12 · Casa Adossada Sabadell — inactiva (base 160 €)
         (12, "Temporada Baixa",     "2000-01-01", "2000-06-30", 130.00, 2, [], 10.00),
         (12, "Temporada Alta",      "2000-07-01", "2000-08-31", 190.00, 3, [], 15.00),
         (12, "Temporada Baixa",     "2000-09-01", "2000-12-31", 130.00, 2, [], 10.00),
-
-        # 13 · Estudi Mataro Rambla (base 65 €) — costa
         (13, "Temporada Baixa",     "2000-01-01", "2000-06-14",  55.00, 2, [], 10.00),
         (13, "Temporada Alta",      "2000-06-15", "2000-09-15",  80.00, 7, [5, 6], 15.00),
         (13, "Temporada Baixa",     "2000-09-16", "2000-12-31",  55.00, 2, [], 10.00),
-
-        # 14 · Apartament Manresa Nou (base 80 €) — urbà
-        (14, "Temporada Única",     "2000-01-01", "2000-12-31",  80.00, 2, [], 10.00),
-
-        # 15 · Xalet Roses Costa (base 400 €) — costa gran
+        (14, "Temporada Unica",     "2000-01-01", "2000-12-31",  80.00, 2, [], 10.00),
         (15, "Hivern",              "2000-01-01", "2000-03-31", 300.00, 2, [], 15.00),
         (15, "Setmana Santa",       "2000-04-01", "2000-04-12", 450.00, 5, [5, 6], 20.00),
         (15, "Primavera",           "2000-04-13", "2000-06-30", 380.00, 3, [], 15.00),
         (15, "Temporada Alta",      "2000-07-01", "2000-08-31", 560.00, 7, [5, 6], 20.00),
         (15, "Tardor/Hivern",       "2000-09-01", "2000-12-31", 350.00, 3, [], 15.00),
-
-        # 16 · Pis Figueres Rambla (base 85 €) — urbà
         (16, "Temporada Baixa",     "2000-01-01", "2000-06-30",  70.00, 2, [], 10.00),
         (16, "Temporada Alta",      "2000-07-01", "2000-08-31", 105.00, 3, [], 15.00),
         (16, "Temporada Baixa",     "2000-09-01", "2000-12-31",  70.00, 2, [], 10.00),
-
-        # 17 · Casa Rural Priorat (base 260 €) — rural
         (17, "Hivern",              "2000-01-01", "2000-03-31", 200.00, 2, [], 15.00),
         (17, "Primavera/Tardor",    "2000-04-01", "2000-06-30", 250.00, 3, [5], 15.00),
         (17, "Estiu",               "2000-07-01", "2000-08-31", 330.00, 7, [5, 6], 20.00),
         (17, "Tardor",              "2000-09-01", "2000-12-31", 220.00, 3, [], 15.00),
-
-        # 18 · Apartament Tortosa Riu (base 75 €) — urbà
         (18, "Temporada Baixa",     "2000-01-01", "2000-06-30",  65.00, 2, [], 10.00),
         (18, "Temporada Alta",      "2000-07-01", "2000-08-31",  90.00, 3, [], 15.00),
         (18, "Temporada Baixa",     "2000-09-01", "2000-12-31",  65.00, 2, [], 10.00),
-
-        # 19 · Duplex Vilanova Centre (base 195 €) — costa
         (19, "Temporada Baixa",     "2000-01-01", "2000-05-31", 155.00, 2, [], 15.00),
         (19, "Temporada Alta",      "2000-06-01", "2000-09-15", 245.00, 7, [5, 6], 20.00),
         (19, "Temporada Mitja",     "2000-09-16", "2000-12-31", 180.00, 3, [], 15.00),
@@ -465,22 +271,17 @@ def run():
 
     temporades = [
         Temporada.objects.create(
-            immoble=immobles[idx],
-            nom=nom,
-            data_inici=inici,
-            data_fi=fi,
-            preu_nit=preu,
-            min_nits=min_nits,
-            dies_checkin=dies_checkin,
-            comissio=comissio, # <-- AFEGIT AQUÍ
+            immoble=immobles[idx], nom=nom, data_inici=inici, data_fi=fi,
+            preu_nit=preu, min_nits=min_nits, dies_checkin=dies_checkin, comissio=comissio,
         )
-        for idx, nom, inici, fi, preu, min_nits, dies_checkin, comissio in temporades_data # <-- AFEGIT AQUÍ
+        for idx, nom, inici, fi, preu, min_nits, dies_checkin, comissio in temporades_data
     ]
     print(f"{len(temporades)} temporades creades")
 
-    # ── 20 Inquilins ─────────────────────────────────────────────────────────
-    # DNIs ficticis (no coincideixen amb els propietaris per evitar colisions)
+    # ── 50 Inquilins ─────────────────────────────────────────────────────────
+    # fmt: (nom, dni, email, residencia)
     inquilins_data = [
+        # originals 0-19
         ("Marc Rovira Puig",      "98765432A", "marc.rovira@gmail.com",    "Carrer Major, 5, Barcelona"),
         ("Laia Font Soler",       "87654321X", "laia.font@hotmail.com",    "Avinguda Diagonal, 10, Barcelona"),
         ("Jordi Mestre Valls",    "76543210C", "jmestre@outlook.com",      "Carrer Nou, 3, Girona"),
@@ -501,114 +302,349 @@ def run():
         ("Imma Domenec Rius",     "21098706R", "idomr@terra.es",           "Carrer Ample, 21, Tortosa"),
         ("Berta Farres Vila",     "10987605S", "bfarres@gmail.com",        "Carrer del Comerc, 5, Vilanova"),
         ("Lluc Alsina Pont",      "09876504T", "lalsina@gmail.com",        "Carrer Verdaguer, 11, Mataro"),
+        # nous 20-49
+        ("David Torra Camps",     "A1234567B", "dtorra@gmail.com",         "Carrer Ample, 10, Barcelona"),
+        ("Marina Planas Bech",    "B2345678C", "mplanas@hotmail.com",      "Avinguda Meridiana, 45, Barcelona"),
+        ("Oriol Casas Forn",      "C3456789D", "ocasas@outlook.com",       "Carrer Nou, 8, Sabadell"),
+        ("Cristina Molina Riera", "D4567890E", "cmolina@gmail.com",        "Placa Major, 3, Vic"),
+        ("Sergi Esteve Folch",    "E5678901F", "sesteve@correu.cat",       "Carrer Balmes, 12, Terrassa"),
+        ("Montse Coma Besa",      "F6789012G", "mcoma@gmail.com",          "Rambla Catalunya, 22, Girona"),
+        ("Pau Carreras Tort",     "G7890123H", "pcarreras@empresa.cat",    "Carrer Nou, 5, Lleida"),
+        ("Neus Viladrich Pons",   "H8901234I", "nviladrich@gmail.com",     "Avinguda del Mar, 3, Sitges"),
+        ("Victor Sanchez Roca",   "I9012345J", "vsanchez@yahoo.es",        "Carrer Amalia, 7, Roses"),
+        ("Anna Pascual Ferre",    "J0123456K", "apascual@gmail.com",       "Passeig Maritim, 12, Badalona"),
+        ("Miquel Miro Llopis",    "K1234560L", "mmiro@correu.cat",         "Carrer Major, 33, Figueres"),
+        ("Laura Blanco Valls",    "L2345601M", "lblanco@gmail.com",        "Rambla del Pi, 5, Tortosa"),
+        ("Carles Duran Mas",      "M3456012N", "cduran@hotmail.com",       "Carrer Groc, 14, Manresa"),
+        ("Rosa Giralt Bou",       "N4560123O", "rgiralt@gmail.com",        "Avinguda Central, 9, Mataro"),
+        ("Joaquim Tubert Vives",  "O5601234P", "jtubert@empresa.net",      "Carrer dels Pins, 2, Vilanova"),
+        ("Marta Garriga Cors",    "P6012345Q", "mgarriga@gmail.com",       "Carrer Olot, 18, Olot"),
+        ("Ricard Pujol Costa",    "Q0123456R", "rpujol@correu.cat",        "Carrer Llevant, 3, Tarragona"),
+        ("Laia Ballester Pou",    "R1234067S", "lballester@gmail.com",     "Placa Independencia, 4, Girona"),
+        ("Arnau Codina Puig",     "S2340678T", "acodina@outlook.com",      "Carrer Princesa, 6, Barcelona"),
+        ("Gemma Torras Font",     "T3401789U", "gtorras@gmail.com",        "Carrer Amposta, 11, Tortosa"),
+        ("Hector Cabane Mir",     "U4012890V", "hcabane@empresa.cat",      "Avinguda Diagonal, 88, Barcelona"),
+        ("Pilar Espinal Pla",     "V0123901W", "pespinal@gmail.com",       "Carrer Mare de Deu, 5, Badalona"),
+        ("Ferran Catala Bosc",    "W1230012X", "fcatala@hotmail.com",      "Carrer del Vent, 3, Roses"),
+        ("Susanna Roca Fuste",    "X2301123Y", "sroca@gmail.com",          "Rambla Vella, 15, Tarragona"),
+        ("Toni Angles Mur",       "Y3012234Z", "tangles@correu.cat",       "Carrer Nou, 20, Lloret de Mar"),
+        ("Elena Verdaguer Pons",  "Z0123345A", "everdaguer@gmail.com",     "Carrer Foneria, 8, Sabadell"),
+        ("Guillem Pallares Ros",  "A1234456B", "gpallares@gmail.com",      "Avinguda Pau Casals, 3, Barcelona"),
+        ("Merce Tarrago Sala",    "B2345567C", "mtarrago@hotmail.com",     "Carrer Colon, 12, Reus"),
+        ("Ivan Massana Vall",     "C3456678D", "imassana@gmail.com",       "Placa Ajuntament, 1, Berga"),
+        ("Silvia Margalef Tort",  "D4567789E", "smargalef@empresa.cat",    "Carrer Anoia, 7, Igualada"),
     ]
 
-    inquilins = []
+    tots_inquilins = []
     for nom, dni, email, residencia in inquilins_data:
-        inq = Persona.objects.create(
-            nom_complet=nom,
-            dni_passaport=dni,
-            email=email,
-            residencia=residencia,
-        )
+        inq = Persona.objects.create(nom_complet=nom, dni_passaport=dni, email=email, residencia=residencia)
         PerfilInquili.objects.create(persona=inq)
-        inquilins.append(inq)
+        tots_inquilins.append(inq)
 
-    print(f"{len(inquilins)} inquilins (Persona+PerfilInquili) creats")
+    print(f"{len(tots_inquilins)} inquilins creats")
 
-    # ── 20 Reserves ──────────────────────────────────────────────────────────
-    # (immoble_idx, inquili_idx, data_entrada, data_sortida, pagat,
-    #  tipus_reserva, limpieza_extra, comentaris)
+    # ── Reserves ─────────────────────────────────────────────────────────────
+    # fmt: (imm_i, inq_i, entrada, sortida, pagat, tipus, lim_extra, comentaris, import_total, estat_reserva)
+    # import_pagat = import_total si pagat=True, 0 si False
+    # estat_pagament derivat de pagat i estat_reserva
     reserves_data = [
-        (0,  0,  "2026-01-10", "2026-01-15", True,  "Airbnb",  1, "Entrada abans de les 15:00 si es possible."),
-        (1,  1,  "2026-01-20", "2026-01-23", True,  "Booking", 0, "Hostes habituals, llits separats."),
-        (2,  2,  "2026-02-03", "2026-02-10", True,  "Direct",  2, "Reserva familiar, necessiten bressol."),
-        (3,  3,  "2026-02-14", "2026-02-16", False, "Airbnb",  0, "Sant Valenti - decoracio especial."),
-        (4,  4,  "2026-03-01", "2026-03-08", True,  "Direct",  3, "Estada llarga, descompte aplicat."),
-        (5,  5,  "2026-03-15", "2026-03-18", False, "Booking", 0, ""),
-        (6,  6,  "2026-04-05", "2026-04-07", True,  "Airbnb",  1, "Cap d'any avancat - Setmana Santa."),
-        (7,  7,  "2026-04-20", "2026-04-25", False, "Direct",  0, "Pendent confirmacio pagament."),
-        (8,  8,  "2026-05-01", "2026-05-05", True,  "Booking", 2, "Festa local, possible soroll."),
-        (9,  9,  "2026-05-10", "2026-05-17", False, "Airbnb",  0, ""),
-        (10, 10, "2026-05-20", "2026-05-22", True,  "Direct",  1, "Treball, necessita wifi rapid."),
-        (11, 11, "2026-06-01", "2026-06-08", False, "Booking", 0, ""),
-        (12, 12, "2026-06-15", "2026-06-20", True,  "Airbnb",  2, "Aniversari de noces."),
-        (13, 13, "2026-07-01", "2026-07-07", False, "Altres",  0, "Reserva via partner extern."),
-        (14, 14, "2026-07-10", "2026-07-14", True,  "Direct",  1, ""),
-        (15, 15, "2026-07-20", "2026-07-25", False, "Booking", 2, "Mascota petita autoritzada."),
-        (16, 16, "2026-08-01", "2026-08-10", True,  "Airbnb",  3, "Vacances familiars d'estiu."),
-        (17, 17, "2026-08-15", "2026-08-18", True,  "Direct",  0, "Pagat per transferencia."),
-        (18, 18, "2026-09-01", "2026-09-05", False, "Booking", 1, ""),
-        (19, 19, "2026-09-10", "2026-09-15", True,  "Airbnb",  2, "Check-in autonom amb codi."),
+        # ── 2026 originals (20) ──────────────────────────────────────────────
+        (0,  0,  "2026-01-10", "2026-01-15", True,  "Airbnb",  1, "Entrada abans de les 15:00 si es possible.",    525.00,  "lista"),
+        (1,  1,  "2026-01-20", "2026-01-23", True,  "Booking", 0, "Hostes habituals, llits separats.",             540.00,  "lista"),
+        (2,  2,  "2026-02-03", "2026-02-10", True,  "Direct",  2, "Reserva familiar, necessiten bressol.",        1890.00,  "lista"),
+        (3,  3,  "2026-02-14", "2026-02-16", False, "Airbnb",  0, "Sant Valenti - decoracio especial.",            130.00,  "lista"),
+        (4,  4,  "2026-03-01", "2026-03-08", True,  "Direct",  3, "Estada llarga, descompte aplicat.",            2520.00,  "lista"),
+        (5,  5,  "2026-03-15", "2026-03-18", False, "Booking", 0, "",                                              360.00,  "lista"),
+        (6,  6,  "2026-04-05", "2026-04-07", True,  "Airbnb",  1, "Cap d'any avancat - Setmana Santa.",           160.00,  "lista"),
+        (7,  7,  "2026-04-20", "2026-04-25", False, "Direct",  0, "Pendent confirmacio pagament.",                 725.00,  "lista"),
+        (8,  8,  "2026-05-01", "2026-05-05", True,  "Booking", 2, "Festa local, possible soroll.",               1160.00,  "lista"),
+        (9,  9,  "2026-05-10", "2026-05-17", False, "Airbnb",  0, "",                                              420.00,  "lista"),
+        (10, 10, "2026-05-20", "2026-05-22", True,  "Direct",  1, "Treball, necessita wifi rapid.",                210.00,  "lista"),
+        (11, 11, "2026-06-01", "2026-06-08", False, "Booking", 0, "",                                            1085.00,  "reservada"),
+        (12, 12, "2026-06-15", "2026-06-20", True,  "Airbnb",  2, "Aniversari de noces.",                         950.00,  "reservada"),
+        (13, 13, "2026-07-01", "2026-07-07", False, "Altres",  0, "Reserva via partner extern.",                   480.00,  "prereservada"),
+        (14, 14, "2026-07-10", "2026-07-14", True,  "Direct",  1, "",                                              320.00,  "prereservada"),
+        (15, 15, "2026-07-20", "2026-07-27", False, "Booking", 2, "Mascota petita autoritzada.",                 3920.00,  "prereservada"),
+        (16, 16, "2026-08-01", "2026-08-10", True,  "Airbnb",  3, "Vacances familiars d'estiu.",                   945.00,  "prereservada"),
+        (17, 17, "2026-08-15", "2026-08-18", True,  "Direct",  0, "Pagat per transferencia.",                      990.00,  "prereservada"),
+        (18, 18, "2026-09-01", "2026-09-05", False, "Booking", 1, "",                                              360.00,  "prereservada"),
+        (19, 19, "2026-09-10", "2026-09-15", True,  "Airbnb",  2, "Check-in autonom amb codi.",                  1225.00,  "prereservada"),
+
+        # ── 2024 (71 reserves) ───────────────────────────────────────────────
+        # Febrer 2024
+        (0,  20, "2024-02-05", "2024-02-08", True,  "Direct",  0, "",   270.00, "lista"),
+        (5,  21, "2024-02-10", "2024-02-14", True,  "Booking", 0, "",   480.00, "lista"),
+        (9,  22, "2024-02-12", "2024-02-15", True,  "Airbnb",  0, "",   180.00, "lista"),
+        (14, 23, "2024-02-20", "2024-02-23", True,  "Direct",  0, "",   240.00, "lista"),
+        (17, 24, "2024-02-22", "2024-02-25", True,  "Booking", 0, "",   600.00, "lista"),
+        # Marc 2024
+        (1,  25, "2024-03-01", "2024-03-04", True,  "Airbnb",  0, "",   540.00, "lista"),
+        (6,  26, "2024-03-08", "2024-03-12", True,  "Direct",  0, "",   320.00, "lista"),
+        (10, 27, "2024-03-15", "2024-03-18", True,  "Booking", 0, "",   315.00, "lista"),
+        (15, 28, "2024-03-20", "2024-03-24", True,  "Direct",  0, "",  1200.00, "lista"),
+        (18, 29, "2024-03-22", "2024-03-25", False, "Airbnb",  0, "",   195.00, "cancelada"),
+        (3,  30, "2024-03-10", "2024-03-13", True,  "Booking", 0, "",   195.00, "lista"),
+        # Abril 2024
+        (4,  31, "2024-03-30", "2024-04-06", True,  "Direct",  2, "Setmana Santa familia",  3640.00, "lista"),
+        (2,  32, "2024-04-01", "2024-04-06", True,  "Airbnb",  1, "Setmana Santa",          1700.00, "lista"),
+        (16, 33, "2024-04-06", "2024-04-11", True,  "Booking", 0, "Setmana Santa Roses",    2250.00, "lista"),
+        (8,  34, "2024-04-08", "2024-04-12", True,  "Direct",  0, "Setmana Santa rural",    1160.00, "lista"),
+        (11, 35, "2024-04-15", "2024-04-20", True,  "Booking", 0, "",    475.00, "lista"),
+        (7,  36, "2024-04-20", "2024-04-25", False, "Airbnb",  0, "",    725.00, "cancelada"),
+        (0,  37, "2024-04-22", "2024-04-26", True,  "Direct",  0, "",    440.00, "lista"),
+        (13, 38, "2024-04-25", "2024-04-28", True,  "Airbnb",  0, "",    165.00, "lista"),
+        # Maig 2024
+        (1,  39, "2024-05-01", "2024-05-05", True,  "Booking", 0, "",    720.00, "lista"),
+        (5,  40, "2024-05-08", "2024-05-12", True,  "Direct",  0, "",    600.00, "lista"),
+        (9,  41, "2024-05-15", "2024-05-18", True,  "Booking", 0, "",    180.00, "lista"),
+        (15, 42, "2024-05-20", "2024-05-24", True,  "Direct",  0, "",   1520.00, "lista"),
+        (3,  43, "2024-05-22", "2024-05-25", True,  "Airbnb",  0, "",    195.00, "lista"),
+        (6,  44, "2024-05-25", "2024-05-29", True,  "Booking", 0, "",    320.00, "lista"),
+        (19, 45, "2024-05-27", "2024-05-31", True,  "Direct",  0, "",    620.00, "lista"),
+        (14, 46, "2024-05-28", "2024-05-31", True,  "Airbnb",  0, "",    240.00, "lista"),
+        (12, 47, "2024-05-10", "2024-05-14", True,  "Booking", 0, "",    520.00, "lista"),
+        # Juny 2024
+        (4,  48, "2024-06-01", "2024-06-08", True,  "Direct",  2, "Grup familiar",  2940.00, "lista"),
+        (2,  49, "2024-06-07", "2024-06-14", True,  "Airbnb",  1, "",   2380.00, "lista"),
+        (7,  20, "2024-06-08", "2024-06-15", True,  "Booking", 0, "",   1610.00, "lista"),
+        (0,  21, "2024-06-15", "2024-06-20", True,  "Direct",  0, "",    550.00, "lista"),
+        (11, 22, "2024-06-15", "2024-06-22", True,  "Booking", 0, "",   1085.00, "lista"),
+        (16, 23, "2024-06-21", "2024-06-28", True,  "Airbnb",  1, "",   2660.00, "lista"),
+        (10, 24, "2024-06-22", "2024-06-25", True,  "Direct",  0, "",    495.00, "lista"),
+        (13, 25, "2024-06-25", "2024-06-28", True,  "Airbnb",  0, "",    240.00, "lista"),
+        (5,  26, "2024-06-28", "2024-07-02", True,  "Booking", 0, "",    600.00, "lista"),
+        # Juliol 2024
+        (4,  27, "2024-07-06", "2024-07-13", True,  "Direct",  3, "Familia nombrosa",  4550.00, "lista"),
+        (16, 28, "2024-07-06", "2024-07-13", True,  "Airbnb",  2, "",   3920.00, "lista"),
+        (2,  29, "2024-07-07", "2024-07-14", True,  "Direct",  2, "",   3360.00, "lista"),
+        (8,  30, "2024-07-06", "2024-07-13", True,  "Booking", 1, "",   2660.00, "lista"),
+        (15, 31, "2024-07-13", "2024-07-20", True,  "Direct",  2, "",   3920.00, "lista"),
+        (7,  32, "2024-07-13", "2024-07-20", True,  "Airbnb",  0, "",   1610.00, "lista"),
+        (1,  33, "2024-07-15", "2024-07-20", True,  "Booking", 0, "",   1400.00, "lista"),
+        (11, 34, "2024-07-20", "2024-07-27", True,  "Airbnb",  1, "",   1085.00, "lista"),
+        (3,  35, "2024-07-22", "2024-07-26", True,  "Direct",  0, "",    380.00, "lista"),
+        (6,  36, "2024-07-25", "2024-07-29", True,  "Booking", 0, "",    460.00, "lista"),
+        (17, 37, "2024-07-06", "2024-07-13", True,  "Direct",  1, "",   2310.00, "lista"),
+        (18, 38, "2024-07-13", "2024-07-16", True,  "Airbnb",  0, "",    270.00, "lista"),
+        # Agost 2024
+        (4,  39, "2024-08-03", "2024-08-10", True,  "Direct",  3, "Estiu gran",  4550.00, "lista"),
+        (16, 40, "2024-08-03", "2024-08-10", True,  "Booking", 2, "",   3920.00, "lista"),
+        (2,  41, "2024-08-03", "2024-08-10", True,  "Airbnb",  2, "",   3360.00, "lista"),
+        (15, 42, "2024-08-10", "2024-08-17", True,  "Direct",  2, "",   3920.00, "lista"),
+        (8,  43, "2024-08-03", "2024-08-10", True,  "Booking", 1, "",   2660.00, "lista"),
+        (9,  44, "2024-08-10", "2024-08-14", True,  "Airbnb",  0, "",    340.00, "lista"),
+        (0,  45, "2024-08-15", "2024-08-20", True,  "Direct",  0, "",    775.00, "lista"),
+        (5,  46, "2024-08-12", "2024-08-17", True,  "Booking", 0, "",    975.00, "lista"),
+        (19, 47, "2024-08-17", "2024-08-24", True,  "Airbnb",  1, "",   1715.00, "lista"),
+        (17, 48, "2024-08-10", "2024-08-17", True,  "Direct",  1, "",   2310.00, "lista"),
+        # Setembre 2024
+        (0,  49, "2024-09-05", "2024-09-09", True,  "Direct",  0, "",    420.00, "lista"),
+        (2,  20, "2024-09-07", "2024-09-12", True,  "Airbnb",  1, "",   1550.00, "lista"),
+        (6,  21, "2024-09-10", "2024-09-14", True,  "Booking", 0, "",    460.00, "lista"),
+        (15, 22, "2024-09-06", "2024-09-13", True,  "Direct",  1, "",   2450.00, "lista"),
+        (7,  23, "2024-09-14", "2024-09-18", True,  "Airbnb",  0, "",    580.00, "lista"),
+        (11, 24, "2024-09-15", "2024-09-20", True,  "Booking", 0, "",    550.00, "lista"),
+        # Octubre 2024
+        (5,  25, "2024-10-05", "2024-10-09", True,  "Direct",  0, "",    560.00, "lista"),
+        (9,  26, "2024-10-10", "2024-10-13", True,  "Airbnb",  0, "",    180.00, "lista"),
+        (14, 27, "2024-10-15", "2024-10-18", True,  "Booking", 0, "",    240.00, "lista"),
+        # Novembre 2024
+        (0,  28, "2024-11-08", "2024-11-11", True,  "Direct",  0, "",    270.00, "lista"),
+        (6,  29, "2024-11-15", "2024-11-18", True,  "Booking", 0, "",    240.00, "lista"),
+        (10, 30, "2024-11-20", "2024-11-23", False, "Airbnb",  0, "",    315.00, "cancelada"),
+
+        # ── 2025 (87 reserves) ───────────────────────────────────────────────
+        # Gener 2025
+        (5,  31, "2025-01-10", "2025-01-14", True,  "Direct",  0, "",    480.00, "lista"),
+        (9,  32, "2025-01-15", "2025-01-18", True,  "Airbnb",  0, "",    180.00, "lista"),
+        (14, 33, "2025-01-20", "2025-01-23", True,  "Booking", 0, "",    240.00, "lista"),
+        (17, 34, "2025-01-08", "2025-01-11", True,  "Direct",  0, "",    600.00, "lista"),
+        # Febrer 2025
+        (0,  35, "2025-02-10", "2025-02-13", True,  "Airbnb",  0, "Sant Valenti",   270.00, "lista"),
+        (1,  36, "2025-02-14", "2025-02-17", True,  "Booking", 0, "",    540.00, "lista"),
+        (6,  37, "2025-02-20", "2025-02-24", True,  "Direct",  0, "",    320.00, "lista"),
+        (10, 38, "2025-02-22", "2025-02-25", False, "Airbnb",  0, "",    315.00, "cancelada"),
+        (18, 39, "2025-02-15", "2025-02-18", True,  "Booking", 0, "",    195.00, "lista"),
+        # Marc 2025
+        (2,  40, "2025-03-07", "2025-03-11", True,  "Direct",  1, "",   1080.00, "lista"),
+        (4,  41, "2025-03-15", "2025-03-19", True,  "Booking", 0, "",   1440.00, "lista"),
+        (8,  42, "2025-03-20", "2025-03-24", True,  "Direct",  0, "",    960.00, "lista"),
+        (15, 43, "2025-03-22", "2025-03-26", True,  "Airbnb",  0, "",   1200.00, "lista"),
+        (11, 44, "2025-03-10", "2025-03-14", True,  "Booking", 0, "",    380.00, "lista"),
+        (7,  45, "2025-03-25", "2025-03-29", True,  "Direct",  0, "",    580.00, "lista"),
+        # Abril 2025
+        (4,  46, "2025-04-12", "2025-04-19", True,  "Direct",  2, "Setmana Santa",  3640.00, "lista"),
+        (16, 47, "2025-04-12", "2025-04-17", True,  "Booking", 1, "Setmana Santa",  2250.00, "lista"),
+        (2,  48, "2025-04-05", "2025-04-10", True,  "Airbnb",  1, "",   1700.00, "lista"),
+        (0,  49, "2025-04-20", "2025-04-24", True,  "Direct",  0, "",    440.00, "lista"),
+        (5,  20, "2025-04-22", "2025-04-26", True,  "Booking", 0, "",    600.00, "lista"),
+        (9,  21, "2025-04-25", "2025-04-28", True,  "Airbnb",  0, "",    180.00, "lista"),
+        (13, 22, "2025-04-10", "2025-04-13", True,  "Direct",  0, "",    165.00, "lista"),
+        (18, 23, "2025-04-15", "2025-04-19", True,  "Booking", 0, "",    260.00, "lista"),
+        # Maig 2025
+        (1,  24, "2025-05-03", "2025-05-07", True,  "Direct",  0, "",    720.00, "lista"),
+        (3,  25, "2025-05-10", "2025-05-13", True,  "Airbnb",  0, "",    195.00, "lista"),
+        (7,  26, "2025-05-15", "2025-05-19", True,  "Booking", 0, "",    580.00, "lista"),
+        (15, 27, "2025-05-20", "2025-05-24", True,  "Direct",  1, "",   1520.00, "lista"),
+        (17, 28, "2025-05-08", "2025-05-12", True,  "Airbnb",  0, "",   1000.00, "lista"),
+        (19, 29, "2025-05-22", "2025-05-27", True,  "Booking", 0, "",    775.00, "lista"),
+        (6,  30, "2025-05-25", "2025-05-29", True,  "Direct",  0, "",    320.00, "lista"),
+        (10, 31, "2025-05-15", "2025-05-18", False, "Airbnb",  0, "",    315.00, "cancelada"),
+        (14, 32, "2025-05-20", "2025-05-23", True,  "Booking", 0, "",    240.00, "lista"),
+        # Juny 2025
+        (4,  33, "2025-06-07", "2025-06-14", True,  "Direct",  2, "",   2940.00, "lista"),
+        (2,  34, "2025-06-07", "2025-06-14", True,  "Airbnb",  1, "",   2380.00, "lista"),
+        (16, 35, "2025-06-07", "2025-06-14", True,  "Booking", 1, "",   2660.00, "lista"),
+        (8,  36, "2025-06-14", "2025-06-19", True,  "Direct",  0, "",   1450.00, "lista"),
+        (11, 37, "2025-06-20", "2025-06-27", True,  "Booking", 1, "",   1085.00, "lista"),
+        (0,  38, "2025-06-22", "2025-06-26", True,  "Airbnb",  0, "",    440.00, "lista"),
+        (5,  39, "2025-06-25", "2025-06-29", True,  "Direct",  0, "",    600.00, "lista"),
+        (7,  40, "2025-06-08", "2025-06-15", True,  "Booking", 0, "",   1610.00, "lista"),
+        (1,  41, "2025-06-15", "2025-06-20", True,  "Airbnb",  0, "",   1400.00, "lista"),
+        (9,  42, "2025-06-10", "2025-06-13", True,  "Direct",  0, "",    180.00, "lista"),
+        # Juliol 2025
+        (4,  43, "2025-07-05", "2025-07-12", True,  "Direct",  3, "Estiu alt",  4550.00, "lista"),
+        (16, 44, "2025-07-05", "2025-07-12", True,  "Booking", 2, "",   3920.00, "lista"),
+        (2,  45, "2025-07-05", "2025-07-12", True,  "Airbnb",  2, "",   3360.00, "lista"),
+        (15, 46, "2025-07-05", "2025-07-12", True,  "Direct",  2, "",   3920.00, "lista"),
+        (8,  47, "2025-07-12", "2025-07-19", True,  "Booking", 1, "",   2660.00, "lista"),
+        (17, 48, "2025-07-05", "2025-07-12", True,  "Direct",  1, "",   2310.00, "lista"),
+        (7,  49, "2025-07-12", "2025-07-19", True,  "Airbnb",  0, "",   1610.00, "lista"),
+        (11, 20, "2025-07-19", "2025-07-26", True,  "Booking", 1, "",   1085.00, "lista"),
+        (1,  21, "2025-07-14", "2025-07-19", True,  "Airbnb",  0, "",   1400.00, "lista"),
+        (3,  22, "2025-07-20", "2025-07-25", True,  "Direct",  0, "",    475.00, "lista"),
+        (0,  23, "2025-07-22", "2025-07-27", True,  "Booking", 0, "",    775.00, "lista"),
+        (19, 24, "2025-07-12", "2025-07-19", True,  "Airbnb",  1, "",   1715.00, "lista"),
+        # Agost 2025
+        (4,  25, "2025-08-02", "2025-08-09", True,  "Direct",  3, "Agost alt",  4550.00, "lista"),
+        (16, 26, "2025-08-02", "2025-08-09", True,  "Booking", 2, "",   3920.00, "lista"),
+        (2,  27, "2025-08-02", "2025-08-09", True,  "Airbnb",  2, "",   3360.00, "lista"),
+        (15, 28, "2025-08-09", "2025-08-16", True,  "Direct",  2, "",   3920.00, "lista"),
+        (8,  29, "2025-08-09", "2025-08-16", True,  "Booking", 1, "",   2660.00, "lista"),
+        (7,  30, "2025-08-16", "2025-08-23", True,  "Airbnb",  0, "",   1610.00, "lista"),
+        (5,  31, "2025-08-10", "2025-08-15", True,  "Direct",  0, "",    975.00, "lista"),
+        (0,  32, "2025-08-14", "2025-08-19", True,  "Booking", 0, "",    775.00, "lista"),
+        (9,  33, "2025-08-05", "2025-08-09", True,  "Airbnb",  0, "",    340.00, "lista"),
+        (17, 34, "2025-08-09", "2025-08-16", True,  "Direct",  1, "",   2310.00, "lista"),
+        (19, 35, "2025-08-16", "2025-08-23", True,  "Airbnb",  1, "",   1715.00, "lista"),
+        # Setembre 2025
+        (2,  36, "2025-09-06", "2025-09-11", True,  "Direct",  1, "",   1550.00, "lista"),
+        (16, 37, "2025-09-06", "2025-09-11", True,  "Booking", 1, "",   1750.00, "lista"),
+        (0,  38, "2025-09-12", "2025-09-16", True,  "Airbnb",  0, "",    420.00, "lista"),
+        (8,  39, "2025-09-12", "2025-09-17", True,  "Direct",  0, "",   1300.00, "lista"),
+        (5,  40, "2025-09-15", "2025-09-19", True,  "Booking", 0, "",    560.00, "lista"),
+        (11, 41, "2025-09-17", "2025-09-22", True,  "Airbnb",  0, "",    550.00, "lista"),
+        (15, 42, "2025-09-13", "2025-09-18", True,  "Direct",  1, "",   1750.00, "lista"),
+        (7,  43, "2025-09-20", "2025-09-24", False, "Booking", 0, "",    580.00, "cancelada"),
+        (6,  44, "2025-09-22", "2025-09-26", True,  "Airbnb",  0, "",    320.00, "lista"),
+        # Octubre 2025
+        (5,  45, "2025-10-05", "2025-10-09", True,  "Direct",  0, "",    560.00, "lista"),
+        (9,  46, "2025-10-10", "2025-10-14", True,  "Airbnb",  0, "",    240.00, "lista"),
+        (14, 47, "2025-10-15", "2025-10-18", True,  "Booking", 0, "",    240.00, "lista"),
+        (17, 48, "2025-10-08", "2025-10-12", True,  "Direct",  0, "",    880.00, "lista"),
+        (0,  49, "2025-10-18", "2025-10-22", True,  "Airbnb",  0, "",    420.00, "lista"),
+        # Novembre 2025
+        (1,  20, "2025-11-07", "2025-11-10", True,  "Direct",  0, "",    630.00, "lista"),
+        (6,  21, "2025-11-14", "2025-11-17", True,  "Booking", 0, "",    240.00, "lista"),
+        (10, 22, "2025-11-20", "2025-11-23", True,  "Airbnb",  0, "",    315.00, "lista"),
+        (14, 23, "2025-11-25", "2025-11-28", False, "Direct",  0, "",    240.00, "cancelada"),
+        # Desembre 2025
+        (0,  24, "2025-12-20", "2025-12-24", True,  "Direct",  0, "Nadal",     360.00, "lista"),
+        (5,  25, "2025-12-22", "2025-12-27", True,  "Booking", 0, "Nadal",     600.00, "lista"),
+        (2,  26, "2025-12-27", "2026-01-02", True,  "Airbnb",  1, "Cap d'any", 1620.00, "lista"),
+        (1,  27, "2025-12-28", "2026-01-02", True,  "Direct",  0, "Cap d'any",  900.00, "lista"),
+
+        # ── 2026 addicionals (31 reserves) ───────────────────────────────────
+        # Gener 2026
+        (5,  28, "2026-01-08", "2026-01-12", True,  "Direct",  0, "",    480.00, "lista"),
+        (9,  29, "2026-01-18", "2026-01-22", True,  "Airbnb",  0, "",    240.00, "lista"),
+        (16, 30, "2026-01-25", "2026-01-29", True,  "Booking", 0, "",   1200.00, "lista"),
+        # Febrer 2026
+        (2,  31, "2026-02-08", "2026-02-12", True,  "Direct",  1, "",   1080.00, "lista"),
+        (6,  32, "2026-02-15", "2026-02-19", True,  "Booking", 0, "",    320.00, "lista"),
+        (15, 33, "2026-02-20", "2026-02-24", True,  "Airbnb",  0, "",   1200.00, "lista"),
+        # Marc 2026
+        (2,  34, "2026-03-07", "2026-03-11", True,  "Airbnb",  0, "",   1080.00, "lista"),
+        (7,  35, "2026-03-12", "2026-03-16", True,  "Direct",  0, "",    580.00, "lista"),
+        (17, 36, "2026-03-18", "2026-03-22", True,  "Booking", 0, "",    800.00, "lista"),
+        # Abril 2026 - Setmana Santa
+        (2,  37, "2026-04-04", "2026-04-11", True,  "Direct",  1, "Setmana Santa",  2380.00, "lista"),
+        (4,  38, "2026-04-04", "2026-04-11", True,  "Airbnb",  2, "Setmana Santa",  3640.00, "lista"),
+        (16, 39, "2026-04-04", "2026-04-09", True,  "Booking", 1, "Setmana Santa",  2250.00, "lista"),
+        # Maig 2026
+        (4,  40, "2026-05-09", "2026-05-14", False, "Direct",  1, "",   2100.00, "lista"),
+        (8,  41, "2026-05-08", "2026-05-12", True,  "Booking", 0, "",   1160.00, "lista"),
+        (16, 42, "2026-05-15", "2026-05-20", True,  "Airbnb",  0, "",   1900.00, "lista"),
+        # Juny 2026 (futur proper)
+        (4,  43, "2026-06-06", "2026-06-13", False, "Direct",  2, "",   2940.00, "reservada"),
+        (16, 44, "2026-06-06", "2026-06-13", False, "Booking", 1, "",   2660.00, "reservada"),
+        (2,  45, "2026-06-13", "2026-06-20", False, "Airbnb",  1, "",   2380.00, "reservada"),
+        (8,  46, "2026-06-20", "2026-06-25", False, "Direct",  0, "",   1450.00, "reservada"),
+        # Juliol 2026 (futur)
+        (4,  47, "2026-07-04", "2026-07-11", False, "Direct",  3, "",   4550.00, "prereservada"),
+        (16, 48, "2026-07-04", "2026-07-11", False, "Booking", 2, "",   3920.00, "prereservada"),
+        (2,  49, "2026-07-04", "2026-07-11", False, "Airbnb",  2, "",   3360.00, "prereservada"),
+        # Agost 2026 (futur)
+        (4,  20, "2026-08-01", "2026-08-08", False, "Direct",  3, "",   4550.00, "prereservada"),
+        (15, 21, "2026-08-01", "2026-08-08", False, "Booking", 2, "",   3920.00, "prereservada"),
+        # Octubre 2026 (futur)
+        (0,  22, "2026-10-05", "2026-10-09", False, "Direct",  0, "",    420.00, "prereservada"),
+        (5,  23, "2026-10-12", "2026-10-16", False, "Booking", 0, "",    560.00, "prereservada"),
+        (9,  24, "2026-10-18", "2026-10-21", False, "Airbnb",  0, "",    180.00, "prereservada"),
+        # Novembre 2026 (futur)
+        (1,  25, "2026-11-07", "2026-11-10", False, "Direct",  0, "",    630.00, "prereservada"),
+        (6,  26, "2026-11-14", "2026-11-17", False, "Booking", 0, "",    240.00, "prereservada"),
+        # Desembre 2026 (futur)
+        (17, 27, "2026-12-20", "2026-12-24", False, "Airbnb",  0, "Nadal",     800.00, "prereservada"),
+        (2,  28, "2026-12-26", "2027-01-02", False, "Direct",  1, "Cap d'any", 1890.00, "prereservada"),
     ]
+
+    metodes_cicle = ["transferencia", "targeta", "bizum", "efectiu", "targeta", "transferencia", "bizum"]
 
     reserves = []
     for row in reserves_data:
-        imm_i, inq_i, entrada, sortida, pagat, tipus, limpieza_extra, comentaris = row
+        imm_i, inq_i, entrada, sortida, pagat, tipus, lim, coment, import_total, estat_reserva = row
+        estat_pag = 'pagada' if pagat else ('rebutjada' if estat_reserva == 'cancelada' else 'pendent')
         r = ReservaBasica.objects.create(
             immoble=immobles[imm_i],
-            inquili=inquilins[inq_i],
+            inquili=tots_inquilins[inq_i],
             data_entrada=entrada,
             data_sortida=sortida,
             pagat=pagat,
             tipus_reserva=tipus,
-            limpieza_extra=limpieza_extra,
-            comentaris_interns=comentaris,
+            limpieza_extra=lim,
+            comentaris_interns=coment,
+            import_total=import_total,
+            import_pagat=import_total if pagat else 0,
+            import_pendent=0 if pagat else import_total,
+            estat_reserva=estat_reserva,
+            estat_pagament=estat_pag,
         )
         reserves.append(r)
 
     print(f"{len(reserves)} reserves creades")
 
-    # ── Hostes (~2-4 per reserva) ────────────────────────────────────────────
-    # Per cada reserva creem un hoste principal (a partir de l'inquili) i
-    # 1-3 hostes addicionals amb dades coherents.
+    # ── Hostes (~2-3 per reserva) ─────────────────────────────────────────────
     hostes_extra = [
-        # (nom, genere, relacio, doc_type, doc_num, nacionalitat, naixement, residencia, email, tel)
-        ("Aina Puig Coma",       "Dona",  "Parella",        "DNI",       "11112222Z", "Espanyola",  "1995-03-12", "Carrer Major 5, Barcelona",      "aina.puig@gmail.com",     "+34 600 000 001"),
-        ("Eric Bosch Pons",      "Home",  "Fill/a",         "DNI",       "22223333Y", "Espanyola",  "2015-07-22", "Carrer Major 5, Barcelona",      "",                        ""),
-        ("Maria Solans Roca",    "Dona",  "Fill/a",         "DNI",       "33334444X", "Espanyola",  "2018-11-04", "Avinguda Diagonal 10, Barcelona","",                        ""),
-        ("Pau Llopis Vila",      "Home",  "Parella",        "Passaport", "AB1234567", "Francesa",   "1988-01-30", "Rue de la Paix 12, Paris",       "pau.llopis@gmail.com",    "+33 6 12 34 56 78"),
-        ("Clara Ferrer Mas",     "Dona",  "Germà/Germana",  "DNI",       "44445555W", "Espanyola",  "1993-06-18", "Placa Catalunya 8, Tarragona",   "clara.ferrer@gmail.com",  "+34 600 000 002"),
-        ("Roger Pla Font",       "Home",  "Fill/a",         "DNI",       "55556666V", "Espanyola",  "2012-04-09", "Carrer del Pi 12, Lleida",       "",                        ""),
-        ("Laia Vidal Mas",       "Dona",  "Parella",        "NIE",       "Y1234567B", "Argentina",  "1991-09-25", "Rambla Nova 20, Tarragona",      "laia.vidal@gmail.com",    "+54 11 1234 5678"),
-        ("Marti Coll Vives",     "Home",  "Fill/a",         "DNI",       "66667777U", "Espanyola",  "2019-02-14", "Carrer Balmes 55, Barcelona",    "",                        ""),
-        ("Berta Sole Pons",      "Dona",  "Parella",        "DNI",       "77778888T", "Espanyola",  "1986-12-01", "Via Augusta 3, Barcelona",       "berta.sole@gmail.com",    "+34 600 000 003"),
-        ("Nil Camps Ros",        "Home",  "Parella",        "DNI",       "88889999S", "Espanyola",  "1990-08-15", "Carrer Groc 7, Reus",            "nil.camps@gmail.com",     "+34 600 000 004"),
-        ("Quim Sala Mas",        "Home",  "Fill/a",         "DNI",       "99990000R", "Espanyola",  "2014-05-20", "Passeig de la Pau 1, Vic",       "",                        ""),
-        ("Mireia Roca Pla",      "Dona",  "Parella",        "DNI",       "00001111Q", "Espanyola",  "1992-10-03", "Carrer dels Albers 4, Manresa",  "mireia.roca@gmail.com",   "+34 600 000 005"),
+        ("Aina Puig Coma",    "Dona",  "Parella",       "DNI",       "11112222Z", "Espanyola",  "1995-03-12", "Carrer Major 5, Barcelona",       "aina.puig@gmail.com",   "+34 600 000 001"),
+        ("Eric Bosch Pons",   "Home",  "Fill/a",        "DNI",       "22223333Y", "Espanyola",  "2015-07-22", "Carrer Major 5, Barcelona",       "",                      ""),
+        ("Maria Solans Roca", "Dona",  "Fill/a",        "DNI",       "33334444X", "Espanyola",  "2018-11-04", "Avinguda Diagonal 10, Barcelona", "",                      ""),
+        ("Pau Llopis Vila",   "Home",  "Parella",       "Passaport", "AB1234567", "Francesa",   "1988-01-30", "Rue de la Paix 12, Paris",        "pau.llopis@gmail.com",  "+33 6 12 34 56 78"),
+        ("Clara Ferrer Mas",  "Dona",  "Germa/Germana", "DNI",       "44445555W", "Espanyola",  "1993-06-18", "Placa Catalunya 8, Tarragona",    "clara.ferrer@gmail.com","+34 600 000 002"),
+        ("Roger Pla Font",    "Home",  "Fill/a",        "DNI",       "55556666V", "Espanyola",  "2012-04-09", "Carrer del Pi 12, Lleida",        "",                      ""),
+        ("Laia Vidal Mas",    "Dona",  "Parella",       "NIE",       "Y1234567B", "Argentina",  "1991-09-25", "Rambla Nova 20, Tarragona",       "laia.vidal@gmail.com",  "+54 11 1234 5678"),
+        ("Marti Coll Vives",  "Home",  "Fill/a",        "DNI",       "66667777U", "Espanyola",  "2019-02-14", "Carrer Balmes 55, Barcelona",     "",                      ""),
+        ("Berta Sole Pons",   "Dona",  "Parella",       "DNI",       "77778888T", "Espanyola",  "1986-12-01", "Via Augusta 3, Barcelona",        "berta.sole@gmail.com",  "+34 600 000 003"),
+        ("Nil Camps Ros",     "Home",  "Parella",       "DNI",       "88889999S", "Espanyola",  "1990-08-15", "Carrer Groc 7, Reus",             "nil.camps@gmail.com",   "+34 600 000 004"),
+        ("Quim Sala Mas",     "Home",  "Fill/a",        "DNI",       "99990000R", "Espanyola",  "2014-05-20", "Passeig de la Pau 1, Vic",        "",                      ""),
+        ("Mireia Roca Pla",   "Dona",  "Parella",       "DNI",       "00001111Q", "Espanyola",  "1992-10-03", "Carrer dels Albers 4, Manresa",   "mireia.roca@gmail.com", "+34 600 000 005"),
     ]
 
     total_hostes = 0
-    # Patró d'addicionals per reserva (índexs a hostes_extra). Ciclat per 20 reserves.
-    patrons = [
-        [0, 1, 2],     # 1 + 3 → 4
-        [3],           # 1 + 1 → 2
-        [4, 5],        # 1 + 2 → 3
-        [],            # 1 → 1
-        [6, 7, 8],     # 1 + 3 → 4
-        [9],
-        [10, 11],
-        [0],
-        [1, 2],
-        [],
-        [3, 4],
-        [5],
-        [6, 7, 8],
-        [9, 10],
-        [0],
-        [1],
-        [2, 3, 4],
-        [5, 6],
-        [],
-        [7, 8],
-    ]
-
     for idx, reserva in enumerate(reserves):
         inq = reserva.inquili
-        # Hoste principal (basat en l'inquili)
         Hoste.objects.create(
-            reserva=reserva,
-            es_principal=True,
+            reserva=reserva, es_principal=True,
             nom_complet=inq.nom_complet,
             genere="Home" if idx % 2 == 0 else "Dona",
             tipus_document="DNI",
@@ -617,96 +653,73 @@ def run():
             data_naixement=f"19{70 + (idx % 30):02d}-0{1 + (idx % 9)}-15",
             residencia=inq.residencia,
             email=inq.email,
-            telefon=f"+34 6{idx:02d} 000 000",
+            telefon=f"+34 6{idx % 100:02d} {idx % 1000:03d} {idx % 100:03d}",
         )
         total_hostes += 1
 
-        # Hostes addicionals
-        for extra_idx in patrons[idx]:
-            extra = hostes_extra[extra_idx]
-            (nom, gen, rel, dtype, dnum, nac, naix, res, em, tel) = extra
+        # 0, 1 o 2 hostes addicionals segons import (grans reserves = mes gent)
+        import_total_val = float(reserves_data[idx][8])
+        num_extra = 0 if import_total_val < 400 else (1 if import_total_val < 1500 else 2)
+        for e in range(num_extra):
+            extra = hostes_extra[(idx + e) % len(hostes_extra)]
+            nom, gen, rel, dtype, dnum, nac, naix, res, em, tel = extra
             Hoste.objects.create(
-                reserva=reserva,
-                es_principal=False,
-                nom_complet=nom,
-                genere=gen,
-                relacio_parental=rel,
-                tipus_document=dtype,
-                numero_document=dnum,
-                nacionalitat=nac,
-                data_naixement=naix,
-                residencia=res,
-                email=em,
-                telefon=tel,
+                reserva=reserva, es_principal=False,
+                nom_complet=nom, genere=gen, relacio_parental=rel,
+                tipus_document=dtype, numero_document=dnum,
+                nacionalitat=nac, data_naixement=naix,
+                residencia=res, email=em, telefon=tel,
             )
             total_hostes += 1
 
-        # Actualitzar el comptador a la reserva
         reserva.num_hostes = reserva.hostes.count()
         reserva.save(update_fields=['num_hostes'])
 
     print(f"{total_hostes} hostes creats")
 
-    # ── Pagaments de reserves ────────────────────────────────────────────────
-    # Format: (reserva_idx, data_pagament, import_pagament, metode, estat)
-    # Les reserves pagades (pagat=True) tenen 1-2 pagaments en estat 'pagat'.
-    # Algunes reserves no pagades tenen 1 pagament en estat 'pendent' o 'cancelat'.
-    pagaments_data = [
-        # Reserva 0 · Apartament Gracia Centre · 5 nits · Airbnb · pagada
-        (0,  "2026-01-08",  550.00, "targeta",       "pagat"),
-        # Reserva 1 · Atic Vista Mar · 3 nits · Booking · pagada
-        (1,  "2026-01-18",  660.00, "transferencia", "pagat"),
-        # Reserva 2 · Casa amb jardi Sitges · 7 nits · Direct · pagada (2 pagaments)
-        (2,  "2026-01-20", 1225.00, "transferencia", "pagat"),
-        (2,  "2026-02-01", 1225.00, "transferencia", "pagat"),
-        # Reserva 3 · Estudi Barceloneta · 2 nits · Airbnb · NO pagada
-        (3,  "2026-02-12",  150.00, "bizum",         "pendent"),
-        # Reserva 4 · Xalet Costa Brava · 7 nits · Direct · pagada (2 pagaments)
-        (4,  "2026-02-10", 1680.00, "transferencia", "pagat"),
-        (4,  "2026-02-25", 1680.00, "transferencia", "pagat"),
-        # Reserva 5 · Pis Modern Eixample · 3 nits · Booking · NO pagada
-        (5,  "2026-03-14",  450.00, "targeta",       "pendent"),
-        # Reserva 6 · Apartament Girona Vella · 2 nits · Airbnb · pagada
-        (6,  "2026-04-03",  190.00, "targeta",       "pagat"),
-        # Reserva 7 · Duplex Tarragona Mar · 5 nits · Direct · NO pagada (cancelat)
-        (7,  "2026-04-18",  900.00, "transferencia", "cancelat"),
-        # Reserva 8 · Casa Rural Osona · 4 nits · Booking · pagada
-        (8,  "2026-04-28", 1200.00, "transferencia", "pagat"),
-        # Reserva 9 · Apartament Lleida Centre · 7 nits · Airbnb · NO pagada
-        (9,  "2026-05-08",  490.00, "bizum",         "pendent"),
-        # Reserva 10 · Atic Terrassa Vista · 2 nits · Direct · pagada
-        (10, "2026-05-18",  260.00, "efectiu",       "pagat"),
-        # Reserva 11 · Pis Badalona Platja · 7 nits · Booking · NO pagada
-        (11, "2026-05-28",  840.00, "targeta",       "pendent"),
-        # Reserva 12 · Casa Adossada Sabadell · 5 nits · Airbnb · pagada
-        (12, "2026-06-12",  800.00, "transferencia", "pagat"),
-        # Reserva 13 · Estudi Mataro Rambla · 6 nits · Altres · NO pagada
-        (13, "2026-06-28",  390.00, "altres",        "pendent"),
-        # Reserva 14 · Apartament Manresa Nou · 4 nits · Direct · pagada
-        (14, "2026-07-08",  320.00, "bizum",         "pagat"),
-        # Reserva 15 · Xalet Roses Costa · 5 nits · Booking · NO pagada
-        (15, "2026-07-18", 2000.00, "transferencia", "pendent"),
-        # Reserva 16 · Pis Figueres Rambla · 9 nits · Airbnb · pagada
-        (16, "2026-07-30",  765.00, "targeta",       "pagat"),
-        # Reserva 17 · Casa Rural Priorat · 3 nits · Direct · pagada
-        (17, "2026-08-13",  780.00, "transferencia", "pagat"),
-        # Reserva 18 · Apartament Tortosa Riu · 4 nits · Booking · NO pagada
-        (18, "2026-08-28",  300.00, "bizum",         "pendent"),
-        # Reserva 19 · Duplex Vilanova Centre · 5 nits · Airbnb · pagada
-        (19, "2026-09-08",  975.00, "targeta",       "pagat"),
-    ]
+    # ── Pagaments (bulk_create per evitar signals d'email) ───────────────────
+    from django.db.models.signals import post_save
+    from bookings import signals as booking_signals
+    post_save.disconnect(booking_signals.pagament_post_save, sender=PagamentReserva)
 
-    pagaments = [
-        PagamentReserva.objects.create(
-            reserva=reserves[r_idx],
-            data_pagament=data,
-            import_pagament=imp,
-            metode_pagament=metode,
-            estat=estat,
-        )
-        for r_idx, data, imp, metode, estat in pagaments_data
-    ]
-    print(f"{len(pagaments)} pagaments creats")
+    pagaments_bulk = []
+    for idx, (reserva, row) in enumerate(zip(reserves, reserves_data)):
+        imm_i, inq_i, entrada, sortida, pagat, tipus, lim, coment, import_total, estat_reserva = row
+        metode = metodes_cicle[idx % len(metodes_cicle)]
+        data_entrada_dt = date.fromisoformat(entrada)
+        data_pag = str(data_entrada_dt - timedelta(days=3))
+
+        if estat_reserva == 'cancelada':
+            pagaments_bulk.append(PagamentReserva(
+                reserva=reserva, data_pagament=data_pag,
+                import_pagament=import_total, metode_pagament=metode, estat='cancelat',
+            ))
+        elif pagat:
+            if import_total >= 2000:
+                meitat = round(import_total / 2, 2)
+                data_pag2 = str(data_entrada_dt - timedelta(days=30))
+                pagaments_bulk.append(PagamentReserva(
+                    reserva=reserva, data_pagament=data_pag2,
+                    import_pagament=meitat, metode_pagament=metode, estat='pagat',
+                ))
+                pagaments_bulk.append(PagamentReserva(
+                    reserva=reserva, data_pagament=data_pag,
+                    import_pagament=import_total - meitat, metode_pagament=metode, estat='pagat',
+                ))
+            else:
+                pagaments_bulk.append(PagamentReserva(
+                    reserva=reserva, data_pagament=data_pag,
+                    import_pagament=import_total, metode_pagament=metode, estat='pagat',
+                ))
+        else:
+            pagaments_bulk.append(PagamentReserva(
+                reserva=reserva, data_pagament=data_pag,
+                import_pagament=import_total, metode_pagament=metode, estat='pendent',
+            ))
+
+    PagamentReserva.objects.bulk_create(pagaments_bulk)
+    post_save.connect(booking_signals.pagament_post_save, sender=PagamentReserva)
+    print(f"{len(pagaments_bulk)} pagaments creats")
     print("Tot OK!")
 
 
