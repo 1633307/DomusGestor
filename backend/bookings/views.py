@@ -1,5 +1,6 @@
 import logging
 from datetime import date, timedelta
+from decimal import Decimal
 
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
@@ -13,7 +14,7 @@ from core.fields import hmac_value
 from properties.models import Immoble
 
 from .emails import enviar_comunicacio_manual
-from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, Comunicacio, ComunicacioEmail
+from .models import Persona, PerfilInquili, PerfilPropietari, ReservaBasica, PagamentReserva, Comunicacio, ComunicacioEmail
 from .serializers import (
     PersonaSerializer, PerfilPropietariSerializer,
     ReservaSerializer, ComunicacioSerializer, ComunicacioEmailSerializer, DashboardSerializer,
@@ -148,6 +149,64 @@ class ReservaPreviewView(APIView):
         return Response(calcular_preview_reserva(request.data))
 
 
+def _portal_nip_matches_reserva(reserva, nip):
+    nip_hash = hmac_value(nip)
+    if reserva.inquili.dni_passaport_hash == nip_hash:
+        return True
+    normalized_nip = nip.casefold()
+    for hoste in reserva.hostes.all():
+        if hoste.numero_document.strip().casefold() == normalized_nip:
+            return True
+        if hoste.persona and hoste.persona.dni_passaport_hash == nip_hash:
+            return True
+    return False
+
+
+def _portal_serialize_reserva(reserva):
+    hostes = [
+        {
+            'id': hoste.id,
+            'nom_complet': hoste.nom_complet,
+            'es_principal': hoste.es_principal,
+            'nacionalitat': hoste.nacionalitat,
+        }
+        for hoste in reserva.hostes.all()
+    ]
+    return {
+        'id': reserva.id,
+        'codi_reserva': reserva.codi_reserva,
+        'immoble_nom': reserva.immoble.nom_comercial,
+        'inquili_nom': reserva.inquili.nom_complet,
+        'data_entrada': reserva.data_entrada,
+        'data_sortida': reserva.data_sortida,
+        'num_hostes': reserva.num_hostes or len(hostes),
+        'hostes': hostes,
+        'tipus_reserva': reserva.tipus_reserva,
+        'estat_reserva': reserva.estat_reserva,
+        'pagat': reserva.pagat,
+        'estat_pagament': reserva.estat_pagament,
+        'import_total': reserva.import_total,
+        'import_pagat': reserva.import_pagat,
+        'import_pendent': reserva.import_pendent,
+        'fianca': reserva.fianca,
+        'metode_pagament': reserva.metode_pagament,
+        'data_ultim_pagament': reserva.data_ultim_pagament,
+        'observacions_pagament': reserva.observacions_pagament,
+    }
+
+
+def _portal_get_reserva(codi_reserva):
+    queryset = (
+        ReservaBasica.objects
+        .select_related('immoble', 'inquili')
+        .prefetch_related('hostes__persona')
+    )
+    reserva = queryset.filter(codi_reserva__iexact=codi_reserva).first()
+    if reserva is None and codi_reserva.isdigit():
+        reserva = queryset.filter(pk=int(codi_reserva)).first()
+    return reserva
+
+
 class ClientPortalLoginView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -163,16 +222,9 @@ class ClientPortalLoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        queryset = (
-            ReservaBasica.objects
-            .select_related('immoble', 'inquili')
-            .prefetch_related('hostes__persona')
-        )
-        reserva = queryset.filter(codi_reserva__iexact=codi_reserva).first()
-        if reserva is None and codi_reserva.isdigit():
-            reserva = queryset.filter(pk=int(codi_reserva)).first()
+        reserva = _portal_get_reserva(codi_reserva)
 
-        if reserva is None or not self._nip_matches_reserva(reserva, nip):
+        if reserva is None or not _portal_nip_matches_reserva(reserva, nip):
             logger.warning('Accés portal client fallat: codi_reserva=%s', codi_reserva)
             return Response(
                 {'detail': 'No hem pogut verificar la reserva amb aquestes dades.'},
@@ -180,52 +232,66 @@ class ClientPortalLoginView(APIView):
             )
 
         logger.info('Accés portal client: reserva_id=%s', reserva.pk)
-        return Response(self._serialize_reserva(reserva))
+        return Response(_portal_serialize_reserva(reserva))
 
-    def _nip_matches_reserva(self, reserva, nip):
-        nip_hash = hmac_value(nip)
-        if reserva.inquili.dni_passaport_hash == nip_hash:
-            return True
 
-        normalized_nip = nip.casefold()
-        for hoste in reserva.hostes.all():
-            if hoste.numero_document.strip().casefold() == normalized_nip:
-                return True
-            if hoste.persona and hoste.persona.dni_passaport_hash == nip_hash:
-                return True
-        return False
+class ClientPortalPayView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
-    def _serialize_reserva(self, reserva):
-        hostes = [
-            {
-                'id': hoste.id,
-                'nom_complet': hoste.nom_complet,
-                'es_principal': hoste.es_principal,
-                'nacionalitat': hoste.nacionalitat,
-            }
-            for hoste in reserva.hostes.all()
-        ]
-        return {
-            'id': reserva.id,
-            'codi_reserva': reserva.codi_reserva,
-            'immoble_nom': reserva.immoble.nom_comercial,
-            'inquili_nom': reserva.inquili.nom_complet,
-            'data_entrada': reserva.data_entrada,
-            'data_sortida': reserva.data_sortida,
-            'num_hostes': reserva.num_hostes or len(hostes),
-            'hostes': hostes,
-            'tipus_reserva': reserva.tipus_reserva,
-            'estat_reserva': reserva.estat_reserva,
-            'pagat': reserva.pagat,
-            'estat_pagament': reserva.estat_pagament,
-            'import_total': reserva.import_total,
-            'import_pagat': reserva.import_pagat,
-            'import_pendent': reserva.import_pendent,
-            'fianca': reserva.fianca,
-            'metode_pagament': reserva.metode_pagament,
-            'data_ultim_pagament': reserva.data_ultim_pagament,
-            'observacions_pagament': reserva.observacions_pagament,
-        }
+    def post(self, request):
+        codi_reserva = str(request.data.get('codi_reserva', '')).strip()
+        nip = str(request.data.get('nip', '')).strip()
+
+        if not codi_reserva or not nip:
+            return Response(
+                {'detail': 'Cal indicar el numero de reserva i el NIP.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        reserva = _portal_get_reserva(codi_reserva)
+
+        if reserva is None or not _portal_nip_matches_reserva(reserva, nip):
+            logger.warning('Pagament portal client fallat: codi_reserva=%s', codi_reserva)
+            return Response(
+                {'detail': 'No hem pogut verificar la reserva amb aquestes dades.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if reserva.estat_reserva == 'cancelada':
+            return Response(
+                {'detail': 'No es pot pagar una reserva cancel·lada.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if reserva.pagat and reserva.estat_reserva in ('reservada', 'lista'):
+            return Response(
+                {'detail': 'Aquesta reserva ja ha estat pagada.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        avui = date.today()
+        reserva.pagat = True
+        reserva.estat_pagament = 'pagada'
+        reserva.import_pagat = reserva.import_total
+        reserva.import_pendent = Decimal('0.00')
+        reserva.data_ultim_pagament = avui
+        reserva.metode_pagament = 'targeta'
+        if reserva.estat_reserva == 'prereservada':
+            reserva.estat_reserva = 'reservada'
+        reserva.save()
+
+        PagamentReserva.objects.create(
+            reserva=reserva,
+            data_pagament=avui,
+            import_pagament=reserva.import_total,
+            metode_pagament='targeta',
+            estat='pagat',
+        )
+
+        reserva.refresh_from_db()
+        logger.info('Pagament portal client: reserva_id=%s import=%s', reserva.pk, reserva.import_total)
+        return Response(_portal_serialize_reserva(reserva))
 
 
 class DashboardView(APIView):

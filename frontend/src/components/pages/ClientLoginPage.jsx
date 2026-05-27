@@ -76,6 +76,7 @@ export default function ClientLoginPage() {
   const [visualPaymentDone, setVisualPaymentDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [paymentError, setPaymentError] = useState('');
 
   const paymentInfo = useMemo(() => {
     if (!reserva) return null;
@@ -110,10 +111,20 @@ export default function ClientLoginPage() {
     }
   };
 
-  const handleFakePayment = (e) => {
+  const handleFakePayment = async (e) => {
     e.preventDefault();
-    setVisualPaymentDone(true);
-    setPaymentFormVisible(false);
+    setPaymentError('');
+    setSubmitting(true);
+    try {
+      const data = await clientPortalApi.pay(form.codiReserva, form.nip);
+      setReserva(data);
+      setPaymentFormVisible(false);
+      setVisualPaymentDone(true);
+    } catch (err) {
+      setPaymentError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (reserva && paymentInfo) {
@@ -229,14 +240,16 @@ export default function ClientLoginPage() {
                     <input type="text" inputMode="numeric" placeholder="000" required />
                   </label>
                 </div>
+                {paymentError && <p className={styles.errorText}>{paymentError}</p>}
                 <div className={styles.paymentActions}>
-                  <button type="submit" className={styles.primaryButton}>
-                    Confirmar pagament
+                  <button type="submit" className={styles.primaryButton} disabled={submitting}>
+                    {submitting ? 'Processant...' : 'Confirmar pagament'}
                   </button>
                   <button
                     type="button"
                     className={styles.secondaryButton}
                     onClick={() => setPaymentFormVisible(false)}
+                    disabled={submitting}
                   >
                     Cancel·lar
                   </button>
@@ -245,7 +258,7 @@ export default function ClientLoginPage() {
             )}
 
             {visualPaymentDone && (
-              <p className={styles.successText}>Pagament confirmat per a aquesta sessió.</p>
+              <p className={styles.successText}>Pagament confirmat correctament. La reserva ha estat actualitzada.</p>
             )}
           </section>
         </main>

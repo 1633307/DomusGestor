@@ -9,6 +9,7 @@ urlpatterns = [
     path('reserves/', views.ReservaListCreateView.as_view(), name='reserva-list'),
     path('reserves/preview/', views.ReservaPreviewView.as_view(), name='reserva-preview'),
     path('client-portal/login/', views.ClientPortalLoginView.as_view(), name='client-portal-login'),
+    path('client-portal/pay/', views.ClientPortalPayView.as_view(), name='client-portal-pay'),
     path('reserves/<int:pk>/', views.ReservaDetailView.as_view(), name='reserva-detail'),
     path(
         'reserves/<int:reserva_pk>/comunicacions/',
