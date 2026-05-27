@@ -34,14 +34,21 @@ from bookings.models import Persona, PerfilInquili, PerfilPropietari, ReservaBas
 
 def run():
     # ── Usuari admin ─────────────────────────────────────────────────────────
-    if Usuari.objects.filter(nip="ADM001").exists() or Usuari.objects.filter(username="admin").exists():
-        print("Usuari admin ja existeix, no s'ha sobreescrit")
+    admin_exists = Usuari.objects.filter(nip="ADM001").first() or Usuari.objects.filter(username="admin").first()
+    if admin_exists:
+        if not admin_exists.is_admin:
+            admin_exists.is_admin = True
+            admin_exists.save(update_fields=["is_admin"])
+            print("Usuari admin actualitzat amb is_admin=True")
+        else:
+            print("Usuari admin ja existeix, no s'ha sobreescrit")
     else:
         Usuari.objects.create_user(
             username="admin",
             email="admin@domusgestor.cat",
             nip="ADM001",
             password="DomusGestor2026!",
+            is_admin=True,
         )
         print("Usuari creat  →  NIP: ADM001 / Password: DomusGestor2026!")
 
