@@ -79,6 +79,12 @@ export const clientPortalApi = {
       { codi_reserva: codiReserva, nip },
       { auth: false },
     ),
+  pay: (codiReserva, nip) =>
+    api.post(
+      "/bookings/client-portal/pay/",
+      { codi_reserva: codiReserva, nip },
+      { auth: false },
+    ),
 };
 
 export const propertiesApi = {
